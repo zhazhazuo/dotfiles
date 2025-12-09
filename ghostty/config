@@ -1,0 +1,15 @@
+# theme = cyberdream
+# FONT
+font-family = Victor Mono
+# font-family = KingHwa_OldSong
+font-family = LXGW WenKai Screen
+
+# BACKGROUND
+background = #000000
+background-opacity = 0.8
+background-blur-radius = 15
+
+# TITLE_BAR
+macos-titlebar-style = hidden
+
+window-padding-balance = true
