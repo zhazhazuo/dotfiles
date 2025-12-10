@@ -18,3 +18,7 @@ ln -s ~/dotfiles/ghostty ~/.config/ghostty
 # Aerospace
 rm -rf ~/.config/aerospace
 ln -s ~/dotfiles/aerospace ~/.config/aerospace
+
+# OpenCode
+rm -rf ~/.config/opencode/agent
+ln -s ~/dotfiles/opencode/agent ~/.config/opencode/agent
