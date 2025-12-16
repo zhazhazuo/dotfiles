@@ -37,7 +37,7 @@ local cyber_dream = {
 			borderless_telescope = true,
 			terminal_colors = true,
 		})
-		vim.cmd.colorscheme("cyberdream")
+		-- vim.cmd.colorscheme("cyberdream")
 	end,
 }
 
@@ -59,6 +59,6 @@ local alabaster = {
 
 return {
 	-- grubox,
-	-- cyber_dream,
+	cyber_dream,
 	alabaster,
 }
