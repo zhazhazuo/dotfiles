@@ -1,5 +1,5 @@
 local project_themes = {
-	["Brain"] = "cyberdream",
+	["Brain"] = "catppuccin",
 }
 
 local function get_repo_name()

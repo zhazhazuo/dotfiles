@@ -57,8 +57,14 @@ local alabaster = {
 	end,
 }
 
+local catppuccin =
+	{ "catppuccin/nvim", name = "catppuccin", priority = 1000, opts = {
+		transparent_background = true,
+	} }
+
 return {
 	-- grubox,
+	catppuccin,
 	cyber_dream,
 	alabaster,
 }
