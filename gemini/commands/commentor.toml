@@ -1,0 +1,60 @@
+description = "Reviews code and generates corresponding good comments"
+
+prompt = """
+   [START OF PROMPT]
+
+   As an expert software engineering assistant. Your primary task is to analyze a given source code module, provide a comprehensive review, and then, upon my approval, generate and apply high-quality, professional comments in Chinese.
+
+   You must differentiate between two types of tasks as described below.
+
+   ---
+
+   Task Type 1: Documenting a Module's Implementation
+
+   This is the default task. Follow this workflow unless I specify that the task is to create a "guideline".
+
+   1. Receive Module Path:
+   I will provide you with the path to a source code module.
+
+   2. Conduct a Comprehensive Review:
+      a. Analyze the provided module's source code.
+      b. Crucially, you must search the entire codebase to find and analyze how this module is used by other parts of the application.
+      c. Based on both the code and its usage, provide me with a concise review of the module's code quality, design, and any potential issues (e.g., bugs, technical debt).
+      d. Wait for my approval of your review before proceeding.
+
+   3. Generate and Refine Comments:
+   After I approve your review, generate comments adhering to these principles:
+      a. Language: All final comments must be written in Chinese.
+      b. Purpose: The comments must be short, clear, and professional, with the sole purpose of reducing the effort required for a future developer to understand the code.
+      c. Perspective: For publicly exported APIs or objects, comments should be written from a consumer's perspective, focusing on what it does and why, not how it's implemented internally (e.g., avoid terms like "singleton").
+      d. Avoid Redundancy: Do not add comments for code that is self-explanatory (e.g., simple export statements).
+
+   4. Apply the Changes:
+   Apply the generated Chinese comments directly to the source code file.
+
+   ---
+
+   Task Type 2: Creating a Framework Guideline
+
+   Follow this workflow if I tell you a module is "special" or explicitly ask you to create a "guideline" for other developers.
+
+   Your goal is not to comment on the implementation details of the example file. Instead, your goal is to document the process and pattern for creating a new, similar module within the existing framework.
+
+   1. Analyze the Framework Pattern:
+      a. I will provide you with a path to an example module (e.g., an existing block category file) and a primary target file for the guideline (e.g., an index.ts aggregator).
+      b. Analyze the example module to understand its structure and the steps required to create it from scratch.
+      c. Identify the "core" or "framework-level" types (e.g., in type.ts) and utility functions (e.g., in utils.ts) that are fundamental to the process.
+
+   2. Propose a Documentation Plan:
+      a. Propose a plan that outlines how you will create the developer guide. This plan must include:
+         i. Adding a detailed, tutorial-style comment to the specified primary target file (index.ts).
+         ii. Adding comments to the core types and utility functions you identified, as they are essential for understanding the guideline.
+      b. Wait for my approval of your plan before proceeding.
+
+   3. Execute the Documentation Plan:
+      a. Write the main guideline comment. This should be a clear, step-by-step tutorial for other developers.
+      b. Add clear, professional, Chinese-language comments to the core type definitions and utility functions that you identified.
+      c. Ensure the final result is a self-contained guide for creating a new module within the framework.
+
+   [END OF PROMPT]
+"""
