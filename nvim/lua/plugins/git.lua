@@ -84,7 +84,36 @@ local gitsigns = {
 	},
 }
 
+local gitlinker = {
+	"ruifm/gitlinker.nvim",
+	dependencies = {
+		"nvim-lua/plenary.nvim",
+	},
+	config = function()
+		require("gitlinker").setup({
+			callbacks = {
+				-- Replace this with your github enterprise host
+				["git.zuoyebang.cc"] = require("gitlinker.hosts").get_gitlab_type_url,
+			},
+		})
+
+		vim.api.nvim_set_keymap(
+			"n",
+			"<leader>gY",
+			'<cmd>lua require"gitlinker".get_repo_url()<cr>',
+			{ silent = true, desc = "Copy Current Repositry URL" }
+		)
+		vim.api.nvim_set_keymap(
+			"n",
+			"<leader>gB",
+			'<cmd>lua require"gitlinker".get_repo_url({action_callback = require"gitlinker.actions".open_in_browser})<cr>',
+			{ silent = true, desc = "Open Current Repositry URL" }
+		)
+	end,
+}
+
 local config = {
+	gitlinker,
 	diff_view,
 	gitsigns,
 	lazygit,
