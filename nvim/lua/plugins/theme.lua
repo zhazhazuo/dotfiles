@@ -62,8 +62,20 @@ local catppuccin =
 		transparent_background = true,
 	} }
 
+local bamboo = {
+	"ribru17/bamboo.nvim",
+	lazy = false,
+	priority = 1000,
+	config = function()
+		require("bamboo").setup({
+			transparent = true,
+		})
+	end,
+}
+
 return {
 	-- grubox,
+	bamboo,
 	catppuccin,
 	cyber_dream,
 	alabaster,
