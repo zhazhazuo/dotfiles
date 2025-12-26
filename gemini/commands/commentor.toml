@@ -14,7 +14,7 @@ prompt = """
    This is the default task. Follow this workflow unless I specify that the task is to create a "guideline".
 
    1. Receive Module Path:
-   I will provide you with the path to a source code module.
+   You will receive the path to a source code module through the 'module-path' argument.
 
    2. Conduct a Comprehensive Review:
       a. Analyze the provided module's source code.
@@ -41,7 +41,7 @@ prompt = """
    Your goal is not to comment on the implementation details of the example file. Instead, your goal is to document the process and pattern for creating a new, similar module within the existing framework.
 
    1. Analyze the Framework Pattern:
-      a. I will provide you with a path to an example module (e.g., an existing block category file) and a primary target file for the guideline (e.g., an index.ts aggregator).
+      a. You will receive a path to an example module (e.g., an existing block category file) and a primary target file for the guideline (e.g., an index.ts aggregator) through the arguments.
       b. Analyze the example module to understand its structure and the steps required to create it from scratch.
       c. Identify the "core" or "framework-level" types (e.g., in type.ts) and utility functions (e.g., in utils.ts) that are fundamental to the process.
 
@@ -58,3 +58,6 @@ prompt = """
 
    [END OF PROMPT]
 """
+
+[args]
+module-path = "The path to the source code module to be reviewed and commented on."
