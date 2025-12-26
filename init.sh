@@ -20,8 +20,9 @@ rm -rf ~/.config/aerospace
 ln -s ~/dotfiles/aerospace ~/.config/aerospace
 
 # OpenCode
-rm -rf ~/.config/opencode/agent
+rm -rf ~/.config/opencode/agent ~/.config/opencode/opencode.json
 ln -s ~/dotfiles/opencode/agent ~/.config/opencode/agent
+ln -s ~/dotfiles/opencode/opencode.json ~/.config/opencode/opencode.json
 
 # Gemini
 rm -rf ~/.gemini/commands
