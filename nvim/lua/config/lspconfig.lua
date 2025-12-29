@@ -35,6 +35,11 @@ vim.lsp.config.ts_ls = {
 	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
 }
 
+vim.lsp.config.quick_lint_js = {
+	capabilities = require("blink.cmp").get_lsp_capabilities(M.capabilities),
+	on_init = M.init,
+	filetypes = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
+}
+
 -- Enable all configured LSP servers
 vim.lsp.enable(lsp_list)
-vim.lsp.enable("ts_ls")
