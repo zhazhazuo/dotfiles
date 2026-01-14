@@ -28,3 +28,7 @@ ln -s ~/dotfiles/opencode/opencode.json ~/.config/opencode/opencode.json
 rm -rf ~/.gemini/commands
 ln -s ~/dotfiles/gemini/commands ~/.gemini/commands
 
+# AGENT
+rm -rf ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md
+ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
+ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md

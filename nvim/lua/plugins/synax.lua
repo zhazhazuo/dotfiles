@@ -2,10 +2,9 @@ local surround = { "echasnovski/mini.surround", version = "*" }
 
 local render_markdown = {
 	"MeanderingProgrammer/render-markdown.nvim",
-	dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
 	---@module 'render-markdown'
 	---@type render.md.UserConfig
-	opts = {},
 }
 
 local markdown_view = {
@@ -104,7 +103,7 @@ local tressistter = {
 
 local config = {
 	-- markdown_view,
-  render_markdown,
+	render_markdown,
 	tressistter,
 	surround,
 	{

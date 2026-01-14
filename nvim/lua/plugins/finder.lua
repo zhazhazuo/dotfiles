@@ -30,9 +30,9 @@ local spelunk = {
 	{
 		"EvWilson/spelunk.nvim",
 		dependencies = {
-			"nvim-lua/plenary.nvim", -- For window drawing utilities
-			"nvim-telescope/telescope.nvim", -- Optional: for fuzzy search capabilities
+			"folke/snacks.nvim", -- Optional: for enhanced fuzzy search capabilities
 			"nvim-treesitter/nvim-treesitter", -- Optional: for showing grammar context
+			"nvim-lualine/lualine.nvim",
 		},
 		config = function()
 			require("spelunk").setup({
@@ -42,9 +42,24 @@ local spelunk = {
 	},
 }
 
+local file_navigator = {
+	"vieitesss/miniharp.nvim",
+	opts = {
+		autoload = true,
+		autosave = true,
+		show_on_autoload = false,
+	},
+	config = function()
+		vim.keymap.set("n", "<leader>m", require("miniharp").toggle_file, { desc = "miniharp: toggle file mark" })
+		vim.keymap.set("n", "<C-n>", require("miniharp").next, { desc = "miniharp: next file mark" })
+		vim.keymap.set("n", "<C-p>", require("miniharp").prev, { desc = "miniharp: prev file mark" })
+		vim.keymap.set("n", "<leader>l", require("miniharp").show_list, { desc = "miniharp: list marks" })
+	end,
+}
 
 return {
-	snipe,
+	-- snipe,
 	spelunk,
 	telescope,
+	file_navigator,
 }

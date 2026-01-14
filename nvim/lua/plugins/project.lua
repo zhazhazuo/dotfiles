@@ -5,5 +5,5 @@ local persisitence = {
 }
 
 return {
-	persisitence
+	persisitence,
 }

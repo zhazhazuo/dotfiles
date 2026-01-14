@@ -17,6 +17,7 @@ You will receive a file path via the `file-path` argument. I will activate the *
 2.  **Global Search:** Immediately use your codebase search tools (e.g., grep, file search) to find **ALL** occurrences of `[task_code_name]` across the entire repository.
     * *Constraint:* Do not proceed until you have aggregated the content of every comment sharing this code name. This collection is your "Task Context."
 3.  **Code Analysis:** Read the code surrounding these markers to understand the technical requirements and dependencies.
+4. **Progress Notify:** Use the correponding MCP server to notify your progress.
 
 ### Phase 2: Planning & Confirmation (STOP POINT)
 4.  **Gap Analysis:** If valid info is missing, list your questions.

@@ -8,7 +8,17 @@ M.init = function(client)
 	end
 end
 
-local lsp_list = { "pyright", "lua_ls", "markdown_oxide", "html", "cssls", "tailwindcss" }
+local lsp_list = {
+	"pyright",
+	"lua_ls",
+	"rust_analyzer",
+	"markdown_oxide",
+	"html",
+	"cssls",
+	"tailwindcss",
+	"ts_ls",
+	"quick_lint_js",
+}
 
 for _, lsp in ipairs(lsp_list) do
 	vim.lsp.config[lsp] = {
@@ -43,3 +53,4 @@ vim.lsp.config.quick_lint_js = {
 
 -- Enable all configured LSP servers
 vim.lsp.enable(lsp_list)
+vim.diagnostic.config({ virtual_text = true })
