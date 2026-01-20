@@ -31,11 +31,18 @@ end, {
 map("n", "<leader>k", '<cmd> execute "%bdelete|edit#|bdelete#"<CR>', { desc = "Only keep current buffer" })
 
 local function reset_the_world()
-	require("persistence").load()
+	vim.defer_fn(function()
+		require("persistence").load()
+	end, 100)
+end
+
+local function restart_the_world()
+	vim.cmd("restart +RW")
 end
 
 -- Register the command
 vim.api.nvim_create_user_command("RW", reset_the_world, { nargs = 0 })
+map("n", "<C-r>", restart_the_world, { desc = "Restart The World" })
 
 -- For motion
 map("i", "<C-h>", "<Left>", { desc = "move left" })
