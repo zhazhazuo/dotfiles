@@ -41,6 +41,7 @@ opt.relativenumber = true
 opt.tabstop = 2
 opt.shiftround = true -- Round indent
 opt.shiftwidth = 2 -- Size of an indent
+opt.expandtab = true -- to use space instead of tab
 
 -- True color support
 opt.termguicolors = true
@@ -56,16 +57,12 @@ opt.wildmode = "longest:full,full"
 -- Minimum window width
 opt.winminwidth = 5
 
--- Disable line wrap
-opt.wrap = false
-
 opt.smoothscroll = true
-opt.foldexpr = "v:lua.require'lazyvim.util'.ui.foldexpr()"
 opt.foldmethod = "expr"
+opt.foldexpr = "nvim_treesitter#foldexpr()" -- Use treesitter for folding
 opt.foldtext = ""
 opt.foldlevelstart = 99
 
-opt.smartcase = true
 -- For insert mode to automatically create indent
 opt.smartindent = true
 
@@ -78,11 +75,6 @@ opt.wildmenu = true
 -- to set the case insensitive in search line
 opt.ignorecase = true
 opt.smartcase = true
-
--- to use space instead of tab
-opt["tabstop"] = 2
-opt["shiftwidth"] = 2
-opt.expandtab = true
 
 -- add the max length to enable LSP.
 opt.maxmempattern = 1000000
