@@ -2,7 +2,6 @@ return {
 	{
 		"echasnovski/mini.nvim",
 		config = function()
-			require("mini.ai").setup()
 			require("mini.icons").setup()
 
 			local hipatterns = require("mini.hipatterns")

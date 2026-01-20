@@ -1,11 +1,4 @@
-local surround = {
-	"kylechui/nvim-surround",
-	version = "*", -- or use latest commit
-	event = "VeryLazy",
-	config = function()
-		require("nvim-surround").setup()
-	end,
-}
+
 
 local formatter = {
 	{
@@ -53,5 +46,4 @@ local formatter = {
 
 return {
 	formatter,
-	surround,
 }
