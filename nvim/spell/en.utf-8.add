@@ -55,3 +55,8 @@ tmux
 MCP
 DFS
 svg
+whitelist
+Blockly
+CPP
+runtimes
+deref

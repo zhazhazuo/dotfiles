@@ -86,12 +86,12 @@ local flash = {
 }
 
 local leap = {
-	"ggandor/leap.nvim",
-	event = "Vimenter",
+	url = "https://codeberg.org/andyg/leap.nvim",
+	event = "vimenter",
 	config = function()
-		vim.keymap.set({ "n", "x", "o" }, "s", "<Plug>(leap-forward)")
-		vim.keymap.set({ "n", "x", "o" }, "S", "<Plug>(leap-backward)")
-		vim.keymap.set({ "n", "x", "o" }, "ts", "<Plug>(leap-from-window)")
+		vim.keymap.set({ "n", "x", "o" }, "s", "<plug>(leap)")
+		vim.keymap.set({ "n" }, "S", "<Plug>(leap-from-window)")
+		-- vim.keymap.set({ "n", "x", "o" }, "ts", "<Plug>(leap-from-window)")
 	end,
 }
 

@@ -9,6 +9,7 @@ rm -rf ~/.config/fish
 ln -s ~/dotfiles/fish ~/.config/fish
 
 # Tmux
+rm -rf ~/.tmux.conf
 ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
 # Ghostty
@@ -32,3 +33,6 @@ ln -s ~/dotfiles/gemini/commands ~/.gemini/commands
 rm -rf ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
+for item in ~/dotfiles/AGENTS/skills/*; do
+  ln -sf "$item" ~/.gemini/skills/
+done

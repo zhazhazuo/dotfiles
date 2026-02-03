@@ -53,4 +53,4 @@ vim.lsp.config.quick_lint_js = {
 
 -- Enable all configured LSP servers
 vim.lsp.enable(lsp_list)
-vim.diagnostic.config({ virtual_text = true })
+-- vim.diagnostic.config({ virtual_text = true })

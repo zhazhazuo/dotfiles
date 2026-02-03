@@ -1,5 +1,6 @@
 if status is-interactive
     # Commands to run in interactive sessions can go here
+    set -g fish_greeting
     fish_vi_key_bindings
 
     # Bind Ctrl+E to accept autosuggestion in insert mode
@@ -72,15 +73,15 @@ end
 
 # eza
 function ls
-  eza --icons --group-directories-first
+  eza --icons --group-directories-first $argv
 end
 
 function lt
-  eza -T -a -L 2 --git --icons
+  eza -T -a -L 2 --git --icons $argv
 end
 
 function ll
-  eza -la --git --icons --group-directories-first --header --time-style=long-iso
+  eza -la --git --icons --group-directories-first --header --time-style=long-iso $argv
 end
 
 # terminal MR 
