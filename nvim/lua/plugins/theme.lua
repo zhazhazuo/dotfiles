@@ -25,6 +25,15 @@ local grubox = {
 	end,
 }
 
+local best_grubox = {
+	"https://gitlab.com/motaz-shokry/gruvbox.nvim",
+	name = "gruvbox",
+	priority = 1000,
+	config = function()
+		-- vim.cmd("colorscheme gruvbox")
+	end,
+}
+
 local cyber_dream = {
 	"scottmckendry/cyberdream.nvim",
 	lazy = false,
@@ -75,6 +84,7 @@ local bamboo = {
 
 return {
 	-- grubox,
+	best_grubox,
 	bamboo,
 	catppuccin,
 	cyber_dream,

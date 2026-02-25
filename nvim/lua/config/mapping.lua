@@ -42,7 +42,8 @@ end
 
 -- Register the command
 vim.api.nvim_create_user_command("RW", reset_the_world, { nargs = 0 })
-map("n", "<C-r>", restart_the_world, { desc = "Restart The World" })
+vim.api.nvim_create_user_command("REW", restart_the_world, { nargs = 0 })
+-- map("n", "<C-R>", restart_the_world, { desc = "Restart The World" })
 
 -- For motion
 map("i", "<C-h>", "<Left>", { desc = "move left" })
@@ -57,3 +58,16 @@ map("t", "<C-X>", "<C-\\><C-n>", { desc = "Quit from T mode" })
 map("n", "gU", [[:<C-u>s/\<./\u&/g<CR> :nohlsearch<CR>]], { desc = "Upper the First Letter" })
 
 map("n", "<leader>cp", ':let @+ = expand("%:p")<CR>', { desc = "Copy The Current File Path." })
+
+-- For LSP
+map("n", "gv", function()
+	vim.cmd("botright vsplit")
+
+	vim.lsp.buf.definition()
+end, { desc = "LSP: Definition in Vertical Split" })
+
+map("n", "gs", function()
+	vim.cmd("split")
+
+	vim.lsp.buf.definition()
+end, { desc = "LSP: Definition in H Split" })
