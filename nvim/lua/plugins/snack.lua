@@ -23,6 +23,14 @@ local config = {
 			},
 		},
 		picker = {
+			actions = {
+				edit_vsplit_right = function(picker, item)
+					picker:close()
+					if item then
+						vim.cmd("botright vsplit " .. item.file)
+					end
+				end,
+			},
 			layout = "cmdline",
 			layouts = {
 				cmdline = {
@@ -41,6 +49,18 @@ local config = {
 							{ win = "preview", title = "{preview}", width = 0.6, border = "rounded" },
 						},
 						{ win = "input", height = 1, border = "none" },
+					},
+				},
+			},
+			win = {
+				input = {
+					keys = {
+						["<c-v>"] = { "edit_vsplit_right", mode = { "i", "n" } },
+					},
+				},
+				list = {
+					keys = {
+						["<c-v>"] = "edit_vsplit_right",
 					},
 				},
 			},
