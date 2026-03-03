@@ -129,3 +129,7 @@ vim.api.nvim_create_autocmd("Colorscheme", {
 	pattern = "*",
 	callback = set_diff_highlights,
 })
+
+-- Specify the behavior of splitting window.
+vim.o.splitbelow = true
+
