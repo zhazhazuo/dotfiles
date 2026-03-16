@@ -64,3 +64,5 @@ Config
 async
 enum
 LLM
+NPM
+claude

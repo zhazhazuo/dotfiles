@@ -31,6 +31,8 @@ local config = {
 					end
 				end,
 			},
+			hidden = true, -- Show hidden files (dotfiles)
+			ignored = true, -- Show files ignored by .gitignor
 			layout = "cmdline",
 			layouts = {
 				cmdline = {
