@@ -1,11 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "task-progress-notifier": {
-      "type": "local",
-      // Or ["bun", "x", "my-mcp-command"]
-      "command": ["/Users/lplp/Z/Scout/.venv/bin/python", "/Users/lplp/Z/Scout/src/mcp/server.py"],
-      "enabled": true,
+  "provider": {
+    "anthropic": {
+      "options": {
+        "baseURL": "https://openproxy.zuoyebang.cc/openproxy/rp/pt/anthropic"
+      }
     }
-  }
+  },
+  "plugin": ["@mohak34/opencode-notifier@latest"]
 }

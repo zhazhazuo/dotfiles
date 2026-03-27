@@ -30,9 +30,10 @@ rm -rf ~/.gemini/commands
 ln -s ~/dotfiles/gemini/commands ~/.gemini/commands
 
 # AGENT
-rm -rf ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md
+rm -rf ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md ~/.claude/CLAUDE.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
+ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
 for item in ~/dotfiles/AGENTS/skills/*; do
   ln -sf "$item" ~/.gemini/skills/
 done
