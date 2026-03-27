@@ -74,30 +74,26 @@ local treesitter_parsers = {
 	"xml",
 	"markdown",
 	"markdown_inline",
-	"latex",
 }
 
 local tressistter = {
 	"nvim-treesitter/nvim-treesitter",
-	version = false, -- last release is way too old and doesn't work on Windows
+	branch = "main",
+	lazy = false,
 	build = ":TSUpdate",
-	opts = {
-		ensure_installed = treesitter_parsers,
-		highlight = { enable = true },
-		indent = { enable = true },
-		textobjects = { enable = true },
-		incremental_selection = {
-			enable = true,
-			keymaps = {
-				init_selection = "<C-space>",
-				node_incremental = "<C-space>",
-				scope_incremental = false,
-				node_decremental = "<bs>",
-			},
-		},
-	},
-	config = function(_, opts)
-		require("nvim-treesitter.configs").setup(opts)
+	config = function()
+		-- Install parsers (no-op if already installed)
+		require("nvim-treesitter").install(treesitter_parsers)
+
+		-- Highlighting and indentation via Neovim built-ins + nvim-treesitter queries
+		vim.api.nvim_create_autocmd("FileType", {
+			callback = function(ev)
+				local ok = pcall(vim.treesitter.start, ev.buf)
+				if ok then
+					vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+				end
+			end,
+		})
 	end,
 }
 
