@@ -7,8 +7,8 @@ sketchybar --bar position=top height=32 blur_radius=30 color=0x40000000
 default=(
   padding_left=5
   padding_right=5
-  icon.font="Hack Nerd Font:Bold:14.0"
-  label.font="Hack Nerd Font:Bold:12.0"
+  icon.font="Hack Nerd Font:Bold:12.0"
+  label.font="Hack Nerd Font:Bold:10.0"
   icon.color=0xffffffff
   label.color=0xffffffff
   icon.padding_left=4
@@ -29,9 +29,9 @@ do
     icon.padding_right=7
     icon.color=0xffaaaaaa
     icon.highlight_color=0xffffffff
-    background.color=0x40ffffff
+    background.color=0xff40a02b
     background.corner_radius=5
-    background.height=25
+    background.height=20
     background.drawing=off
     label.drawing=off
     script="$PLUGIN_DIR/aerospace_workspaces.sh"
