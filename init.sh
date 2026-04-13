@@ -20,6 +20,10 @@ ln -s ~/dotfiles/ghostty ~/.config/ghostty
 rm -rf ~/.config/aerospace
 ln -s ~/dotfiles/aerospace ~/.config/aerospace
 
+# Sketchybar
+rm -rf ~/.config/sketchybar
+ln -s ~/dotfiles/sketchybar ~/.config/sketchybar
+
 # OpenCode
 rm -rf ~/.config/opencode/agent ~/.config/opencode/opencode.json
 ln -s ~/dotfiles/opencode/agent ~/.config/opencode/agent

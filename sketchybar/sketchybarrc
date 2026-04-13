@@ -1,0 +1,67 @@
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+##### Bar Appearance #####
+sketchybar --bar position=top height=32 blur_radius=30 color=0x40000000
+
+##### Changing Defaults #####
+default=(
+  padding_left=5
+  padding_right=5
+  icon.font="Hack Nerd Font:Bold:14.0"
+  label.font="Hack Nerd Font:Bold:12.0"
+  icon.color=0xffffffff
+  label.color=0xffffffff
+  icon.padding_left=4
+  icon.padding_right=4
+  label.padding_left=4
+  label.padding_right=4
+)
+sketchybar --default "${default[@]}"
+
+##### Left: Aerospace Workspaces #####
+WORKSPACE_NAMES=("T" "N" "M" "I" "P" "B")
+for i in "${!WORKSPACE_NAMES[@]}"
+do
+  name="${WORKSPACE_NAMES[i]}"
+  space=(
+    icon="$name"
+    icon.padding_left=7
+    icon.padding_right=7
+    icon.color=0xffaaaaaa
+    icon.highlight_color=0xffffffff
+    background.color=0x40ffffff
+    background.corner_radius=5
+    background.height=25
+    background.drawing=off
+    label.drawing=off
+    script="$PLUGIN_DIR/aerospace_workspaces.sh"
+    click_script="aerospace workspace $name"
+  )
+  sketchybar --add item space."$name" left --set space."$name" "${space[@]}"
+done
+
+sketchybar --add event aerospace_workspace_change \
+           --set space.T space.N space.M space.I space.P space.B \
+                 script="$PLUGIN_DIR/aerospace_workspaces.sh" \
+           --subscribe space.T space.N space.M space.I space.P space.B aerospace_workspace_change
+
+##### Center: Focused Application #####
+sketchybar --add item front_app center \
+           --set front_app icon.drawing=off script="$PLUGIN_DIR/front_app.sh" \
+           --subscribe front_app front_app_switched
+
+##### Right: Components #####
+sketchybar --add item volume right \
+           --set volume script="$PLUGIN_DIR/volume.sh" \
+           --subscribe volume volume_change \
+           --add item battery right \
+           --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+           --subscribe battery system_woke power_source_change \
+           --add item wifi right \
+           --set wifi update_freq=30 script="$PLUGIN_DIR/wifi.sh" \
+           --subscribe wifi system_woke \
+           --add item cpu right \
+           --set cpu update_freq=10 icon=󰻠 script="$PLUGIN_DIR/cpu.sh"
+
+##### Force all scripts to run the first time #####
+sketchybar --update
