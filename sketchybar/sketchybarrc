@@ -19,7 +19,7 @@ default=(
 sketchybar --default "${default[@]}"
 
 ##### Left: Aerospace Workspaces #####
-WORKSPACE_NAMES=("T" "N" "M" "I" "P" "B")
+WORKSPACE_NAMES=("B" "T" "N" "M" "I" "P")
 for i in "${!WORKSPACE_NAMES[@]}"
 do
   name="${WORKSPACE_NAMES[i]}"
@@ -58,7 +58,11 @@ sketchybar --add item volume right \
            --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
            --subscribe battery system_woke power_source_change \
             --add item ip right \
-            --set ip update_freq=60 icon=󰩟 script="$PLUGIN_DIR/ip.sh"
+            --set ip update_freq=60 icon=󰩟 script="$PLUGIN_DIR/ip.sh" \
+            --add item date right \
+            --set date update_freq=60 icon=󰸗 script="$PLUGIN_DIR/date.sh" \
+            --add item week right \
+            --set week update_freq=60 icon=󰃭 script="$PLUGIN_DIR/week.sh"
 
 ##### Force all scripts to run the first time #####
 sketchybar --update
