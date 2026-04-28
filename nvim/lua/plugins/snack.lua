@@ -31,9 +31,38 @@ local config = {
 					end
 				end,
 			},
-			-- hidden = true, -- Show hidden files (dotfiles)
-			-- ignored = true, -- Show files ignored by .gitignor
+			hidden = true,
+			ignored = true,
 			layout = "cmdline",
+			sources = {
+				files = {
+					cmd = "rg",
+					args = {
+						"--files",
+						"--hidden",
+						"--glob", "!.git/",
+						"--glob", "!node_modules/",
+						"--glob", "!vendor/",
+						"--glob", "!dist/",
+						"--glob", "!build/",
+						"--glob", "!.next/",
+						"--glob", "!coverage/",
+					},
+				},
+				grep = {
+					cmd = "rg",
+					args = {
+						"--hidden",
+						"--glob", "!.git/",
+						"--glob", "!node_modules/",
+						"--glob", "!vendor/",
+						"--glob", "!dist/",
+						"--glob", "!build/",
+						"--glob", "!.next/",
+						"--glob", "!coverage/",
+					},
+				},
+			},
 			layouts = {
 				cmdline = {
 					layout = {
