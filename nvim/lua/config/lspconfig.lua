@@ -16,7 +16,6 @@ local lsp_list = {
 	"html",
 	"cssls",
 	"tailwindcss",
-	"ts_ls",
 	"quick_lint_js",
 }
 
@@ -30,6 +29,16 @@ end
 local vue_language_server_path = vim.fn.stdpath("data")
 	.. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 
+-- tsgo: TypeScript-native LSP for TS/JS files
+vim.lsp.config.tsgo = {
+	capabilities = require("blink.cmp").get_lsp_capabilities(M.capabilities),
+	on_init = M.init,
+	cmd = { "tsgo", "--lsp", "--stdio" },
+	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+}
+
+-- ts_ls: only for Vue (with @vue/typescript-plugin)
 vim.lsp.config.ts_ls = {
 	capabilities = require("blink.cmp").get_lsp_capabilities(M.capabilities),
 	on_init = M.init,
@@ -42,7 +51,7 @@ vim.lsp.config.ts_ls = {
 			},
 		},
 	},
-	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
+	filetypes = { "vue" },
 }
 
 vim.lsp.config.quick_lint_js = {
@@ -52,5 +61,5 @@ vim.lsp.config.quick_lint_js = {
 }
 
 -- Enable all configured LSP servers
-vim.lsp.enable(lsp_list)
+vim.lsp.enable({ "tsgo", "ts_ls", unpack(lsp_list) })
 -- vim.diagnostic.config({ virtual_text = true })
