@@ -1,5 +1,3 @@
-
-
 local formatter = {
 	{
 		"stevearc/conform.nvim",
@@ -20,11 +18,11 @@ local formatter = {
 				lua = { "stylua" },
 				sql = { "sqlfmt" },
 				python = { "isort", "black" },
-				json = { "prettierd", "prettier", stop_after_first = true },
-				javascript = { "prettierd", "prettier", stop_after_first = true },
-				javascriptreact = { "prettierd", "prettier", stop_after_first = true },
-				typescript = { "prettierd", "prettier", stop_after_first = true },
-				typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+				json = { "biome" },
+				javascript = { "biome" },
+				javascriptreact = { "biome" },
+				typescript = { "biome" },
+				typescriptreact = { "biome" },
 				vue = { "prettierd", "prettier", stop_after_first = true },
 			},
 			-- Set default options
