@@ -59,12 +59,24 @@ opt.winminwidth = 5
 
 opt.smoothscroll = true
 opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()" -- Use treesitter for folding
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()" -- Use built-in treesitter foldexpr
 opt.foldtext = ""
 opt.foldlevelstart = 99
 
 -- For insert mode to automatically create indent
 opt.smartindent = true
+
+-- Use LSP-based indent when available
+vim.api.nvim_create_autocmd("FileType", {
+	callback = function(ev)
+		if vim.lsp.get_clients({ bufnr = ev.buf, name = "ts_ls" })[1]
+			or vim.lsp.get_clients({ bufnr = ev.buf, name = "lua_ls" })[1]
+			or vim.lsp.get_clients({ bufnr = ev.buf, name = "pyright" })[1]
+		then
+			vim.bo[ev.buf].indentexpr = "v:lua.vim.lsp.indentexpr()"
+		end
+	end,
+})
 
 -- Enable persistent undo
 opt.undofile = true

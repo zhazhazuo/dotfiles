@@ -76,22 +76,21 @@ local treesitter_parsers = {
 	"markdown_inline",
 }
 
-local tressistter = {
+local treesitter = {
 	"nvim-treesitter/nvim-treesitter",
 	branch = "main",
 	lazy = false,
 	build = ":TSUpdate",
-	config = function()
-		-- Install parsers (no-op if already installed)
-		require("nvim-treesitter").install(treesitter_parsers)
+	opts = {
+		ensure_installed = treesitter_parsers,
+	},
+	config = function(_, opts)
+		require("nvim-treesitter").setup(opts)
 
-		-- Highlighting and indentation via Neovim built-ins + nvim-treesitter queries
+		-- Enable treesitter highlighting via Neovim built-in
 		vim.api.nvim_create_autocmd("FileType", {
 			callback = function(ev)
-				local ok = pcall(vim.treesitter.start, ev.buf)
-				if ok then
-					vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-				end
+				pcall(vim.treesitter.start, ev.buf)
 			end,
 		})
 	end,
@@ -100,8 +99,38 @@ local tressistter = {
 local config = {
 	-- markdown_view,
 	render_markdown,
-	tressistter,
+	treesitter,
 	surround,
+	{
+		"nvim-treesitter/nvim-treesitter-textobjects",
+		lazy = true,
+		opts = {
+			textobjects = {
+				select = {
+					enable = true,
+					lookahead = true,
+					keymaps = {
+						["af"] = "@function.outer",
+						["if"] = "@function.inner",
+						["ac"] = "@class.outer",
+						["ic"] = "@class.inner",
+					},
+				},
+				move = {
+					enable = true,
+					set_jumps = true,
+					goto_next_start = {
+						["]f"] = "@function.outer",
+						["]c"] = "@class.outer",
+					},
+					goto_previous_start = {
+						["[f"] = "@function.outer",
+						["[c"] = "@class.outer",
+					},
+				},
+			},
+		},
+	},
 	{
 		"windwp/nvim-ts-autotag",
 		event = "VeryLazy",
