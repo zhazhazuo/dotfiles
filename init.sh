@@ -38,6 +38,7 @@ rm -rf ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md ~/.claude/CLAUDE.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
+ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 for item in ~/dotfiles/AGENTS/skills/*; do
   ln -sf "$item" ~/.gemini/skills/
 done
