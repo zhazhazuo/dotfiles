@@ -81,18 +81,25 @@ local treesitter = {
 	branch = "main",
 	lazy = false,
 	build = ":TSUpdate",
-	opts = {
-		ensure_installed = treesitter_parsers,
-	},
-	config = function(_, opts)
-		require("nvim-treesitter").setup(opts)
-
-		-- Enable treesitter highlighting via Neovim built-in
+	init = function()
+		-- Enable highlighting + indentation per Neovim 0.12 / nvim-treesitter main
 		vim.api.nvim_create_autocmd("FileType", {
-			callback = function(ev)
-				pcall(vim.treesitter.start, ev.buf)
+			callback = function()
+				pcall(vim.treesitter.start)
+				vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 			end,
 		})
+
+		-- Install missing parsers on startup
+		local already = require("nvim-treesitter.config").get_installed()
+		local to_install = vim.iter(treesitter_parsers)
+			:filter(function(p)
+				return not vim.tbl_contains(already, p)
+			end)
+			:totable()
+		if #to_install > 0 then
+			require("nvim-treesitter").install(to_install)
+		end
 	end,
 }
 
