@@ -1,0 +1,22 @@
+{
+  "lastChangelogVersion": "0.73.0",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
+  "packages": [
+    "npm:pi-subagents",
+    "npm:pi-mermaid",
+    "npm:@uadgj/pi-superpowers-support",
+    "https://github.com/obra/superpowers",
+    "npm:pi-notify",
+    "../../Workshop/pi-brain-wiki/extensions/llm-wiki/index.ts",
+    "../../Workshop/pi-brain/pi-brain-wiki/extensions/llm-wiki/index.ts",
+    "../../Workshop/pi-brain-wiki/extensions/brain-wiki/index.ts"
+  ],
+  "terminal": {
+    "showTerminalProgress": true
+  },
+  "showHardwareCursor": true,
+  "hideThinkingBlock": true,
+  "theme": "dark"
+}

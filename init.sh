@@ -42,3 +42,9 @@ ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 for item in ~/dotfiles/AGENTS/skills/*; do
   ln -sf "$item" ~/.gemini/skills/
 done
+
+# Pi
+rm -rf ~/.pi/agent/AGENTS.md
+ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
+ln -s ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
+ln -s ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
