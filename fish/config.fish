@@ -2,6 +2,7 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
     set -g fish_greeting
     fish_vi_key_bindings
+    fzf_configure_bindings --directory=\cf --git_log=\cg --git_status=\ct --history=\cr --processes=\cp --variables=\cv
 
     # Bind Ctrl+E to accept autosuggestion in insert mode
     bind -M insert \ce accept-autosuggestion
