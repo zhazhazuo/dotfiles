@@ -57,7 +57,7 @@ map("t", "<C-X>", "<C-\\><C-n>", { desc = "Quit from T mode" })
 
 map("n", "gU", [[:<C-u>s/\<./\u&/g<CR> :nohlsearch<CR>]], { desc = "Upper the First Letter" })
 
-map("n", "<leader>cp", ':let @+ = expand("%:p")<CR>', { desc = "Copy The Current File Path." })
+map("n", "<leader>cp", ':let @+ = expand("%:.")<CR>', { desc = "Copy The Current File Path." })
 
 -- For LSP
 map("n", "gv", function()
