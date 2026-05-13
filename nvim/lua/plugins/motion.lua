@@ -1,6 +1,5 @@
 local tmux_navigator = {
 	"christoomey/vim-tmux-navigator",
-	event = "VimEnter",
 	cmd = {
 		"TmuxNavigateLeft",
 		"TmuxNavigateDown",
@@ -30,7 +29,6 @@ local hop = {
 
 local flash = {
 	"folke/flash.nvim",
-	event = "VeryLazy",
 	config = function()
 		require("flash").toggle(false)
 	end,
@@ -87,12 +85,10 @@ local flash = {
 
 local leap = {
 	url = "https://codeberg.org/andyg/leap.nvim",
-	event = "vimenter",
-	config = function()
-		vim.keymap.set({ "n", "x", "o" }, "s", "<plug>(leap)")
-		vim.keymap.set({ "n" }, "S", "<Plug>(leap-from-window)")
-		-- vim.keymap.set({ "n", "x", "o" }, "ts", "<Plug>(leap-from-window)")
-	end,
+	keys = {
+		{ "s", "<Plug>(leap)", mode = { "n", "x", "o" }, desc = "Leap" },
+		{ "S", "<Plug>(leap-from-window)", mode = "n", desc = "Leap From Window" },
+	},
 }
 
 return {

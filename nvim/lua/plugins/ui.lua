@@ -1,5 +1,6 @@
 local zen_mode = {
 	"folke/zen-mode.nvim",
+	cmd = "ZenMode",
 	opts = {
 		window = {
 			backdrop = 0, -- fully transparent backdrop
@@ -20,7 +21,7 @@ local zen_mode = {
 	},
 }
 
-local web_icons = { "nvim-tree/nvim-web-devicons", opts = {} }
+local web_icons = { "nvim-tree/nvim-web-devicons", lazy = true, opts = {} }
 
 local which_keys = {
 	"folke/which-key.nvim",
@@ -44,6 +45,7 @@ local which_keys = {
 
 local bqf = {
 	"kevinhwang91/nvim-bqf",
+	ft = "qf",
 	config = function()
 		require("bqf").setup()
 	end,
@@ -51,7 +53,7 @@ local bqf = {
 
 local neoscroll = {
 	"karb94/neoscroll.nvim",
-	event = "BufEnter",
+	event = "VeryLazy",
 	config = function()
 		require("neoscroll").setup({})
 	end,

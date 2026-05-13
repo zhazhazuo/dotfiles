@@ -21,7 +21,7 @@ local diff_view = {
 
 local gitsigns = {
 	"lewis6991/gitsigns.nvim",
-	event = "VimEnter",
+	event = "VeryLazy",
 	dependencies = {
 		{
 			"sindrets/diffview.nvim",
@@ -89,6 +89,24 @@ local gitlinker = {
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 	},
+	keys = {
+		{
+			"<leader>gY",
+			function()
+				require("gitlinker").get_repo_url()
+			end,
+			desc = "Copy Current Repositry URL",
+		},
+		{
+			"<leader>gB",
+			function()
+				require("gitlinker").get_repo_url({
+					action_callback = require("gitlinker.actions").open_in_browser,
+				})
+			end,
+			desc = "Open Current Repositry URL",
+		},
+	},
 	config = function()
 		require("gitlinker").setup({
 			callbacks = {
@@ -96,19 +114,6 @@ local gitlinker = {
 				["git.zuoyebang.cc"] = require("gitlinker.hosts").get_gitlab_type_url,
 			},
 		})
-
-		vim.api.nvim_set_keymap(
-			"n",
-			"<leader>gY",
-			'<cmd>lua require"gitlinker".get_repo_url()<cr>',
-			{ silent = true, desc = "Copy Current Repositry URL" }
-		)
-		vim.api.nvim_set_keymap(
-			"n",
-			"<leader>gB",
-			'<cmd>lua require"gitlinker".get_repo_url({action_callback = require"gitlinker.actions".open_in_browser})<cr>',
-			{ silent = true, desc = "Open Current Repositry URL" }
-		)
 	end,
 }
 

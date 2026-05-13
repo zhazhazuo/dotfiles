@@ -1,6 +1,10 @@
 local project_themes = {
-	["Brain"] = "bamboo",
+	-- ["Brain"] = "bamboo",
 }
+
+if next(project_themes) == nil then
+	return
+end
 
 local function get_repo_name()
 	local handle = io.popen("git rev-parse --show-toplevel 2>/dev/null")

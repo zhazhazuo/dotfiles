@@ -1,7 +1,8 @@
-local surround = { "echasnovski/mini.surround", version = "*" }
+local surround = { "echasnovski/mini.surround", version = "*", event = "VeryLazy" }
 
 local render_markdown = {
 	"MeanderingProgrammer/render-markdown.nvim",
+	ft = "markdown",
 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
 	---@module 'render-markdown'
 	---@type render.md.UserConfig
@@ -53,52 +54,28 @@ local markdown_view = {
 	end,
 }
 
-local treesitter_parsers = {
-	"lua",
-	"vim",
-	"vimdoc",
-	"javascript",
-	"typescript",
-	"tsx",
-	"html",
-	"css",
-	"scss",
-	"vue",
-	"svelte",
-	"graphql",
-	"python",
-	"bash",
-	"json",
-	"yaml",
-	"toml",
-	"xml",
-	"markdown",
-	"markdown_inline",
-}
-
 local treesitter = {
 	"nvim-treesitter/nvim-treesitter",
 	branch = "main",
-	lazy = false,
+	event = { "BufReadPost", "BufNewFile" },
 	build = ":TSUpdate",
-	init = function()
+	config = function()
 		-- Enable highlighting + indentation per Neovim 0.12 / nvim-treesitter main
+		local function start_treesitter(buf)
+			if pcall(vim.treesitter.start, buf) then
+				vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+			end
+		end
+
 		vim.api.nvim_create_autocmd("FileType", {
-			callback = function()
-				pcall(vim.treesitter.start)
-				vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+			callback = function(ev)
+				start_treesitter(ev.buf)
 			end,
 		})
 
-		-- Install missing parsers on startup
-		local already = require("nvim-treesitter.config").get_installed()
-		local to_install = vim.iter(treesitter_parsers)
-			:filter(function(p)
-				return not vim.tbl_contains(already, p)
-			end)
-			:totable()
-		if #to_install > 0 then
-			require("nvim-treesitter").install(to_install)
+		local current = vim.api.nvim_get_current_buf()
+		if vim.bo[current].filetype ~= "" then
+			start_treesitter(current)
 		end
 	end,
 }
@@ -146,6 +123,7 @@ local config = {
 
 	{
 		"windwp/nvim-autopairs",
+		event = "InsertEnter",
 		config = function()
 			require("nvim-autopairs").setup()
 		end,

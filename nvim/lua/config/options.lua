@@ -1,4 +1,3 @@
-require("config.lspconfig")
 require("config.mapping")
 
 vim.diagnostic.config({
@@ -9,13 +8,18 @@ vim.diagnostic.config({
 
 local opt = vim.opt
 
--- enable spell check
-opt.spell = true
 opt.spelloptions = "camel,noplainbuffer"
 opt.spellcapcheck = ""
 opt.spellfile = vim.fn.stdpath("config") .. "/spell/en.utf-8.add"
 opt.spellsuggest = "best,9"
 opt.spelllang = { "en", "cjk" }
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "gitcommit", "markdown", "text", "typst" },
+	callback = function()
+		vim.opt_local.spell = true
+	end,
+})
 
 -- for high performance
 opt.lazyredraw = false
@@ -144,4 +148,3 @@ vim.api.nvim_create_autocmd("Colorscheme", {
 
 -- Specify the behavior of splitting window.
 vim.o.splitbelow = true
-

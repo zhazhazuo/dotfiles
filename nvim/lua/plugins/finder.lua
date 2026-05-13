@@ -15,6 +15,7 @@ local snipe = {
 
 local telescope = {
 	"nvim-telescope/telescope.nvim",
+	cmd = "Telescope",
 	dependencies = {
 		{
 			"nvim-telescope/telescope-fzf-native.nvim",
@@ -29,6 +30,7 @@ local telescope = {
 local spelunk = {
 	{
 		"EvWilson/spelunk.nvim",
+		event = "VeryLazy",
 		dependencies = {
 			"folke/snacks.nvim", -- Optional: for enhanced fuzzy search capabilities
 			"nvim-treesitter/nvim-treesitter", -- Optional: for showing grammar context
@@ -49,11 +51,14 @@ local file_navigator = {
 		autosave = true,
 		show_on_autoload = false,
 	},
-	config = function()
-		vim.keymap.set("n", "<leader>m", require("miniharp").toggle_file, { desc = "miniharp: toggle file mark" })
-		vim.keymap.set("n", "<C-n>", require("miniharp").next, { desc = "miniharp: next file mark" })
-		vim.keymap.set("n", "<C-p>", require("miniharp").prev, { desc = "miniharp: prev file mark" })
-		vim.keymap.set("n", "<leader>l", require("miniharp").show_list, { desc = "miniharp: list marks" })
+	keys = {
+		{ "<leader>m", function() require("miniharp").toggle_file() end, desc = "miniharp: toggle file mark" },
+		{ "<C-n>", function() require("miniharp").next() end, desc = "miniharp: next file mark" },
+		{ "<C-p>", function() require("miniharp").prev() end, desc = "miniharp: prev file mark" },
+		{ "<leader>l", function() require("miniharp").show_list() end, desc = "miniharp: list marks" },
+	},
+	config = function(_, opts)
+		require("miniharp").setup(opts)
 	end,
 }
 

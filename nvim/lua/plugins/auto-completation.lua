@@ -2,6 +2,7 @@ local lua_snip = {
 	"L3MON4D3/LuaSnip",
 	-- follow latest release.
 	version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+	event = "InsertEnter",
 	-- install jsregexp (optional!).
 	build = "make install_jsregexp",
 	config = function()
@@ -17,18 +18,15 @@ local lazy_dev = {
 			-- See the configuration section for more details
 			-- Load luvit types when the `vim.uv` word is found
 			{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
+			"nvim-dap-ui",
 		},
 	},
-	init = function()
-		require("lazydev").setup({
-			library = { "nvim-dap-ui" },
-		})
-	end,
 }
 
 local blink = {
 	"saghen/blink.cmp",
 	dependencies = { "rafamadriz/friendly-snippets", "moyiz/blink-emoji.nvim" },
+	event = { "InsertEnter", "CmdlineEnter" },
 
 	-- use a release tag to download pre-built binaries
 	version = "1.*",

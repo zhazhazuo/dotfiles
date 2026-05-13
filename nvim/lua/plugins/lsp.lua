@@ -32,7 +32,7 @@ local tinyCodeAction = {
 
 local indentScope = {
 	"echasnovski/mini.indentscope",
-	event = "BufEnter",
+	event = { "BufReadPost", "BufNewFile" },
 	opts = {
 		symbol = "│",
 		options = { try_as_border = true },
@@ -66,6 +66,7 @@ local hlarg = {
 
 local comment = {
 	"folke/todo-comments.nvim",
+	event = { "BufReadPost", "BufNewFile" },
 	dependencies = { "nvim-lua/plenary.nvim" },
 	opts = {
 		-- your configuration comes here
@@ -166,10 +167,10 @@ local trouble = {
 
 local lspconfig = {
 	"neovim/nvim-lspconfig",
-	dependencies = {
-		"mason.nvim",
-		{ "williamboman/mason-lspconfig.nvim", config = function() end },
-	},
+	event = { "BufReadPre", "BufNewFile" },
+	config = function()
+		require("config.lspconfig")
+	end,
 }
 
 local mason_packages = {

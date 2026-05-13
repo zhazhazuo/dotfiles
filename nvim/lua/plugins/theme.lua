@@ -28,6 +28,7 @@ local grubox = {
 local best_grubox = {
 	"https://gitlab.com/motaz-shokry/gruvbox.nvim",
 	name = "gruvbox",
+	lazy = true,
 	priority = 1000,
 	config = function()
 		-- vim.cmd("colorscheme gruvbox")
@@ -36,7 +37,7 @@ local best_grubox = {
 
 local cyber_dream = {
 	"scottmckendry/cyberdream.nvim",
-	lazy = false,
+	lazy = true,
 	priority = 1000,
 	config = function()
 		require("cyberdream").setup({
@@ -66,14 +67,19 @@ local alabaster = {
 	end,
 }
 
-local catppuccin =
-	{ "catppuccin/nvim", name = "catppuccin", priority = 1000, opts = {
+local catppuccin = {
+	"catppuccin/nvim",
+	name = "catppuccin",
+	lazy = true,
+	priority = 1000,
+	opts = {
 		transparent_background = true,
-	} }
+	},
+}
 
 local bamboo = {
 	"ribru17/bamboo.nvim",
-	lazy = false,
+	lazy = true,
 	priority = 1000,
 	config = function()
 		require("bamboo").setup({
