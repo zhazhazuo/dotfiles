@@ -1,5 +1,9 @@
 # After run this sh, the all symlinks will be set up successfully.
 
+# git
+rm -rf ~/.gitconfig
+ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
+
 # Neovim
 rm -rf ~/.config/nvim
 ln -s ~/dotfiles/nvim ~/.config/nvim
@@ -40,11 +44,11 @@ ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 for item in ~/dotfiles/AGENTS/skills/*; do
-  ln -sf "$item" ~/.gemini/skills/
+  ln -sf "$item" ~/.agent/skills/
 done
 
 # Pi
-rm -rf ~/.pi/agent/AGENTS.md
+rm -rf ~/.pi/agent/AGENTS.md ~/dotfiles/pi/keybindings.json ~/dotfiles/pi/settings.json
 ln -s ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -s ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -s ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
