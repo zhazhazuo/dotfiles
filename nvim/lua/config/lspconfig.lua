@@ -3,7 +3,7 @@ local M = {}
 M.capabilities = vim.lsp.protocol.make_client_capabilities()
 
 M.init = function(client)
-	if client.supports_method("textDocument/semanticTokens") then
+	if client:supports_method("textDocument/semanticTokens") then
 		client.server_capabilities.semanticTokensProvider = nil
 	end
 end

@@ -168,16 +168,35 @@ local trouble = {
 local lspconfig = {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
+	dependencies = {
+		"williamboman/mason.nvim",
+		"saghen/blink.cmp",
+	},
 	config = function()
 		require("config.lspconfig")
 	end,
+}
+
+local mason_lsp_servers = {
+	"lua_ls",
+	"pyright",
+	"rust_analyzer",
+	"markdown_oxide",
+	"html",
+	"cssls",
+	"tailwindcss",
+	"quick_lint_js",
+	"tsgo",
+	"ts_ls",
 }
 
 local mason_packages = {
 	-- LSP servers
 	"lua-language-server",
 	"pyright",
+	"rust-analyzer",
 	"typescript-language-server",
+	"tsgo",
 	"html-lsp",
 	"css-lsp",
 	"tailwindcss-language-server",
@@ -187,6 +206,7 @@ local mason_packages = {
 	"yaml-language-server",
 	"bash-language-server",
 	"graphql-language-service-cli",
+	"quick-lint-js",
 
 	"marksman", -- markdown
 	"markdown-oxide", -- obsidian navigation
@@ -204,11 +224,9 @@ local mason_packages = {
 
 local mason = {
 	"williamboman/mason.nvim",
-	cmd = "Mason",
+	lazy = false,
 	build = ":MasonUpdate",
-	opts = {
-		ensure_installed = mason_packages,
-	},
+	opts = {},
 	config = function(_, opts)
 		require("mason").setup(opts)
 
@@ -216,10 +234,10 @@ local mason = {
 		vim.api.nvim_create_user_command("MasonInstallAll", function()
 			local mr = require("mason-registry")
 			local installed = 0
-			local total = #opts.ensure_installed
+			local total = #mason_packages
 
 			mr.refresh(function()
-				for _, tool in ipairs(opts.ensure_installed or {}) do
+				for _, tool in ipairs(mason_packages) do
 					local p = mr.get_package(tool)
 					if not p:is_installed() then
 						vim.notify("Installing " .. tool, vim.log.levels.INFO)
@@ -234,8 +252,20 @@ local mason = {
 					end
 				end
 			end)
-		end, { desc = "Install all Mason packages from ensure_installed list" })
+		end, { desc = "Install all configured Mason packages" })
 	end,
+}
+
+local mason_lspconfig = {
+	"williamboman/mason-lspconfig.nvim",
+	dependencies = {
+		"williamboman/mason.nvim",
+		"neovim/nvim-lspconfig",
+	},
+	opts = {
+		ensure_installed = mason_lsp_servers,
+		automatic_enable = false,
+	},
 }
 
 local quicker = {
@@ -255,8 +285,9 @@ return {
 	spectre,
 	trouble,
 	comment,
-	lspconfig,
 	mason,
+	mason_lspconfig,
+	lspconfig,
 	-- codeAction,
 	quicker,
 	tinyCodeAction,
