@@ -1,43 +1,43 @@
 local map = vim.keymap.set
 
 map("n", "<leader>gg", "<cmd> LazyGit <CR>", {
-	desc = "LazyGit",
+  desc = "LazyGit",
 })
 
 map("n", "<Esc>", "<cmd> nohlsearch <CR>", {
-	desc = "Remove Search HL",
+  desc = "Remove Search HL",
 })
 
 map("n", "<C-Q>", "<cmd> qa <CR>", {
-	desc = "Quit Vim",
+  desc = "Quit Vim",
 })
 
 map("n", "<leader>x", function()
-	local win_type = vim.fn.win_gettype()
+  local win_type = vim.fn.win_gettype()
 
-	if win_type == "quickfix" then
-		vim.cmd("cclose")
-	elseif win_type == "loclist" then
-		vim.cmd("lclose")
-	else
-		vim.cmd("bdelete")
-	end
+  if win_type == "quickfix" then
+    vim.cmd("cclose")
+  elseif win_type == "loclist" then
+    vim.cmd("lclose")
+  else
+    vim.cmd("bdelete")
+  end
 end, {
-	desc = "Close Current Buffer",
-	noremap = true,
-	nowait = true,
+  desc = "Close Current Buffer",
+  noremap = true,
+  nowait = true,
 })
 
 map("n", "<leader>k", '<cmd> execute "%bdelete|edit#|bdelete#"<CR>', { desc = "Only keep current buffer" })
 
 local function reset_the_world()
-	vim.defer_fn(function()
-		require("persistence").load()
-	end, 100)
+  vim.defer_fn(function()
+    require("persistence").load()
+  end, 100)
 end
 
 local function restart_the_world()
-	vim.cmd("restart +RW")
+  vim.cmd("restart +RW")
 end
 
 -- Register the command
@@ -61,13 +61,21 @@ map("n", "<leader>cp", ':let @+ = expand("%:.")<CR>', { desc = "Copy The Current
 
 -- For LSP
 map("n", "gv", function()
-	vim.cmd("botright vsplit")
+  vim.cmd("botright vsplit")
 
-	vim.lsp.buf.definition()
+  vim.lsp.buf.definition()
 end, { desc = "LSP: Definition in Vertical Split" })
 
 map("n", "gs", function()
-	vim.cmd("split")
+  vim.cmd("split")
 
-	vim.lsp.buf.definition()
+  vim.lsp.buf.definition()
 end, { desc = "LSP: Definition in H Split" })
+
+map("n", "<leader>cl", function()
+  local text = vim.fn.expand("%") .. ":" ..
+      vim.fn.line(".") .. ":" ..
+      vim.fn.col(".")
+  vim.fn.setreg("+", text)
+  print("Copied: " .. text)
+end, { desc = "Copy Current Cursor Position" })
