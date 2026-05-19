@@ -72,10 +72,44 @@ map("n", "gs", function()
   vim.lsp.buf.definition()
 end, { desc = "LSP: Definition in H Split" })
 
+map({ "n", "x" }, "<C-Space>", function()
+  require("vim.treesitter._select").select_parent(vim.v.count1)
+end)
+
+map({ "n", "x" }, "<BS>", function()
+  require("vim.treesitter._select").select_child(vim.v.count1)
+end)
+
+-- For Refer File
 map("n", "<leader>cl", function()
-  local text = vim.fn.expand("%") .. ":" ..
-      vim.fn.line(".") .. ":" ..
-      vim.fn.col(".")
+  local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local text = string.format(
+    "%s:%d:%d",
+    file,
+    vim.fn.line("."),
+    vim.fn.col(".")
+  )
+
   vim.fn.setreg("+", text)
-  print("Copied: " .. text)
+  print("Copied location: " .. text)
 end, { desc = "Copy Current Cursor Position" })
+
+map("v", "<leader>cr", function()
+  local start_line = vim.fn.line("v")
+  local end_line = vim.fn.line(".")
+
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+
+  local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local text = string.format(
+    "%s:%d-%d",
+    file,
+    start_line,
+    end_line
+  )
+
+  vim.fn.setreg("+", text)
+  print("Copied range: " .. text)
+end, { desc = "Copy file range" })
