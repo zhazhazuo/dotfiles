@@ -19,7 +19,7 @@ default=(
 sketchybar --default "${default[@]}"
 
 ##### Left: Aerospace Workspaces #####
-WORKSPACE_NAMES=("B" "T" "N" "M" "I" "P")
+WORKSPACE_NAMES=("B" "T" "N" "M" "I" "P" "A")
 for i in "${!WORKSPACE_NAMES[@]}"
 do
   name="${WORKSPACE_NAMES[i]}"
@@ -41,9 +41,9 @@ do
 done
 
 sketchybar --add event aerospace_workspace_change \
-           --set space.T space.N space.M space.I space.P space.B \
+           --set space.T space.N space.M space.I space.P space.B space.A \
                  script="$PLUGIN_DIR/aerospace_workspaces.sh" \
-           --subscribe space.T space.N space.M space.I space.P space.B aerospace_workspace_change
+           --subscribe space.T space.N space.M space.I space.P space.B space.A aerospace_workspace_change
 
 ##### Center: Focused Application #####
 sketchybar --add item front_app center \
