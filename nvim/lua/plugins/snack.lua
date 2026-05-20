@@ -97,6 +97,19 @@ local config = {
 			},
 		},
 	},
+	config = function(_, opts)
+		require("snacks").setup(opts)
+
+		local function set_picker_highlights()
+			vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#2c2c2c" })
+		end
+
+		set_picker_highlights()
+		vim.api.nvim_create_autocmd("ColorScheme", {
+			group = vim.api.nvim_create_augroup("snacks-picker-highlights", { clear = true }),
+			callback = set_picker_highlights,
+		})
+	end,
 	keys = {
 		-- explorer
 		{
