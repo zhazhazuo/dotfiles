@@ -3,8 +3,7 @@
 # Print a tmux topbar widget for AI agent panes.
 #
 # Widget parts:
-#   1. Agent state summary: icon + count per state.
-#   2. Attention list: icon + session name + window name for panes needing involvement.
+#   1. Attention list: icon + session name + window name for panes needing involvement.
 #
 # Detection order:
 #   1. Explicit pane options: @agent_name / @agent_state
@@ -25,6 +24,22 @@ tmux_pane_option() {
 	local option="$2"
 
 	tmux show-options -pqv -t "$pane_id" "$option" 2>/dev/null || true
+}
+
+option_or_default() {
+	local option="$1"
+	local default="$2"
+	local value
+
+	value="$(tmux_global_option "$option")"
+	printf '%s' "${value:-$default}"
+}
+
+word_option_or_default() {
+	local option="$1"
+	local default="$2"
+
+	option_or_default "$option" "$default" | tr ',;' '  '
 }
 
 lower() {
@@ -54,57 +69,9 @@ contains_word() {
 	return 1
 }
 
-color_for_state() {
-	local state="$1"
-
-	case "$state" in
-	doing)
-		tmux_global_option @thm_green
-		;;
-	waiting)
-		tmux_global_option @thm_yellow
-		;;
-	needs-input)
-		tmux_global_option @thm_yellow
-		;;
-	failed)
-		tmux_global_option @thm_red
-		;;
-	*)
-		tmux_global_option @thm_mauve
-		;;
-	esac
-}
-
-icon_for_state() {
-	local state="$1"
-	local icon
-
-	case "$state" in
-	doing)
-		icon="$(tmux_global_option @task_icon_busy)"
-		printf '%s' "${icon:-󱚣 }"
-		;;
-	waiting)
-		icon="$(tmux_global_option @task_icon_wait)"
-		printf '%s' "${icon:-󰮥 }"
-		;;
-	needs-input)
-		icon="$(tmux_global_option @task_icon_input)"
-		printf '%s' "${icon:-󰀦 }"
-		;;
-	failed)
-		icon="$(tmux_global_option @task_icon_fail)"
-		printf '%s' "${icon:- }"
-		;;
-	*)
-		printf '🤖 '
-		;;
-	esac
-}
-
 normalize_state() {
 	local state
+
 	state="$(printf '%s' "${1:-agent}" | lower | tr '_' '-')"
 
 	case "$state" in
@@ -122,6 +89,29 @@ normalize_state() {
 		;;
 	*)
 		printf 'agent'
+		;;
+	esac
+}
+
+color_for_state() {
+	local state="$1"
+
+	case "$state" in
+	doing)
+		tmux_global_option @thm_green
+		;;
+	waiting)
+		tmux_global_option @thm_blue
+		# tmux_global_option @thm_yellow
+		;;
+	needs-input)
+		tmux_global_option @thm_blue
+		;;
+	failed)
+		tmux_global_option @thm_blue
+		;;
+	*)
+		tmux_global_option @thm_mauve
 		;;
 	esac
 }
@@ -179,21 +169,26 @@ detect_state_from_text() {
 	fi
 }
 
-print_state_count() {
-	local bg="$1"
-	local state="$2"
-	local count="$3"
-	local color icon
+detect_pane_state() {
+	local pane_id="$1"
+	local pane_tty="$2"
+	local pane_command="$3"
+	local harnesses="$4"
+	local explicit_name explicit_state
 
-	[[ "$count" -le 0 ]] && return 0
+	explicit_name="$(tmux_pane_option "$pane_id" @agent_name)"
+	explicit_state="$(tmux_pane_option "$pane_id" @agent_state)"
 
-	color="$(color_for_state "$state")"
-	icon="$(icon_for_state "$state")"
+	if [[ -n "$explicit_name" ]]; then
+		normalize_state "${explicit_state:-agent}"
+		return 0
+	fi
 
-	color="${color:-colour177}"
-	icon="${icon:-🤖 }"
+	if ! detect_agent_from_processes "$pane_tty" "$pane_command" "$harnesses" >/dev/null; then
+		return 1
+	fi
 
-	printf '#[bg=%s,fg=%s] %s%s ' "$bg" "$color" "$icon" "$count"
+	detect_state_from_text "$pane_id"
 }
 
 print_attention_item() {
@@ -201,111 +196,67 @@ print_attention_item() {
 	local state="$2"
 	local session_name="$3"
 	local window_name="$4"
-	local color icon
+	local color
 
 	color="$(color_for_state "$state")"
-	icon="$(icon_for_state "$state")"
 
-	color="${color:-colour177}"
-	icon="${icon:-🤖 }"
-
-	printf '#[bg=%s,fg=%s] %s%s:%s ' "$bg" "$color" "$icon" "$session_name" "$window_name"
+	printf '#[bg=%s,fg=%s] %s:%s' "$bg" "${color:-colour177}" "$session_name" "$window_name"
 }
 
-main() {
-	local enabled harnesses involve_states list_limit bg overlay
-	local pane_id pane_tty pane_command session_name window_name
-	local explicit_name explicit_state agent_state
-	local doing_count=0 waiting_count=0 input_count=0 failed_count=0 agent_count=0 total_count=0
-	local attention_items=() attention_count=0
-	local panes
+append_attention_item() {
+	local state="$1"
+	local session_name="$2"
+	local window_name="$3"
 
-	enabled="$(tmux_global_option @agent_status_enabled)"
-	if [[ "$enabled" == "off" || "$enabled" == "false" || "$enabled" == "0" ]]; then
-		exit 0
+	if ! contains_word "$involve_states" "$state"; then
+		return 0
 	fi
 
-	harnesses="$(tmux_global_option @agent_status_harnesses)"
-	harnesses="${harnesses:-pi opencode codex}"
-	harnesses="$(printf '%s' "$harnesses" | tr ',;' '  ')"
+	attention_items+=("$(print_attention_item "$bg" "$state" "$session_name" "$window_name")")
+	attention_count=$((attention_count + 1))
+}
 
-	involve_states="$(tmux_global_option @agent_status_involve_states)"
-	involve_states="${involve_states:-needs-input failed}"
-	involve_states="$(printf '%s' "$involve_states" | tr ',;' '  ')"
-
-	list_limit="$(tmux_global_option @agent_status_list_limit)"
-	list_limit="${list_limit:-4}"
-
-	bg="$(tmux_global_option @thm_bg)"
-	overlay="$(tmux_global_option @thm_overlay_0)"
-	bg="${bg:-default}"
-	overlay="${overlay:-colour244}"
+scan_panes() {
+	local panes pane_id pane_tty pane_command session_name window_name agent_state
 
 	panes="$(tmux list-panes -a -F '#{pane_id}	#{pane_tty}	#{pane_current_command}	#{session_name}	#{window_name}' 2>/dev/null || true)"
 
 	while IFS=$'\t' read -r pane_id pane_tty pane_command session_name window_name; do
 		[[ -z "${pane_id:-}" ]] && continue
 
-		explicit_name="$(tmux_pane_option "$pane_id" @agent_name)"
-		explicit_state="$(tmux_pane_option "$pane_id" @agent_state)"
-
-		if [[ -n "$explicit_name" ]]; then
-			agent_state="$(normalize_state "${explicit_state:-agent}")"
-		else
-			if ! detect_agent_from_processes "$pane_tty" "$pane_command" "$harnesses" >/dev/null; then
-				continue
-			fi
-
-			agent_state="$(detect_state_from_text "$pane_id")"
+		if ! agent_state="$(detect_pane_state "$pane_id" "$pane_tty" "$pane_command" "$harnesses")"; then
+			continue
 		fi
 
-		total_count=$((total_count + 1))
-
-		case "$agent_state" in
-		doing)
-			doing_count=$((doing_count + 1))
-			;;
-		waiting)
-			waiting_count=$((waiting_count + 1))
-			;;
-		needs-input)
-			input_count=$((input_count + 1))
-			;;
-		failed)
-			failed_count=$((failed_count + 1))
-			;;
-		*)
-			agent_count=$((agent_count + 1))
-			;;
-		esac
-
-		if contains_word "$involve_states" "$agent_state"; then
-			if [[ "$attention_count" -lt "$list_limit" ]]; then
-				attention_items+=("$(print_attention_item "$bg" "$agent_state" "$session_name" "$window_name")")
-			fi
-			attention_count=$((attention_count + 1))
-		fi
+		append_attention_item "$agent_state" "$session_name" "$window_name"
 	done <<<"$panes"
+}
 
-	[[ "$total_count" -le 0 ]] && exit 0
+print_status() {
+	[[ "$attention_count" -le 0 ]] && return 0
 
-	printf '#[bg=%s,fg=%s] ' "$bg" "$overlay"
-	print_state_count "$bg" doing "$doing_count"
-	print_state_count "$bg" waiting "$waiting_count"
-	print_state_count "$bg" needs-input "$input_count"
-	print_state_count "$bg" failed "$failed_count"
-	print_state_count "$bg" agent "$agent_count"
+	printf '%s' "${attention_items[*]}"
+}
 
-	if [[ "$attention_count" -gt 0 ]]; then
-		printf '#[bg=%s,fg=%s]│ ' "$bg" "$overlay"
-		printf '%s' "${attention_items[*]}"
+load_config() {
+	enabled="$(option_or_default @agent_status_enabled on)"
+	harnesses="$(word_option_or_default @agent_status_harnesses "pi opencode codex")"
+	involve_states="$(word_option_or_default @agent_status_involve_states "needs-input failed")"
+	bg="$(option_or_default @thm_bg default)"
+}
 
-		if [[ "$attention_count" -gt "$list_limit" ]]; then
-			printf '#[bg=%s,fg=%s]+%s ' "$bg" "$overlay" "$((attention_count - list_limit))"
-		fi
+main() {
+	local enabled harnesses involve_states bg
+	local attention_items=() attention_count=0
+
+	load_config
+
+	if [[ "$enabled" == "off" || "$enabled" == "false" || "$enabled" == "0" ]]; then
+		exit 0
 	fi
 
-	printf '#[bg=%s,fg=%s]│' "$bg" "$overlay"
+	scan_panes
+	print_status
 }
 
 main
