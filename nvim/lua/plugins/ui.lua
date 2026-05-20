@@ -94,6 +94,7 @@ local noice = {
 				},
 				hover = {
 					enabled = true,
+					silent = true,
 				},
 			},
 			routes = {
