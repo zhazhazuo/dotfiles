@@ -21,7 +21,7 @@ local diff_view = {
 
 local gitsigns = {
 	"lewis6991/gitsigns.nvim",
-	event = "VeryLazy",
+	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
 		{
 			"sindrets/diffview.nvim",
