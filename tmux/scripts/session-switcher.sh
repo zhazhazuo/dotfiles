@@ -15,6 +15,7 @@ rows=""
 row_count=0
 max_name_width=0
 current_session=""
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while IFS=$'\t' read -r _ session window_index window_name window_active _; do
   [[ -z "$session" || -z "$window_index" || -z "$window_name" ]] && continue
@@ -30,7 +31,7 @@ while IFS=$'\t' read -r _ session window_index window_name window_active _; do
 
   marker="  "
   if [[ "$window_active" == "1" ]]; then
-    marker="* "
+    marker=" "
   fi
 
   display="  ${marker}${session} / ${window_name}"
@@ -52,7 +53,7 @@ fzf_args=(
   --with-nth=2..
   --accept-nth=1
   --bind=enter:accept-non-empty
-  --preview='case {1} in *:*) tmux capture-pane -ep -t {1} -S -80 ;; *) tmux list-windows -t {1} -F "#{window_index}	#{window_name}" | while IFS="	" read -r index name; do printf "## %s\n" "$name"; tmux capture-pane -ep -t {1}:$index -S -20; printf "\n"; done ;; esac'
+  --preview="${script_dir}/session-preview.sh {1}"
   --preview-window=right,70%,border-left,wrap
 )
 if [[ "${1:-}" == "--popup" ]]; then

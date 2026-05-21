@@ -41,7 +41,7 @@ set -euo pipefail
 
 printf '%s\n' "$*" >"$FZF_ARGS_LOG"
 cat >"$FZF_INPUT_LOG"
-printf 'alpha:1	logs\n'
+printf '%s\n' "${FZF_SELECTION:-alpha:1	logs}"
 FAKE_FZF
 chmod +x "$TMP_DIR/fzf"
 
@@ -73,7 +73,7 @@ fi
 printf 'ok - switches to selected window target\n'
 
 fzf_input="$(cat "$FZF_INPUT_LOG")"
-expected_fzf_input=$'__header__\talpha\nalpha:0\t  * main\nalpha:1\t    logs\n__header__\tbeta\nbeta:0\t  * server'
+expected_fzf_input=$'alpha\talpha\nalpha:0\t   alpha / main\nalpha:1\t    alpha / logs\nbeta\tbeta\nbeta:0\t   beta / server'
 if [[ "$fzf_input" != "$expected_fzf_input" ]]; then
 	printf 'not ok - shows session tree with window names in fzf\n' >&2
 	printf 'expected:\n%s\n' "$expected_fzf_input" >&2
@@ -91,10 +91,23 @@ printf 'ok - omits blank current-session row before fzf\n'
 "$SCRIPT" --popup
 
 fzf_args="$(cat "$FZF_ARGS_LOG")"
-if [[ "$fzf_args" != "--reverse --exit-0 --delimiter=	 --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty --tmux=center,60%,60%,border-native" ]]; then
+if [[ "$fzf_args" != "--reverse --exit-0 --delimiter=	 --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty --preview=$ROOT_DIR/scripts/session-preview.sh {1} --preview-window=right,70%,border-left,wrap --tmux=center,60%,60%,border-native" ]]; then
 	printf 'not ok - popup mode lets fzf create the tmux popup\n' >&2
-	printf 'expected: --reverse --exit-0 --delimiter=<tab> --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty --tmux=center,60%%,60%%,border-native\n' >&2
+	printf 'expected popup args with right-side tmux capture preview\n' >&2
 	printf 'actual:   %s\n' "$fzf_args" >&2
 	exit 1
 fi
 printf 'ok - popup mode lets fzf create the tmux popup\n'
+
+rm -f "$TMUX_CALL_LOG"
+FZF_SELECTION=$'alpha\talpha' "$SCRIPT"
+
+expected_calls=$'list-windows -a -F #{session_last_attached}\t#{session_name}\t#{window_index}\t#{window_name}\t#{window_active}\t#{window_last_flag}\nswitch-client -t alpha'
+actual_calls="$(cat "$TMUX_CALL_LOG")"
+if [[ "$actual_calls" != "$expected_calls" ]]; then
+	printf 'not ok - switches to selected session target\n' >&2
+	printf 'expected:\n%s\n' "$expected_calls" >&2
+	printf 'actual:\n%s\n' "$actual_calls" >&2
+	exit 1
+fi
+printf 'ok - switches to selected session target\n'
