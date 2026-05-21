@@ -20,7 +20,7 @@ while IFS=$'\t' read -r _ session window_index window_name window_active _; do
   [[ -z "$session" || -z "$window_index" || -z "$window_name" ]] && continue
 
   if [[ "$session" != "$current_session" ]]; then
-    rows="${rows}__header__"$'\t'"${session}"$'\n'
+    rows="${rows}${session}"$'\t'"${session}"$'\n'
     row_count=$((row_count + 1))
     current_session="$session"
     if ((${#session} > max_name_width)); then
@@ -33,7 +33,7 @@ while IFS=$'\t' read -r _ session window_index window_name window_active _; do
     marker="* "
   fi
 
-  display="  ${marker}${window_name}"
+  display="  ${marker}${session} / ${window_name}"
   rows="${rows}${session}:${window_index}"$'\t'"${display}"$'\n'
   row_count=$((row_count + 1))
   if ((${#display} > max_name_width)); then
@@ -45,7 +45,16 @@ if ((row_count == 0)); then
   exit 0
 fi
 
-fzf_args=(--reverse --exit-0 --delimiter=$'\t' --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty)
+fzf_args=(
+  --reverse
+  --exit-0
+  --delimiter=$'\t'
+  --with-nth=2..
+  --accept-nth=1
+  --bind=enter:accept-non-empty
+  --preview='case {1} in *:*) tmux capture-pane -ep -t {1} -S -80 ;; *) tmux list-windows -t {1} -F "#{window_index}	#{window_name}" | while IFS="	" read -r index name; do printf "## %s\n" "$name"; tmux capture-pane -ep -t {1}:$index -S -20; printf "\n"; done ;; esac'
+  --preview-window=right,70%,border-left,wrap
+)
 if [[ "${1:-}" == "--popup" ]]; then
   fzf_args+=(--tmux=center,60%,60%,border-native)
 fi
@@ -53,6 +62,6 @@ fi
 choice=$(printf '%s' "$rows" | fzf "${fzf_args[@]}")
 choice="${choice%%$'\t'*}"
 
-if [[ -n "$choice" && "$choice" != "__header__" ]]; then
+if [[ -n "$choice" ]]; then
   tmux switch-client -t "$choice"
 fi
