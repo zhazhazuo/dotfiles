@@ -280,13 +280,21 @@ scan_panes() {
 print_status() {
 	[[ "$agent_count" -le 0 ]] && return 0
 
-	printf '%s' "${agent_items[*]}"
+	local item separator
+
+	separator="#[bg=${bg},fg=${separator_color:-colour240},none] ${agent_separator} "
+	printf '%s' "${agent_items[0]}"
+	for item in "${agent_items[@]:1}"; do
+		printf '%s%s' "$separator" "$item"
+	done
 }
 
 load_config() {
 	enabled="$(option_or_default @agent_status_enabled on)"
 	harnesses="$(word_option_or_default @agent_status_harnesses "pi opencode codex")"
 	bg="$(option_or_default @thm_bg default)"
+	separator_color="$(option_or_default @thm_overlay_0 colour240)"
+	agent_separator="$(option_or_default @agent_status_separator "│")"
 }
 
 cache_file() {
@@ -334,7 +342,7 @@ start_background_refresh() {
 }
 
 render_status() {
-	local enabled harnesses bg
+	local enabled harnesses bg separator_color agent_separator
 	local agent_items=() agent_count=0
 
 	load_config
