@@ -67,6 +67,20 @@ local alabaster = {
 	end,
 }
 
+local focus_walker = {
+	dir = vim.fn.stdpath("config"),
+	name = "focus-walker",
+	lazy = false,
+	priority = 1000,
+	config = function()
+		require("focus-walker").setup({
+			dim_comments = false,
+			transparent = false,
+		})
+		vim.cmd.colorscheme("focus-walker")
+	end,
+}
+
 local catppuccin = {
 	"catppuccin/nvim",
 	name = "catppuccin",
@@ -90,9 +104,10 @@ local bamboo = {
 
 return {
 	-- grubox,
-	best_grubox,
-	bamboo,
-	catppuccin,
-	cyber_dream,
-	alabaster,
+	-- best_grubox,
+	-- bamboo,
+	-- catppuccin,
+	-- cyber_dream,
+	-- alabaster,
+	focus_walker,
 }
