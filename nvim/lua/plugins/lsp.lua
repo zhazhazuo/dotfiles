@@ -186,6 +186,8 @@ local mason_lsp_servers = {
 	"cssls",
 	"tailwindcss",
 	"quick_lint_js",
+	"emmet_ls",
+	"jinja_lsp",
 	"tsgo",
 	"ts_ls",
 }
@@ -207,6 +209,7 @@ local mason_packages = {
 	"bash-language-server",
 	"graphql-language-service-cli",
 	"quick-lint-js",
+	"jinja-lsp",
 
 	"marksman", -- markdown
 	"markdown-oxide", -- obsidian navigation

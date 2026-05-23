@@ -23,6 +23,7 @@ local formatter = {
 				javascriptreact = { "biome" },
 				typescript = { "biome" },
 				typescriptreact = { "biome" },
+				html = { "biome" },
 				vue = { "prettierd", "prettier", stop_after_first = true },
 			},
 			-- Set default options
@@ -33,6 +34,15 @@ local formatter = {
 			formatters = {
 				shfmt = {
 					prepend_args = { "-i", "2" },
+				},
+				-- biome 2.x: stdin mode + HTML opt-in (not enabled by default)
+				biome = {
+					args = {
+						"format",
+						"--html-formatter-enabled=true",
+						"--stdin-file-path",
+						"$FILENAME",
+					},
 				},
 			},
 		},
