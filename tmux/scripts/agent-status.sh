@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 #
-# Print a tmux topbar widget for AI agent panes.
-#
-# Widget parts:
-#   1. Agent list: session name + window name for every detected agent pane.
-#
-# Detection order:
-#   1. Explicit pane options: @agent_name / @agent_state
-#   2. Heuristic process + pane-text detection using @agent_status_harnesses
-#
-# Explicit state contract:
-#   tmux set-option -p -t "$TMUX_PANE" @agent_name codex
-#   tmux set-option -p -t "$TMUX_PANE" @agent_state running
-#   tmux set-option -p -t "$TMUX_PANE" @agent_instances 1
+# Print the tmux topbar widget for explicit agent monitor records.
 
 set -euo pipefail
 
@@ -20,11 +8,8 @@ tmux_global_option() {
 	tmux show-options -gqv "$1" 2>/dev/null || true
 }
 
-tmux_pane_option() {
-	local pane_id="$1"
-	local option="$2"
-
-	tmux show-options -pqv -t "$pane_id" "$option" 2>/dev/null || true
+tmux_set_global_option() {
+	tmux set-option -gq "$1" "$2" 2>/dev/null || true
 }
 
 option_or_default() {
@@ -36,60 +21,48 @@ option_or_default() {
 	printf '%s' "${value:-$default}"
 }
 
-word_option_or_default() {
-	local option="$1"
-	local default="$2"
-
-	option_or_default "$option" "$default" | tr ',;' '  '
+is_integer() {
+	[[ "${1:-}" =~ ^[0-9]+$ ]]
 }
 
-lower() {
-	tr '[:upper:]' '[:lower:]'
+current_epoch() {
+	printf '%s' "${AGENT_STATUS_NOW:-$(date +%s)}"
 }
 
-matches_any() {
-	local text="$1"
-	local pattern="$2"
-
-	printf '%s\n' "$text" | grep -Eiq "$pattern"
+tmux_format_literal() {
+	printf '%s' "$1" | sed 's/#/##/g'
 }
 
-regex_escape() {
-	printf '%s' "$1" | sed 's/[][(){}.^$*+?|\\]/\\&/g'
+valid_pane_id() {
+	[[ "${1:-}" =~ ^%[0-9]+$ ]]
 }
 
-normalize_state() {
-	local state
+effective_state() {
+	local state="$1"
+	local updated_at="$2"
+	local now="$3"
 
-	state="$(printf '%s' "${1:-agent}" | lower | tr '_' '-')"
+	if [[ "$state" == "needs-attention" ]] && is_integer "$updated_at" && is_integer "$attention_timeout"; then
+		if [[ "$((now - updated_at))" -gt "$attention_timeout" ]]; then
+			printf 'idle'
+			return 0
+		fi
+	fi
 
-	case "$state" in
-	run | running | doing | work | working | busy | thinking | executing | tool | tools)
-		printf 'doing'
-		;;
-	wait | waiting | idle | ready | done | complete | completed)
-		printf 'waiting'
-		;;
-	input | needsinput | needs-input | confirm | approval | blocked)
-		printf 'needs-input'
-		;;
-	fail | failed | failure | error)
-		printf 'failed'
-		;;
-	*)
-		printf 'agent'
-		;;
-	esac
+	printf '%s' "$state"
 }
 
 color_for_state() {
 	local state="$1"
 
 	case "$state" in
-	doing)
+	running)
 		tmux_global_option @thm_green
 		;;
-	needs-input)
+	needs-help)
+		tmux_global_option @thm_red
+		;;
+	needs-attention)
 		tmux_global_option @thm_blue
 		;;
 	*)
@@ -98,183 +71,50 @@ color_for_state() {
 	esac
 }
 
-detect_agent_from_processes() {
-	local pane_tty="$1"
-	local pane_command="$2"
-	local harnesses="$3"
-	local tty_name processes haystack harness escaped pattern
-
-	tty_name="${pane_tty#/dev/}"
-	processes=""
-
-	if [[ -n "$tty_name" ]]; then
-		processes="$(ps -t "$tty_name" -o comm= -o command= 2>/dev/null || true)"
-	fi
-
-	haystack="$pane_command
-$processes"
-
-	for harness in $harnesses; do
-		escaped="$(regex_escape "$harness")"
-		pattern="(^|[[:space:]/])${escaped}([[:space:]]|$)"
-
-		if [[ "$pane_command" == "$harness" ]] || matches_any "$haystack" "$pattern"; then
-			printf '%s' "$harness"
-			return 0
-		fi
-	done
-
-	return 1
-}
-
-count_agent_instances_from_processes() {
-	local pane_tty="$1"
-	local pane_command="$2"
-	local harnesses="$3"
-	local tty_name processes count harness escaped pattern
-
-	tty_name="${pane_tty#/dev/}"
-	processes=""
-	count=0
-
-	if [[ -n "$tty_name" ]]; then
-		processes="$(ps -t "$tty_name" -o comm= -o command= 2>/dev/null || true)"
-	fi
-
-	for harness in $harnesses; do
-		escaped="$(regex_escape "$harness")"
-		pattern="(^|[[:space:]/])${escaped}([[:space:]]|$)"
-		count=$((count + $(printf '%s\n' "$processes" | grep -Eic "$pattern" || true)))
-	done
-
-	if [[ "$count" -le 0 ]]; then
-		for harness in $harnesses; do
-			if [[ "$pane_command" == "$harness" ]]; then
-				count=1
-				break
-			fi
-		done
-	fi
-
-	if [[ "$count" -le 0 ]]; then
-		count=1
-	fi
-
-	printf '%s' "$count"
-}
-
-detect_state_from_text() {
-	local pane_id="$1"
-	local text line
-
-	text="$(tmux capture-pane -pJ -t "$pane_id" -S -80 2>/dev/null | tail -40 | lower || true)"
-
-	if [[ -z "$text" ]]; then
-		printf 'agent'
-		return 0
-	fi
-
-	while IFS= read -r line; do
-		if matches_any "$line" 'permission|approval|approve|confirm|continue\?|press enter|allow|deny|\by/n\b|\[y/n\]|waiting for (approval|input)'; then
-			printf 'needs-input'
-			return 0
-		elif matches_any "$line" 'thinking|running|executing|editing|applying|reading|writing|searching|calling|tool|working|processing'; then
-			printf 'doing'
-			return 0
-		elif matches_any "$line" 'waiting|idle|inactive|ready|done|completed|complete'; then
-			printf 'waiting'
-			return 0
-		elif matches_any "$line" 'error|failed|failure|denied|blocked|exception'; then
-			printf 'failed'
-			return 0
-		fi
-	done < <(printf '%s\n' "$text" | awk '{ lines[NR] = $0 } END { for (i = NR; i >= 1; i--) print lines[i] }')
-
-	printf 'agent'
-}
-
-detect_pane_state() {
-	local pane_id="$1"
-	local pane_tty="$2"
-	local pane_command="$3"
-	local harnesses="$4"
-	local explicit_name explicit_state
-
-	explicit_name="$(tmux_pane_option "$pane_id" @agent_name)"
-	explicit_state="$(tmux_pane_option "$pane_id" @agent_state)"
-
-	if [[ -n "$explicit_name" ]]; then
-		normalize_state "${explicit_state:-agent}"
-		return 0
-	fi
-
-	if ! detect_agent_from_processes "$pane_tty" "$pane_command" "$harnesses" >/dev/null; then
-		return 1
-	fi
-
-	detect_state_from_text "$pane_id"
-}
-
-detect_pane_instances() {
-	local pane_id="$1"
-	local pane_tty="$2"
-	local pane_command="$3"
-	local harnesses="$4"
-	local explicit_instances
-
-	explicit_instances="$(tmux_pane_option "$pane_id" @agent_instances)"
-
-	if [[ "$explicit_instances" =~ ^[0-9]+$ ]] && [[ "$explicit_instances" -gt 0 ]]; then
-		printf '%s' "$explicit_instances"
-		return 0
-	fi
-
-	count_agent_instances_from_processes "$pane_tty" "$pane_command" "$harnesses"
-}
-
 print_agent_item() {
 	local bg="$1"
 	local state="$2"
-	local session_name="$3"
-	local window_name="$4"
-	local instance_count="$5"
-	local color suffix
+	local name="$3"
+	local label="$4"
+	local pane="$5"
+	local color
 
+	: "$name"
 	color="$(color_for_state "$state")"
-	suffix=""
-
-	if [[ "$instance_count" -gt 1 ]]; then
-		suffix="($instance_count)"
+	label="$(tmux_format_literal "${label:-agent}")"
+	if valid_pane_id "$pane"; then
+		printf '#[range=pane|%s]#[bg=%s,fg=%s] %s#[norange]' "$pane" "$bg" "${color:-colour240}" "$label"
+	else
+		printf '#[bg=%s,fg=%s] %s' "$bg" "${color:-colour240}" "$label"
 	fi
-
-	printf '#[bg=%s,fg=%s] %s:%s%s' "$bg" "${color:-colour177}" "$session_name" "$window_name" "$suffix"
 }
 
 append_agent_item() {
-	local state="$1"
-	local session_name="$2"
-	local window_name="$3"
-	local instance_count="$4"
+	local id="$1"
+	local prefix name state label pane updated_at now
 
-	agent_items+=("$(print_agent_item "$bg" "$state" "$session_name" "$window_name" "$instance_count")")
+	prefix="@agent_monitor_${id}"
+	name="$(tmux_global_option "${prefix}_name")"
+	state="$(tmux_global_option "${prefix}_state")"
+	label="$(tmux_global_option "${prefix}_label")"
+	pane="$(tmux_global_option "${prefix}_pane")"
+	updated_at="$(tmux_global_option "${prefix}_updated_at")"
+	now="$(current_epoch)"
+
+	[[ -z "$name" && -z "$state" && -z "$label" ]] && return 0
+
+	state="$(effective_state "${state:-idle}" "$updated_at" "$now")"
+	agent_items+=("$(print_agent_item "$bg" "$state" "${name:-agent}" "${label:-agent}" "$pane")")
 	agent_count=$((agent_count + 1))
 }
 
-scan_panes() {
-	local panes pane_id pane_tty pane_command session_name window_name agent_state instance_count
-
-	panes="$(tmux list-panes -a -F '#{pane_id}	#{pane_tty}	#{pane_current_command}	#{session_name}	#{window_name}' 2>/dev/null || true)"
-
-	while IFS=$'\t' read -r pane_id pane_tty pane_command session_name window_name; do
-		[[ -z "${pane_id:-}" ]] && continue
-
-		if ! agent_state="$(detect_pane_state "$pane_id" "$pane_tty" "$pane_command" "$harnesses")"; then
-			continue
-		fi
-
-		instance_count="$(detect_pane_instances "$pane_id" "$pane_tty" "$pane_command" "$harnesses")"
-		append_agent_item "$agent_state" "$session_name" "$window_name" "$instance_count"
-	done <<<"$panes"
+load_config() {
+	enabled="$(option_or_default @agent_status_enabled on)"
+	instances="$(tmux_global_option @agent_monitor_instances)"
+	attention_timeout="$(option_or_default @agent_monitor_attention_timeout 300)"
+	bg="$(option_or_default @thm_bg default)"
+	separator_color="$(option_or_default @thm_overlay_0 colour240)"
+	agent_separator="$(option_or_default @agent_status_separator "│")"
 }
 
 print_status() {
@@ -289,12 +129,22 @@ print_status() {
 	done
 }
 
-load_config() {
-	enabled="$(option_or_default @agent_status_enabled on)"
-	harnesses="$(word_option_or_default @agent_status_harnesses "pi opencode codex")"
-	bg="$(option_or_default @thm_bg default)"
-	separator_color="$(option_or_default @thm_overlay_0 colour240)"
-	agent_separator="$(option_or_default @agent_status_separator "│")"
+render_status() {
+	local enabled instances attention_timeout bg separator_color agent_separator
+	local agent_items=() agent_count=0
+	local id
+
+	load_config
+
+	if [[ "$enabled" == "off" || "$enabled" == "false" || "$enabled" == "0" ]]; then
+		return 0
+	fi
+
+	for id in $instances; do
+		append_agent_item "$id"
+	done
+
+	print_status
 }
 
 cache_file() {
@@ -307,21 +157,22 @@ cache_file() {
 }
 
 refresh_status_cache() {
-	local cache tmp
+	local cache tmp rendered
 
 	cache="$(cache_file)"
 	tmp="${cache}.$$"
+	rendered="$(render_status)"
 
 	mkdir -p "$(dirname "$cache")"
-	render_status >"$tmp"
+	printf '%s' "$rendered" >"$tmp"
 	mv "$tmp" "$cache"
+	tmux_set_global_option @agent_monitor_status "$rendered"
 }
 
 print_cached_status() {
 	local cache
 
 	cache="$(cache_file)"
-
 	if [[ -r "$cache" ]]; then
 		cat "$cache"
 	fi
@@ -339,20 +190,6 @@ start_background_refresh() {
 			refresh_status_cache
 		) >/dev/null 2>&1 &
 	fi
-}
-
-render_status() {
-	local enabled harnesses bg separator_color agent_separator
-	local agent_items=() agent_count=0
-
-	load_config
-
-	if [[ "$enabled" == "off" || "$enabled" == "false" || "$enabled" == "0" ]]; then
-		return 0
-	fi
-
-	scan_panes
-	print_status
 }
 
 main() {
