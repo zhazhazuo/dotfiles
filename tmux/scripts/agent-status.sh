@@ -82,10 +82,19 @@ print_agent_item() {
 	: "$name"
 	color="$(color_for_state "$state")"
 	label="$(tmux_format_literal "${label:-agent}")"
+	if [[ "$state" == "needs-help" ]]; then
+		if valid_pane_id "$pane"; then
+			printf '#[range=pane|%s]#[bg=%s,fg=%s,bold] ‹%s›#[norange]' "$pane" "$bg" "${color:-colour240}" "$label"
+		else
+			printf '#[bg=%s,fg=%s,bold] ‹%s›' "$bg" "${color:-colour240}" "$label"
+		fi
+		return 0
+	fi
+
 	if valid_pane_id "$pane"; then
-		printf '#[range=pane|%s]#[bg=%s,fg=%s] %s#[norange]' "$pane" "$bg" "${color:-colour240}" "$label"
+		printf '#[range=pane|%s]#[bg=%s,fg=%s] ‹%s›#[norange]' "$pane" "$bg" "${color:-colour240}" "$label"
 	else
-		printf '#[bg=%s,fg=%s] %s' "$bg" "${color:-colour240}" "$label"
+		printf '#[bg=%s,fg=%s] ‹%s›' "$bg" "${color:-colour240}" "$label"
 	fi
 }
 
@@ -122,7 +131,7 @@ print_status() {
 
 	local item separator
 
-	separator="#[bg=${bg},fg=${separator_color:-colour240},none] ${agent_separator} "
+	separator="#[bg=${bg},fg=${separator_color:-colour240},none]  "
 	printf '%s' "${agent_items[0]}"
 	for item in "${agent_items[@]:1}"; do
 		printf '%s%s' "$separator" "$item"

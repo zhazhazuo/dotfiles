@@ -77,6 +77,7 @@ refresh_status() {
 
 	script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 	"${script_dir}/agent-status.sh" --refresh >/dev/null 2>&1 || true
+	"${script_dir}/agent-monitor-state.sh" --refresh >/dev/null 2>&1 || true
 	tmux refresh-client -S 2>/dev/null || true
 }
 

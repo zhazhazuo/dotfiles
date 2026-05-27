@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Reconcile tmux agent monitor records from Codex hook events.
+# Reconcile tmux agent monitor records from agent hook events (codex, pi, opencode, claude).
 
 set +e +u
 
@@ -49,6 +49,7 @@ refresh_status() {
 
 	script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 	"${script_dir}/agent-status.sh" --refresh >/dev/null 2>&1 || true
+	"${script_dir}/agent-monitor-state.sh" --refresh >/dev/null 2>&1 || true
 	tmux refresh-client -S 2>/dev/null || true
 }
 
@@ -112,37 +113,74 @@ state_for_event() {
 	tool_name="$(json_string_field tool_name | lowercase)"
 	sandbox_permissions="$(json_query_string '.tool_input.sandbox_permissions' | lowercase)"
 
+	# ── Agent-agnostic generic mapping (preferred for new agents) ──
 	case "$event_name" in
-	SessionStart)
+	SessionStart|SessionResume)
 		printf 'idle'
+		return 0
 		;;
-	UserPromptSubmit|PostToolUse)
+	PromptSubmit|RunStart|ToolStart|ToolEnd)
 		printf 'running'
+		return 0
 		;;
-	PreToolUse)
-		case "$tool_name" in
-		*request_user_input*|*ask_question*|*ask_user*|*request_plugin_install*|*request_permission*|*request_approval*)
-			printf 'needs-help'
-			;;
-		*)
-			if [[ "$sandbox_permissions" == "require_escalated" ]]; then
-				printf 'needs-help'
-			else
-				printf 'running'
-			fi
-			;;
-		esac
-		;;
-	PermissionRequest)
+	PermissionRequest|InputRequired)
 		printf 'needs-help'
+		return 0
 		;;
-	Stop)
+	TurnComplete|Stop)
 		printf 'needs-attention'
-		;;
-	*)
-		printf 'idle'
+		return 0
 		;;
 	esac
+
+	# ── Codex-specific mapping (legacy) ──
+	if [[ "$agent_name" == "codex" ]]; then
+		case "$event_name" in
+		UserPromptSubmit|PostToolUse)
+			printf 'running'
+			return 0
+			;;
+		PreToolUse)
+			case "$tool_name" in
+			*request_user_input*|*ask_question*|*ask_user*|*request_plugin_install*|*request_permission*|*request_approval*)
+				printf 'needs-help'
+				;;
+			*)
+				if [[ "$sandbox_permissions" == "require_escalated" ]]; then
+					printf 'needs-help'
+				else
+					printf 'running'
+				fi
+				;;
+			esac
+			return 0
+			;;
+		PermissionRequest)
+			printf 'needs-help'
+			return 0
+			;;
+		esac
+	fi
+
+	# ── Pi-specific mapping ──
+	if [[ "$agent_name" == "pi" ]]; then
+		case "$event_name" in
+		AgentStart)
+			printf 'running'
+			return 0
+			;;
+		AgentEnd)
+			printf 'needs-attention'
+			return 0
+			;;
+		SessionShutdown)
+			printf 'idle'
+			return 0
+			;;
+		esac
+	fi
+
+	printf 'idle'
 }
 
 reconcile_instance_list() {

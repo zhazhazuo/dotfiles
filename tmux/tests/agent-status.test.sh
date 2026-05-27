@@ -96,8 +96,8 @@ export AGENT_STATUS_NOW=1000
 export TMUX_SET_LOG="$TMP_DIR/set-options.log"
 
 actual="$("$SCRIPT" --once)"
-expected='#[range=pane|%1]#[bg=default,fg=green] ##[evil]work#[norange]#[bg=default,fg=overlay,none] │ #[range=pane|%2]#[bg=default,fg=red] review#[norange]#[bg=default,fg=overlay,none] │ #[range=pane|%3]#[bg=default,fg=blue] ship#[norange]#[bg=default,fg=overlay,none] │ #[range=pane|%4]#[bg=default,fg=overlay] old#[norange]'
-assert_equal "$expected" "$actual" "renders monitor records with event colors and timeout decay"
+expected='#[range=pane|%1]#[bg=default,fg=green] ‹##[evil]work›#[norange]#[bg=default,fg=overlay,none]  #[range=pane|%2]#[bg=default,fg=red,bold] ‹review›#[norange]#[bg=default,fg=overlay,none]  #[range=pane|%3]#[bg=default,fg=blue] ‹ship›#[norange]#[bg=default,fg=overlay,none]  #[range=pane|%4]#[bg=default,fg=overlay] ‹old›#[norange]'
+assert_equal "$expected" "$actual" "renders monitor records as subtle bracketed agent labels"
 
 actual="$(AGENT_STATUS_ENABLED=off "$SCRIPT" --once)"
 assert_equal "" "$actual" "prints nothing when disabled"
