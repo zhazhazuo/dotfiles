@@ -102,6 +102,13 @@ local config = {
 
 		local function set_picker_highlights()
 			vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#2c2c2c" })
+
+			-- Fix low-contrast picker highlights: Dir/PathHidden/PathIgnored/Unselected
+			-- were all linked to NonText (#3f3951) which is invisible on bg (#282433)
+			vim.api.nvim_set_hl(0, "SnacksPickerDir", { fg = "#938AAD" })
+			vim.api.nvim_set_hl(0, "SnacksPickerPathHidden", { fg = "#6e6587" })
+			vim.api.nvim_set_hl(0, "SnacksPickerPathIgnored", { fg = "#6e6587" })
+			vim.api.nvim_set_hl(0, "SnacksPickerUnselected", { fg = "#938AAD" })
 		end
 
 		set_picker_highlights()
