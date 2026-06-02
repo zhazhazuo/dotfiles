@@ -73,7 +73,7 @@ fi
 printf 'ok - switches to selected window target\n'
 
 fzf_input="$(cat "$FZF_INPUT_LOG")"
-expected_fzf_input=$'alpha\talpha\nalpha:0\t   alpha / main\nalpha:1\t    alpha / logs\nbeta\tbeta\nbeta:0\t   beta / server'
+expected_fzf_input=$'alpha\t\033[38;2;110;115;141malpha\033[0m\nalpha:0\t  \033[38;2;166;218;149m\033[0m main \033[38;2;110;115;141m· alpha\033[0m\nalpha:1\t    logs \033[38;2;110;115;141m· alpha\033[0m\nbeta\t\033[38;2;110;115;141mbeta\033[0m\nbeta:0\t  \033[38;2;166;218;149m\033[0m server \033[38;2;110;115;141m· beta\033[0m'
 if [[ "$fzf_input" != "$expected_fzf_input" ]]; then
 	printf 'not ok - shows session tree with window names in fzf\n' >&2
 	printf 'expected:\n%s\n' "$expected_fzf_input" >&2
@@ -91,13 +91,13 @@ printf 'ok - omits blank current-session row before fzf\n'
 "$SCRIPT" --popup
 
 fzf_args="$(cat "$FZF_ARGS_LOG")"
-if [[ "$fzf_args" != "--reverse --exit-0 --delimiter=	 --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty --preview=$ROOT_DIR/scripts/session-preview.sh {1} --preview-window=right,70%,border-left,wrap --tmux=center,60%,60%,border-native" ]]; then
-	printf 'not ok - popup mode lets fzf create the tmux popup\n' >&2
-	printf 'expected popup args with right-side tmux capture preview\n' >&2
+if [[ "$fzf_args" != "--reverse --exit-0 --ansi --delimiter=	 --with-nth=2.. --accept-nth=1 --bind=enter:accept-non-empty --layout=reverse --style=minimal --border=none --list-border=none --input-border=none --header-border=none --padding=1,3 --no-separator --info=inline-right --header=  --prompt=  Sessions   --pointer=▌ --marker=• --border-label= tmux session switcher  --border-label-pos=3 --color=fg:#cad3f5,bg:-1,fg+:#f4dbd6,bg+:-1,hl:#8aadf4,hl+:#f5bde6,info:#6e738d,prompt:#8aadf4,pointer:#f5bde6,marker:#a6da95,spinner:#f5bde6,header:#6e738d,border:#6e738d,gutter:-1,label:#6e738d --tmux=center,48,11,border-native" ]]; then
+	printf 'not ok - popup mode adapts size and padding to the list\n' >&2
+	printf 'expected popup args with content-aware geometry\n' >&2
 	printf 'actual:   %s\n' "$fzf_args" >&2
 	exit 1
 fi
-printf 'ok - popup mode lets fzf create the tmux popup\n'
+printf 'ok - popup mode adapts size and padding to the list\n'
 
 rm -f "$TMUX_CALL_LOG"
 FZF_SELECTION=$'alpha\talpha' "$SCRIPT"

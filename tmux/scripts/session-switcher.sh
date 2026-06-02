@@ -13,32 +13,49 @@
 
 rows=""
 row_count=0
-max_name_width=0
 current_session=""
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+max_item_width=0
+muted=$'\033[38;2;110;115;141m'
+accent=$'\033[38;2;166;218;149m'
+reset=$'\033[0m'
+
+clamp() {
+  local value="$1"
+  local min="$2"
+  local max="$3"
+
+  if ((value < min)); then
+    echo "$min"
+  elif ((value > max)); then
+    echo "$max"
+  else
+    echo "$value"
+  fi
+}
 
 while IFS=$'\t' read -r _ session window_index window_name window_active _; do
   [[ -z "$session" || -z "$window_index" || -z "$window_name" ]] && continue
 
   if [[ "$session" != "$current_session" ]]; then
-    rows="${rows}${session}"$'\t'"${session}"$'\n'
+    rows="${rows}${session}"$'\t'"${muted}${session}${reset}"$'\n'
     row_count=$((row_count + 1))
     current_session="$session"
-    if ((${#session} > max_name_width)); then
-      max_name_width=${#session}
+    if ((${#session} > max_item_width)); then
+      max_item_width=${#session}
     fi
   fi
 
   marker="  "
   if [[ "$window_active" == "1" ]]; then
-    marker=" "
+    marker="${accent}${reset} "
   fi
 
-  display="  ${marker}${session} / ${window_name}"
+  raw_display="  ${window_name} · ${session}"
+  display="  ${marker}${window_name} ${muted}· ${session}${reset}"
   rows="${rows}${session}:${window_index}"$'\t'"${display}"$'\n'
   row_count=$((row_count + 1))
-  if ((${#display} > max_name_width)); then
-    max_name_width=${#display}
+  if ((${#raw_display} > max_item_width)); then
+    max_item_width=${#raw_display}
   fi
 done < <(tmux list-windows -a -F '#{session_last_attached}	#{session_name}	#{window_index}	#{window_name}	#{window_active}	#{window_last_flag}' | sort -t $'\t' -k1,1rn -k2,2 -k3,3n)
 
@@ -46,18 +63,42 @@ if ((row_count == 0)); then
   exit 0
 fi
 
+padding="1,2"
+if ((row_count <= 6)); then
+  padding="1,3"
+elif ((row_count >= 14)); then
+  padding="0,1"
+fi
+
 fzf_args=(
   --reverse
   --exit-0
+  --ansi
   --delimiter=$'\t'
   --with-nth=2..
   --accept-nth=1
   --bind=enter:accept-non-empty
-  --preview="${script_dir}/session-preview.sh {1}"
-  --preview-window=right,70%,border-left,wrap
+  --layout=reverse
+  --style=minimal
+  --border=none
+  --list-border=none
+  --input-border=none
+  --header-border=none
+  --padding="${padding}"
+  --no-separator
+  --info=inline-right
+  --header=" "
+  --prompt="  Sessions  "
+  --pointer="▌"
+  --marker="•"
+  --border-label=" tmux session switcher "
+  --border-label-pos=3
+  --color="fg:#cad3f5,bg:-1,fg+:#f4dbd6,bg+:-1,hl:#8aadf4,hl+:#f5bde6,info:#6e738d,prompt:#8aadf4,pointer:#f5bde6,marker:#a6da95,spinner:#f5bde6,header:#6e738d,border:#6e738d,gutter:-1,label:#6e738d"
 )
 if [[ "${1:-}" == "--popup" ]]; then
-  fzf_args+=(--tmux=center,60%,60%,border-native)
+  popup_width="$(clamp $((max_item_width + 14)) 48 84)"
+  popup_height="$(clamp $((row_count + 6)) 11 22)"
+  fzf_args+=(--tmux="center,${popup_width},${popup_height},border-native")
 fi
 
 choice=$(printf '%s' "$rows" | fzf "${fzf_args[@]}")
