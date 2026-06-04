@@ -7,5 +7,9 @@
       }
     }
   },
-  "plugin": ["@mohak34/opencode-notifier@latest"]
+  "plugin": [
+    "@mohak34/opencode-notifier@latest",
+    "superpowers@git+https://github.com/obra/superpowers.git",
+    "@plannotator/opencode@latest"
+  ]
 }
