@@ -1,80 +1,19 @@
+#!/bin/bash
+# ── Sketchybar Configuration ──────────────────────────────────────────
+#
+# Split by responsibility:
+#   defaults.sh    — bar appearance + default item styles
+#   workspaces.sh  — aerospace workspace items
+#   left.sh        — front app, agent monitor
+#   right.sh       — volume, battery, ip, date, week, time
+#
+
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 
-##### Bar Appearance #####
-sketchybar --bar position=top height=32 blur_radius=30 color=0x40000000
+source "$CONFIG_DIR/defaults.sh"
+source "$CONFIG_DIR/workspaces.sh"
+source "$CONFIG_DIR/left.sh"
+source "$CONFIG_DIR/right.sh"
 
-##### Changing Defaults #####
-default=(
-  padding_left=5
-  padding_right=5
-  icon.font="Hack Nerd Font:Bold:12.0"
-  label.font="Hack Nerd Font:Bold:10.0"
-  icon.color=0xffffffff
-  label.color=0xffffffff
-  icon.padding_left=4
-  icon.padding_right=4
-  label.padding_left=4
-  label.padding_right=4
-)
-sketchybar --default "${default[@]}"
-
-##### Left: Aerospace Workspaces #####
-WORKSPACE_NAMES=("B" "T" "N" "M" "I" "P" "A")
-for i in "${!WORKSPACE_NAMES[@]}"
-do
-  name="${WORKSPACE_NAMES[i]}"
-  space=(
-    icon="$name"
-    icon.padding_left=7
-    icon.padding_right=7
-    icon.color=0xffaaaaaa
-    icon.highlight_color=0xffffffff
-    background.color=0xff40a02b
-    background.corner_radius=5
-    background.height=20
-    background.drawing=off
-    label.drawing=off
-    script="$PLUGIN_DIR/aerospace_workspaces.sh"
-    click_script="aerospace workspace $name"
-  )
-  sketchybar --add item space."$name" left --set space."$name" "${space[@]}"
-done
-
-sketchybar --add event aerospace_workspace_change \
-           --set space.T space.N space.M space.I space.P space.B space.A \
-                 script="$PLUGIN_DIR/aerospace_workspaces.sh" \
-           --subscribe space.T space.N space.M space.I space.P space.B space.A aerospace_workspace_change
-
-##### Left: Focused Application #####
-sketchybar --add item front_app left \
-           --set front_app icon.drawing=off script="$PLUGIN_DIR/front_app.sh" \
-           --subscribe front_app front_app_switched
-
-##### Center: Agent Monitor #####
-sketchybar --add event agent_monitor_update \
-           --add item agent_monitor center \
-           --set agent_monitor drawing=off \
-                                icon.padding_left=8 \
-                                icon.padding_right=4 \
-                                label.padding_left=2 \
-                                script="$PLUGIN_DIR/agent_monitor.sh" \
-           --subscribe agent_monitor agent_monitor_update mouse.clicked
-
-##### Right: Components #####
-sketchybar --add item volume right \
-           --set volume script="$PLUGIN_DIR/volume.sh" \
-           --subscribe volume volume_change \
-           --add item battery right \
-           --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
-           --subscribe battery system_woke power_source_change \
-            --add item ip right \
-            --set ip update_freq=60 icon=󰩟 script="$PLUGIN_DIR/ip.sh" \
-            --add item date right \
-            --set date update_freq=60 icon=󰸗 script="$PLUGIN_DIR/date.sh" \
-            --add item week right \
-            --set week update_freq=60 icon=󰃭 script="$PLUGIN_DIR/week.sh" \
-            --add item time right \
-            --set time update_freq=30 icon=󰥔 script="$PLUGIN_DIR/time.sh"
-
-##### Force all scripts to run the first time #####
+# Force all scripts to run the first time.
 sketchybar --update
