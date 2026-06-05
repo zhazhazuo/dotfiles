@@ -1,0 +1,22 @@
+# [Created by task 3.4.2 6/5/2026 22:10:58]
+data.location=$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Brain/Artifact/.task
+news.version=3.4.2
+
+uda.estimate.type=numeric
+uda.estimate.label=Estimate
+uda.estimate.default=1
+uda.estimate.values=0.5,1,1.5,2,2.5,3
+
+# To use the default location of the XDG directories,
+# move this configuration file from ~/.taskrc to ~/.config/task/taskrc and update location config as follows:
+
+#data.location=~/.local/share/task
+#hooks.location=~/.config/task/hooks
+
+_forcecolor=1
+
+# Color theme
+include $HOME/dotfiles/task/themes/catppuccin-macchiato.theme
+
+report.list.columns=id,project,priority,estimate,description,due
+report.list.labels=ID,Project,Pri,Est,Description,Due

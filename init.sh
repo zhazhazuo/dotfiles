@@ -59,3 +59,7 @@ rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
+
+# Taskwarrior
+rm -f ~/.taskrc
+ln -sf ~/dotfiles/task/.taskrc ~/.taskrc
