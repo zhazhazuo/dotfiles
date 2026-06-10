@@ -1,61 +1,61 @@
-# Catppuccin Macchiato - Information Hierarchy Theme
-# Color = information. No color = no special status.
-# Uses Catppuccin palette throughout.
+# Catppuccin Macchiato - Readability-first Theme
+# Keep the task description legible.
+# Reserve strong color for urgency and current action.
 
 rule.precedence.color=overdue,due.today,due,active,pri.A,pri.B,blocked,blocking,recurring,tagged,completed,deleted,label,header,uda.*
 
 # ─── Base ───────────────────────────────────────
 color=on
 
-# ─── Structure (Catppuccin blue, unobtrusive) ──
-color.header=bold color111
-color.footnote=color111
-color.label=bold color245
-color.label.sort=bold color245
+# ─── Structure (quiet, low-noise) ──────────────
+color.header=bold color153
+color.footnote=color245
+color.label=color245
+color.label.sort=color245
 color.warning=bold color223
 color.error=bold color204
 
 # ─── Row states ─────────────────────────────────
-color.alternate=on color236
-color.completed=color240
-color.deleted=color240
-color.blocked=color240
-color.blocking=color240
+color.alternate=on color235
+color.completed=color242
+color.deleted=color239
+color.blocked=color239
+color.blocking=bold color174
 color.tagged=
 
-# ─── Time & Urgency (Catppuccin warm colors) ───
+# ─── Time & Urgency (primary emphasis) ─────────
 color.overdue=bold color204
 color.due.today=bold color215
-color.due=color223
-color.active=bold color114
-color.recurring=color183
+color.due=color186
+color.active=bold color151
+color.recurring=color246
 
-# ─── Priority (Catppuccin gradient) ────────────
-color.pri.A=bold color204
-color.pri.B=color215
-color.pri.C=color111
-color.pri.none=color250
+# ─── Priority (secondary to due state) ─────────
+color.pri.A=bold color210
+color.pri.B=color216
+color.pri.C=color110
+color.pri.none=color246
 
-# ─── Tags (Catppuccin accent colors, subtle) ───
-color.tag=color117
+# ─── Tags (subtle unless important) ────────────
+color.tag=color246
 color.tag.work=color111
 color.tag.home=color114
 color.tag.urgent=bold color204
-color.tag.personal=color218
-color.tag.shopping=color215
+color.tag.personal=color182
+color.tag.shopping=color179
 
-# ─── Projects (Catppuccin purple family) ──────
-color.project.A=color183
-color.project.B=color147
-color.project.none=color250
+# ─── Projects (visible, not dominant) ──────────
+color.project.A=color146
+color.project.B=color110
+color.project.none=color246
 
 # ─── Reports ───────────────────────────────────
-color.summary.bar=color114 on color235
+color.summary.bar=color151 on color235
 color.summary.background=on color235
 
 # ─── Calendar ──────────────────────────────────
 color.calendar.today=bold color215
 color.calendar.overdue=bold color204
-color.calendar.due=color223
-color.calendar.weekend=color240
+color.calendar.due=color186
+color.calendar.weekend=color239
 color.calendar.weeknumber=color245
