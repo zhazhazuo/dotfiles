@@ -18,5 +18,5 @@ _forcecolor=1
 # Color theme
 include $HOME/dotfiles/task/themes/catppuccin-macchiato.theme
 
-report.list.columns=id,project,priority,estimate,description,due
-report.list.labels=ID,Project,Pri,Est,Description,Due
+report.list.columns=id,project,description,tags,priority,estimate,start,due
+report.list.labels=ID,Project,Description,Tags,Pri,Est,StartAt,Due
