@@ -17,7 +17,7 @@ local tmux_navigator = {
 }
 
 local hop = {
-	"phaazon/hop.nvim",
+	"nicksherron/hop.nvim",
 	branch = "v2", -- optional but strongly recommended
 	config = function()
 		require("hop").setup()

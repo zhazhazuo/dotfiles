@@ -65,6 +65,8 @@ local lsp_list = {
 	"quick_lint_js",
 	"emmet_ls",
 	"jinja_lsp",
+	"jsonls",
+	"yamlls",
 }
 
 for _, lsp in ipairs(lsp_list) do
@@ -163,6 +165,32 @@ vim.lsp.config.jinja_lsp = {
 	on_init = M.init,
 	filetypes = with_extra_filetypes("jinja_lsp", { "hubl" }),
 	root_markers = { "jinja-lsp.toml", "pyproject.toml", "Cargo.toml", ".git" },
+}
+
+-- JSON/YAML schemas via SchemaStore.nvim
+vim.lsp.config.jsonls = {
+	capabilities = capabilities,
+	on_init = M.init,
+	settings = {
+		json = {
+			schemas = require("schemastore").json.schemas(),
+			validate = { enable = true },
+		},
+	},
+}
+
+vim.lsp.config.yamlls = {
+	capabilities = capabilities,
+	on_init = M.init,
+	settings = {
+		yaml = {
+			schemaStore = {
+				enable = false,
+				url = "",
+			},
+			schemas = require("schemastore").yaml.schemas(),
+		},
+	},
 }
 
 -- Enable all configured LSP servers
