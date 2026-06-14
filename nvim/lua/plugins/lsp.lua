@@ -175,6 +175,7 @@ local lspconfig = {
   dependencies = {
     "williamboman/mason.nvim",
     "saghen/blink.cmp",
+    "b0o/SchemaStore.nvim",
   },
   config = function()
     require("config.lspconfig")
@@ -194,6 +195,8 @@ local mason_lsp_servers = {
   "jinja_lsp",
   "tsgo",
   "ts_ls",
+  "jsonls",
+  "yamlls",
 }
 
 local mason_packages = {

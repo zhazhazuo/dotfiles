@@ -113,3 +113,5 @@ map("v", "<leader>cr", function()
   vim.fn.setreg("+", text)
   print("Copied range: " .. text)
 end, { desc = "Copy file range" })
+
+map("n", "<leader>zm", '<cmd>MarkdownWritingMode<CR>', { desc = "ZenMode for Markdown" })
