@@ -52,7 +52,7 @@ unset_record() {
 	local id="$1" prefix suffix
 
 	prefix="@agent_monitor_${id}"
-	for suffix in name state label pane session_id updated_at; do
+	for suffix in name state label pane session_id updated_at turn_completed_at; do
 		tmux_unset_global_option "${prefix}_${suffix}"
 	done
 }

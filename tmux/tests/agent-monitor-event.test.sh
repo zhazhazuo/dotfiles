@@ -93,6 +93,9 @@ export TMUX_OPTION_STORE="$STORE"
 export TMUX_PANE="%9"
 export TMUX_WINDOW_NAME="agent-window"
 export AGENT_MONITOR_NOW="100"
+export AGENT_MONITOR_STATE_FILE="$TMP_DIR/agent-state.tsv"
+export AGENT_MONITOR_SKETCHYBAR_CACHE="$TMP_DIR/sketchybar-items.cache"
+export AGENT_MONITOR_SKIP_SKETCHYBAR=1
 
 printf '%s\n' '{"session_id":"session-1","cwd":"/tmp/project"}' | "$SCRIPT" codex SessionStart
 assert_equal "9" "$(tmux show-options -gqv @agent_monitor_instances)" "registers pane as canonical instance id"
@@ -119,6 +122,11 @@ printf '@agent_monitor_instances\t9 9 other 9\n' >"$STORE"
 printf '%s\n' '{"session_id":"session-1"}' | "$SCRIPT" codex PreToolUse
 assert_equal "9 other" "$(tmux show-options -gqv @agent_monitor_instances)" "deduplicates existing instance list"
 assert_equal "running" "$(tmux show-options -gqv @agent_monitor_9_state)" "tool hooks reconcile running state"
+
+updated_before="$(tmux show-options -gqv @agent_monitor_9_updated_at)"
+printf '%s\n' '{"session_id":"session-1"}' | "$SCRIPT" codex PreToolUse
+assert_equal "running" "$(tmux show-options -gqv @agent_monitor_9_state)" "repeat tool use stays running"
+assert_equal "$updated_before" "$(tmux show-options -gqv @agent_monitor_9_updated_at)" "repeat tool use is a no-op fast path"
 
 printf '%s\n' '{"session_id":"session-1","tool_name":"functions.request_user_input"}' | "$SCRIPT" codex PreToolUse
 assert_equal "needs-help" "$(tmux show-options -gqv @agent_monitor_9_state)" "ask-question tool needs help"

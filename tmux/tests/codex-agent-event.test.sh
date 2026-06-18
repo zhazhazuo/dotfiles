@@ -53,6 +53,9 @@ PATH="$TMP_DIR:$PATH"
 export TMUX_PANE="%1"
 export TMUX_LOG="$TMP_DIR/tmux.log"
 export AGENT_MONITOR_NOW=1000
+export AGENT_MONITOR_STATE_FILE="$TMP_DIR/agent-state.tsv"
+export AGENT_MONITOR_SKETCHYBAR_CACHE="$TMP_DIR/sketchybar-items.cache"
+export AGENT_MONITOR_SKIP_SKETCHYBAR=1
 
 "$SCRIPT" UserPromptSubmit
 expected='set-option -gq @agent_monitor_instances 1
