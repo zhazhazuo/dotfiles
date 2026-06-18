@@ -43,6 +43,14 @@ agent_process_exists() {
 	tty="${tty#/dev/}"
 
 	processes="$(ps -t "$tty" -o comm= -o command= 2>/dev/null)" || return 0
+
+	case "$name" in
+	cursor)
+		printf '%s\n' "$processes" | grep -Eiq 'cursor-agent/versions/|\.local/bin/agent'
+		return $?
+		;;
+	esac
+
 	escaped="$(regex_escape "$name")"
 	printf '%s\n' "$processes" | grep -Eiq "(^|[[:space:]/])${escaped}([[:space:]]|$)"
 }
@@ -70,6 +78,7 @@ prune_instance_options() {
 	tmux_unset_global_option "${prefix}_pane"
 	tmux_unset_global_option "${prefix}_session_id"
 	tmux_unset_global_option "${prefix}_updated_at"
+	tmux_unset_global_option "${prefix}_turn_completed_at"
 }
 
 refresh_status() {

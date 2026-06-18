@@ -15,7 +15,7 @@ state_file() {
 		return 0
 	fi
 
-	printf '%s/agent-monitor.%s.tsv' "${TMPDIR:-/tmp}" "${UID:-$(id -u)}"
+	printf '%s/agent-monitor/agent-monitor.%s.tsv' "${XDG_CACHE_HOME:-${HOME}/.cache}" "${UID:-$(id -u)}"
 }
 
 normalize_field() {
@@ -93,6 +93,10 @@ write_state() {
 }
 
 trigger_sketchybar() {
+	if [[ -n "${AGENT_MONITOR_SKIP_SKETCHYBAR:-}" ]]; then
+		return 0
+	fi
+
 	if command -v sketchybar >/dev/null 2>&1; then
 		(sketchybar --trigger agent_monitor_update >/dev/null 2>&1 || true) &
 	fi

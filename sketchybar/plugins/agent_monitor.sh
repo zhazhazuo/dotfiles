@@ -8,7 +8,7 @@ state_file() {
 		return 0
 	fi
 
-	printf '%s/agent-monitor.%s.tsv' "${TMPDIR:-/tmp}" "${UID:-$(id -u)}"
+	printf '%s/agent-monitor/agent-monitor.%s.tsv' "${XDG_CACHE_HOME:-${HOME}/.cache}" "${UID:-$(id -u)}"
 }
 
 priority_for_state() {

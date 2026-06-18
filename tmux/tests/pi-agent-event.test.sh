@@ -95,6 +95,9 @@ export TMUX_OPTION_STORE="$STORE"
 export TMUX_PANE="%9"
 export TMUX_WINDOW_NAME="pi-session"
 export AGENT_MONITOR_NOW="200"
+export AGENT_MONITOR_STATE_FILE="$TMP_DIR/agent-state.tsv"
+export AGENT_MONITOR_SKETCHYBAR_CACHE="$TMP_DIR/sketchybar-items.cache"
+export AGENT_MONITOR_SKIP_SKETCHYBAR=1
 
 # ── Generic event mapping (used by Pi extension) ──
 

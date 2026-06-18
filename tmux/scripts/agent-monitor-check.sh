@@ -206,31 +206,62 @@ reconcile_instance_list() {
 	tmux_set_global_option @agent_monitor_instances "$next"
 }
 
+should_prune() {
+	case "$event_name" in
+	SessionStart|SessionResume|Stop|TurnComplete) return 0 ;;
+	esac
+
+	return 1
+}
+
+state_is_stable() {
+	case "$1" in
+	idle|running|needs-attention|needs-help) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
 main() {
-	local id state label session_id now prefix current_state
+	local id state label session_id now prefix current_state state_changed
 
 	id="$(instance_id)"
 	[[ -z "$id" ]] && id="$agent_name"
 
 	state="$(state_for_event)"
+	prefix="@agent_monitor_${id}"
+	current_state="$(tmux_global_option "${prefix}_state")"
+
+	if [[ -n "$current_state" && "$current_state" == "$state" ]] && state_is_stable "$state"; then
+		exit 0
+	fi
+
 	label="$(window_label)"
 	session_id="$(json_string_field session_id)"
 	now="${AGENT_MONITOR_NOW:-$(date +%s)}"
-	prefix="@agent_monitor_${id}"
+	state_changed=false
 
-	prune_stale_instances
+	if should_prune; then
+		prune_stale_instances
+	fi
 	reconcile_instance_list "$id"
 	tmux_set_global_option "${prefix}_name" "$agent_name"
-	current_state="$(tmux_global_option "${prefix}_state")"
 	if [[ "$current_state" != "$state" ]]; then
 		tmux_set_global_option "${prefix}_state" "$state"
+		state_changed=true
 	fi
 	tmux_set_global_option "${prefix}_label" "$label"
 	tmux_set_global_option "${prefix}_pane" "${TMUX_PANE:-}"
 	tmux_set_global_option "${prefix}_session_id" "$session_id"
 	tmux_set_global_option "${prefix}_updated_at" "$now"
+	case "$state" in
+	needs-attention|needs-help)
+		tmux_set_global_option "${prefix}_turn_completed_at" "$now"
+		;;
+	esac
 	notify_if_attention_transition "$current_state" "$state" "$label"
-	refresh_status
+	if [[ "$state_changed" == true || -z "$current_state" ]]; then
+		refresh_status
+	fi
 }
 
 main
