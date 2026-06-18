@@ -8,7 +8,7 @@ Run these checks in order. If ALL three return no result, the gap is confirmed.
 
 ### Check 1 — Feature Map
 
-Open `./docs/01_maps/feature_map.md`.
+Open `./repoWiki/01_maps/feature_map.md`.
 
 - Search for the feature name or related keyword
 - If no entry found → gap candidate
@@ -17,7 +17,7 @@ Open `./docs/01_maps/feature_map.md`.
 
 ### Check 2 — Module Files
 
-Scan `./docs/04_modules/` directory.
+Scan `./repoWiki/04_modules/` directory.
 
 - Look for a file covering the module in question
 - If no file found or file lacks the relevant section → gap candidate
@@ -26,7 +26,7 @@ Scan `./docs/04_modules/` directory.
 
 ### Check 3 — File Index
 
-Open `./docs/03_index/file_index.md`.
+Open `./repoWiki/03_index/file_index.md`.
 
 - Search for the file path(s) related to the topic
 - If path is absent → gap confirmed
@@ -37,7 +37,7 @@ Open `./docs/03_index/file_index.md`.
 
 ### Check 4 — Symbols
 
-Open `./docs/05_symbols/<module-slug>.md`.
+Open `./repoWiki/05_symbols/<module-slug>.md`.
 
 - Search for the function or symbol name
 - If file does not exist or function entry is not found → symbol gap confirmed

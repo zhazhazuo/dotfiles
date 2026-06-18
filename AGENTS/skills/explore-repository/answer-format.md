@@ -38,7 +38,7 @@ Use when the question is about a specific function or symbol.
 
 **Sources**
 → Declare exactly where each part came from:
-- `[KB]` — from `./docs/05_symbols/<slug>.md` (cite file path)
+- `[KB]` — from `./repoWiki/05_symbols/<slug>.md` (cite file path)
 - `[Code]` — read from source code (cite file path and line number)
 
 ---
@@ -61,7 +61,7 @@ Use when the question is about a file, module, or feature.
 
 **Sources**
 → Declare exactly where each part of the answer came from:
-- `[KB]` — information taken directly from a `./docs/` file (cite the file path)
+- `[KB]` — information taken directly from a `./repoWiki/` file (cite the file path)
 - `[Code]` — information read from source code (cite the file path and line number)
 - `[KB+Code]` — KB stated it, code was verified against it
 
@@ -84,14 +84,14 @@ Two distinct paths depending on what is missing.
 
 ### File / Module / Feature not in KB → `gap_type = topic`
 
-1. Confirm the gap: check `./docs/RUNBOOK.md` and the relevant `04_modules/` or `06_features/` directory — if no entry exists, the gap is confirmed
+1. Confirm the gap: check `./repoWiki/RUNBOOK.md` and the relevant `04_modules/` or `06_features/` directory — if no entry exists, the gap is confirmed
 2. Trigger `refine-knowledge-base` with `gap_type = topic`
 3. Wait for refine to complete, then return to navigation and compose the answer from the newly written KB file
 4. Do NOT read source code yourself — the refine subagent handles that
 
 ### Symbol / Function not in KB → `gap_type = symbol`
 
-1. Confirm the gap: check `./docs/05_symbols/` for the symbol slug — if absent, gap is confirmed
+1. Confirm the gap: check `./repoWiki/05_symbols/` for the symbol slug — if absent, gap is confirmed
 2. Load `verification-protocol.md` and read the minimum source file(s) needed to answer
 3. Compose the answer immediately using `[Code]` source tags
 4. Trigger `refine-knowledge-base` with `gap_type = symbol, findings = <your findings>` so the KB is updated for future queries
@@ -116,9 +116,9 @@ Question: "What does `src/containers/paint-editor-wrapper.jsx` do?"
 - `src/reducers/editor-tab.js` → tab selection state this container reads
 
 **Sources**
-- Big Picture → `[KB]` `./docs/04_modules/containers.md`
-- Context → `[KB+Code]` `./docs/06_features/paint-editor.md` + verified at `src/containers/paint-editor-wrapper.jsx:42`
-- Range → `[KB]` `./docs/04_modules/containers.md` (sibling file list)
+- Big Picture → `[KB]` `./repoWiki/04_modules/containers.md`
+- Context → `[KB+Code]` `./repoWiki/06_features/paint-editor.md` + verified at `src/containers/paint-editor-wrapper.jsx:42`
+- Range → `[KB]` `./repoWiki/04_modules/containers.md` (sibling file list)
 
 ---
 
@@ -139,5 +139,5 @@ Question: "What does `buildManifest()` do?"
 → Throws if required fields (name, version) are absent; does not write to disk
 
 **Sources**
-- Chain → `[KB]` `./docs/05_symbols/publish-skill.md`
-- Behavior, Signature, Constraints → `[KB]` `./docs/05_symbols/publish-skill.md`
+- Chain → `[KB]` `./repoWiki/05_symbols/publish-skill.md`
+- Behavior, Signature, Constraints → `[KB]` `./repoWiki/05_symbols/publish-skill.md`

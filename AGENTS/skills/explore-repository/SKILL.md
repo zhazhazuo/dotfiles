@@ -10,7 +10,7 @@ Follow this flowchart exactly. Every node is mandatory — do not skip or shortc
 
 ```mermaid
 flowchart TD
-    START([Question about codebase]) --> META{META.md exists?\n./docs/META.md}
+    START([Question about codebase]) --> META{META.md exists?\n./repoWiki/META.md}
 
     META -->|No| INIT[Trigger initialize-knowledge-base\nStop here — do not continue]
 
@@ -76,7 +76,7 @@ Follow this loop exactly — do not skip steps:
 
 ```
 0. Run version-check.md — verify KB is current before reading anything
-1. Open ./docs/RUNBOOK.md
+1. Open ./repoWiki/RUNBOOK.md
 2. Navigate to the relevant KB file using navigation-guide.md
 3. Compose answer using answer-format.md
 4. If you need to touch code or verify behavior → run verification-protocol.md first
@@ -89,7 +89,7 @@ Follow this loop exactly — do not skip steps:
 **NEVER open source code before completing steps 0–3.**
 **NEVER open broad source areas when a KB path or confirmed gap gives a smaller scope.**
 Never open RUNBOOK.md before completing step 0.
-explore-repository NEVER writes to ./docs/ directly — all writes go through refine-knowledge-base.
+explore-repository NEVER writes to ./repoWiki/ directly — all writes go through refine-knowledge-base.
 
 ---
 
@@ -97,7 +97,7 @@ explore-repository NEVER writes to ./docs/ directly — all writes go through re
 
 ### Load `version-check.md` first — before navigation-guide.md or any KB file.
 
-It compares `last_commit` from META.md against the current HEAD using `git diff --name-only last_commit HEAD -- ':!docs'` to detect whether source code (excluding docs/) has changed since the last sync.
+It compares `last_commit` from META.md against the current HEAD using `git diff --name-only last_commit HEAD -- ':!repoWiki'` to detect whether source code (excluding repoWiki/) has changed since the last sync.
 If changes are found, it checks whether changed files are referenced in KB index files (`03_index/file_index.md` or `04_modules/*.md`) or look like new source files that should be indexed.
 KB-covered source changes and new app source files trigger a refine; generated/cache/noise files can be ignored.
 If META.md does not exist → skip and trigger `initialize-knowledge-base` instead.

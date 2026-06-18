@@ -1,6 +1,6 @@
 ---
 name: refine-knowledge-base
-description: Use when the user asks about a feature, module, or code path that is missing or incomplete in ./docs/
+description: Use when the user asks about a feature, module, or code path that is missing or incomplete in ./repoWiki/
 allowed-tools: Read, Grep
 ---
 
@@ -8,7 +8,7 @@ allowed-tools: Read, Grep
 
 Load this skill when:
 - The user asks about a specific feature, module, or code path
-- AND you cannot fully answer from `./docs/` (entry is absent or incomplete)
+- AND you cannot fully answer from `./repoWiki/` (entry is absent or incomplete)
 
 ---
 

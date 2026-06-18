@@ -12,7 +12,7 @@ subagent prompt constraints below. Do not broaden scope during fallback.
 
 ## Step 1 — Confirm Gap
 
-Use `gap-detection.md` to verify the topic is missing or incomplete in `./docs/`.
+Use `gap-detection.md` to verify the topic is missing or incomplete in `./repoWiki/`.
 
 If fully documented → stop, answer from existing docs.
 
@@ -128,7 +128,7 @@ From the subagent output (or provided findings), apply `knowledge-base-writer` r
 
 If gap is partial, update only the missing sections of existing files.
 
-refine-knowledge-base is the ONLY skill that writes to ./docs/ — never delegate writes elsewhere.
+refine-knowledge-base is the ONLY skill that writes to ./repoWiki/ — never delegate writes elsewhere.
 
 Follow `knowledge-base-writer/file-generation-rules.md` for format.
 Follow `knowledge-base-writer/output-style.md` for tone.
@@ -139,13 +139,13 @@ Follow `knowledge-base-writer/output-style.md` for tone.
 
 If new files were created:
 
-- Add link to `./docs/RUNBOOK.md` under the appropriate section
+- Add link to `./repoWiki/RUNBOOK.md` under the appropriate section
 
 ---
 
 ## Step 6 — Update META (main agent)
 
-In `./docs/META.md`:
+In `./repoWiki/META.md`:
 
 Run:
 

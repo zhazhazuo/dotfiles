@@ -3,7 +3,7 @@
 ## When to Verify
 
 Verify KB against code when:
-- You are about to make a change to a module described in `./docs/`
+- You are about to make a change to a module described in `./repoWiki/`
 - The KB description seems inconsistent with other KB files
 - The user's question implies behavior not matching the KB
 
