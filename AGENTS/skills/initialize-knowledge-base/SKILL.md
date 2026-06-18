@@ -1,12 +1,12 @@
 ---
 name: initialize-knowledge-base
-description: Use when ./docs/RUNBOOK.md does not exist and a knowledge base needs to be generated from scratch for the current project
+description: Use when ./repoWiki/RUNBOOK.md does not exist and a knowledge base needs to be generated from scratch for the current project
 allowed-tools: Read, Grep
 ---
 
 ## Trigger Condition
 
-Check for `./docs/RUNBOOK.md`. If the file does not exist, run this skill now.
+Check for `./repoWiki/RUNBOOK.md`. If the file does not exist, run this skill now.
 
 ---
 
@@ -31,7 +31,7 @@ Main agent writing steps: 3, 4, 8, 9
 
 ### Load `execution-plan.md` immediately after reading this file.
 
-It contains the 9 ordered steps you must follow to build the full `./docs/` directory.
+It contains the 9 ordered steps you must follow to build the full `./repoWiki/` directory.
 Without it you have no procedure — do not begin writing any file before loading it.
 
 ### Load `knowledge-base-writer` sub-files as directed by execution-plan.md.

@@ -84,7 +84,7 @@ Must include:
 - **Entry Points** — key files agents should open first
 - **Key Files** — path → role
 - **Constraints** — rules or invariants to preserve
-- **Symbols** — `→ docs/05_symbols/<slug>.md` (omit if no symbols file exists yet)
+- **Symbols** — `→ repoWiki/05_symbols/<slug>.md` (omit if no symbols file exists yet)
 - **Scope Table** — REQUIRED markdown table with columns:
 
 | Layer | Item | Description |
@@ -106,8 +106,8 @@ Required header:
 ```
 # Symbols: <module-name>
 
-Module: → docs/04_modules/<slug>.md
-Feature: → docs/06_features/<kebab-name>.md
+Module: → repoWiki/04_modules/<slug>.md
+Feature: → repoWiki/06_features/<kebab-name>.md
 ```
 
 Per source file section:

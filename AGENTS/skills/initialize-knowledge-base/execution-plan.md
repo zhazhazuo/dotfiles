@@ -3,7 +3,7 @@
 ## Roles
 
 - **Subagent**: reads source code, returns structured findings — keeps raw code out of main context
-- **Main agent**: receives subagent output, writes all KB files to `./docs/`
+- **Main agent**: receives subagent output, writes all KB files to `./repoWiki/`
 
 ---
 
@@ -184,11 +184,11 @@ Use `knowledge-base-writer/meta-template.md` as the template.
 Run:
 ```
 git rev-parse --short HEAD   → last_commit
-git rev-parse HEAD:docs      → docs_tree_hash
+git rev-parse HEAD:repoWiki      → repoWiki_tree_hash
 ```
 
 - Set `generated` and `last_synced` to today's ISO date
 - Set `schema_version` to `1`
 - Use `"init"` for both hash fields if no commits exist yet
-- Use `"untracked"` for `docs_tree_hash` if `./docs/` is not yet committed
-- Write to `./docs/META.md`
+- Use `"untracked"` for `repoWiki_tree_hash` if `./repoWiki/` is not yet committed
+- Write to `./repoWiki/META.md`

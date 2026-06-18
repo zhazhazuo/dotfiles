@@ -37,7 +37,7 @@ Do NOT summarize commit messages — read the actual code.
 
 ## Step 4 — Create Feature Document
 
-Create `./docs/06_features/<kebab-name>.md` using `feature-doc-template.md`.
+Create `./repoWiki/06_features/<kebab-name>.md` using `feature-doc-template.md`.
 
 Fill in all sections from the code you read in Step 3.
 
@@ -47,14 +47,14 @@ Fill in all sections from the code you read in Step 3.
 
 Update both index files:
 
-- `./docs/01_maps/feature_map.md` — add entry: `<feature name> → ./06_features/<kebab-name>.md`
-- `./docs/03_index/file_index.md` — add any new file paths identified in Step 2
+- `./repoWiki/01_maps/feature_map.md` — add entry: `<feature name> → ./06_features/<kebab-name>.md`
+- `./repoWiki/03_index/file_index.md` — add any new file paths identified in Step 2
 
 ---
 
 ## Step 6 — Update RUNBOOK
 
-In `./docs/RUNBOOK.md`:
+In `./repoWiki/RUNBOOK.md`:
 
 - Add link under the **Features** section: `- [<Feature Name>](./06_features/<kebab-name>.md)`
 
@@ -62,13 +62,13 @@ In `./docs/RUNBOOK.md`:
 
 ## Step 7 — Update META
 
-In `./docs/META.md`:
+In `./repoWiki/META.md`:
 
 Run:
 ```
 git rev-parse --short HEAD   → last_commit
-git rev-parse HEAD:docs      → docs_tree_hash
+git rev-parse HEAD:repoWiki      → repoWiki_tree_hash
 ```
 
 - Set `last_synced` to today's ISO date
-- Update `last_commit` and `docs_tree_hash`
+- Update `last_commit` and `repoWiki_tree_hash`

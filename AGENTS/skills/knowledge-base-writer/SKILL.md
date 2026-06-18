@@ -1,6 +1,6 @@
 ---
 name: knowledge-base-writer
-description: Shared writing rules for all knowledge base skills — load this before writing any file to ./docs/
+description: Shared writing rules for all knowledge base skills — load this before writing any file to ./repoWiki/
 allowed-tools: Read, Grep
 ---
 
@@ -27,10 +27,10 @@ Read the constraints below before touching any file, then load sub-files as dire
 
 ## Output Structure
 
-All files go under `./docs/`:
+All files go under `./repoWiki/`:
 
 ```
-docs/
+repoWiki/
 ├── META.md
 ├── RUNBOOK.md
 ├── 00_overview/
@@ -78,7 +78,7 @@ Enforce these on every file you write — no exceptions:
 
 ### Load `file-generation-rules.md` before writing any file.
 
-It defines the required sections for every file type in `./docs/` (00_overview through 06_features).
+It defines the required sections for every file type in `./repoWiki/` (00_overview through 06_features).
 Without it you will produce files with missing sections — especially the mandatory Scope Table and Mermaid flowchart.
 
 ### Load `heuristics.md` when scanning an unfamiliar codebase.
@@ -96,12 +96,12 @@ Skipping it produces diagrams that are either missing where required or overly c
 It enforces the arrow-and-short-phrase style used across all KB files.
 If you skip it, your output will use paragraph prose instead of the structured format the rest of the KB expects.
 
-### Load `meta-template.md` when creating or updating `./docs/META.md`.
+### Load `meta-template.md` when creating or updating `./repoWiki/META.md`.
 
 It defines the exact fields (`schema_version`, `generated`, `last_synced`, `last_commit`) and how to capture the commit SHA.
 Do not write META.md from memory — field names and update rules are defined there.
 
-### Load `RUNBOOK-template.md` only when writing or updating `./docs/RUNBOOK.md`.
+### Load `RUNBOOK-template.md` only when writing or updating `./repoWiki/RUNBOOK.md`.
 
 It is the exact template for the RUNBOOK, including the metadata block and navigation sections.
 Do not write RUNBOOK.md from memory — always use this template to ensure consistency.
