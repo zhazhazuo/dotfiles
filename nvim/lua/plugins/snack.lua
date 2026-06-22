@@ -128,25 +128,11 @@ local config = {
 		},
 		-- picker
 		{
-			"<leader><leader>",
-			function()
-				Snacks.picker.smart()
-			end,
-			desc = "Smart Find Files",
-		},
-		{
 			"<leader>n",
 			function()
 				Snacks.picker.notifications()
 			end,
 			desc = "Notification History",
-		},
-		{
-			"<leader>ff",
-			function()
-				Snacks.picker.files()
-			end,
-			desc = "Find Files",
 		},
 		{
 			"<leader>fb",
@@ -156,25 +142,11 @@ local config = {
 			desc = "Buffers",
 		},
 		{
-			"<leader>/",
-			function()
-				Snacks.picker.grep()
-			end,
-			desc = "Grep",
-		},
-		{
 			"<leader>fr",
 			function()
 				Snacks.picker.recent()
 			end,
 			desc = "Recent",
-		},
-		{
-			"<leader>fg",
-			function()
-				Snacks.picker.git_files()
-			end,
-			desc = "Find Git Files",
 		},
 		{
 			"<leader>gh",
@@ -275,14 +247,6 @@ local config = {
 				Snacks.picker.grep_buffers()
 			end,
 			desc = "Grep Open Buffers",
-		},
-		{
-			"<leader>sw",
-			function()
-				Snacks.picker.grep_word()
-			end,
-			desc = "Visual selection or word",
-			mode = { "n", "x" },
 		},
 		{
 			"<leader>sd",
