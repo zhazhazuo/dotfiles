@@ -180,6 +180,10 @@ local render_markdown = {
 				},
 			},
 		})
+
+		vim.api.nvim_create_user_command("MarkdownToggle", function()
+			require("render-markdown").toggle()
+		end, { desc = "Toggle markdown preview/raw mode" })
 	end,
 }
 
