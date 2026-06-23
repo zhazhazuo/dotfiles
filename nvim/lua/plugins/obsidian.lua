@@ -36,6 +36,7 @@ local obsidian = {
 		completion = {
 			nvim_cmp = false,
 		},
+		disable_frontmatter = true,
 	},
 }
 
