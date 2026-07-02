@@ -1,0 +1,46 @@
+{
+  "status": "failed",
+  "run_id": "20260702-175409-92893",
+  "target_files": {
+    "allowed": [
+      "peashooter.sh"
+    ],
+    "creatable": [],
+    "deletable": [],
+    "required_changes": []
+  },
+  "changed_files": [
+    "fish/fish_variables",
+    "ghostty/config",
+    "git/.gitconfig",
+    "instructions/AGENT_MONITOR_INTEGRATION.md",
+    "nvim/.loop-data/runs/metadata.jsonl",
+    "nvim/lazy-lock.json",
+    "nvim/lua/plugins/formatter.lua",
+    "nvim/lua/plugins/markdown.lua",
+    "nvim/lua/plugins/obsidian.lua",
+    "nvim/spell/en.utf-8.add",
+    "nvim/spell/en.utf-8.add.spl",
+    "pi/settings.json",
+    "task/.taskrc"
+  ],
+  "created_files": [
+    ".agent-runs/20260702-175409-92893.log",
+    ".agent-runs/edit.lock",
+    ".loop-data/runs/metadata.jsonl",
+    "SKILL.md",
+    "peashooter.sh",
+    "references/batch-and-streaming.md",
+    "references/failure-and-retry.md",
+    "references/prompting.md",
+    "references/safety.md",
+    "references/setup.md",
+    "references/validation.md",
+    "references/wrapper-contract.md"
+  ],
+  "deleted_files": [],
+  "renamed_files": [],
+  "log_file": ".agent-runs/20260702-175409-92893.log",
+  "legacy_mode": 0,
+  "exit_code": 130
+}
