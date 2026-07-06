@@ -46,6 +46,7 @@ local render_markdown = {
 		set_hl(0, "RenderMarkdownH6Bg", { bg = palette.bg_darker })
 
 		require("render-markdown").setup({
+			enabled = false,
 			completions = {
 				lsp = { enabled = true },
 			},
