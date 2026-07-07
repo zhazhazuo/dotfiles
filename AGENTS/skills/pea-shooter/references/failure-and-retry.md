@@ -6,6 +6,14 @@ Load this file on the first non-`success` report.
 
 Read the JSON report first.
 
+Use the report's structured guidance before deciding to retry:
+
+- `retryable`
+- `suggested_actions`
+- `last_successful_phase`
+- `failure_reason`
+- `agent_silent_seconds`
+
 Open the full log at `.agent-runs/<run-id>.log` only when:
 
 - the report's reason is not enough to act on,
@@ -61,6 +69,9 @@ specific error and the file/line.
   the edit across more calls),
 - raise `AGENT_TIMEOUT_SECONDS` for the environment if the change
   is genuinely large.
+
+Before retrying, inspect `.agent-runs/<run-id>.status.json` to see whether the
+wrapper was still receiving agent output or whether the run had gone silent.
 
 Do not paste a timeout message into a retry prompt.
 

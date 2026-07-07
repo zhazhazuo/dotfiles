@@ -1,12 +1,15 @@
 ---
 name: pea-shooter
-description: Use when delegating a discrete, already-scoped file-edit task to a CLI subagent with deterministic post-run validation.
+description: use this skill when you need a subagent to do a update task.
 ---
 
 # Pea Shooter
 
 Use this skill to hand off one focused bounded edit task to `./peashooter.sh`.
 Do not call the underlying `agent` CLI directly.
+
+In Codex, run `peashooter.sh` outside the sandbox. The wrapper uses Cursor
+`agent -p --yolo`, which is unreliable under `CODEX_SANDBOX=seatbelt`.
 
 ## When to Use
 
@@ -29,11 +32,14 @@ Do not use this skill for:
 
 1. Load [references/wrapper-contract.md](references/wrapper-contract.md).
 2. Load [references/prompting.md](references/prompting.md).
-3. Write a concrete one-line instruction for the target file set.
+3. Prefer `--manifest` when the task already has explicit file boundaries and validation commands.
+4. Write a concrete one-line instruction for the target file set when the manifest does not already carry it.
+5. Declare `--validate` checks up front when the correct project validation commands are already known.
 4. Run `./peashooter.sh ...`.
-5. Read the JSON report first.
-6. If the report is `success`, run project-level validation from [references/validation.md](references/validation.md).
-7. If the report is not `success`, load [references/failure-and-retry.md](references/failure-and-retry.md) and inspect the full log only if needed.
+6. Read the JSON report first.
+7. When the run is long, inspect the status sidecar before opening the full log.
+8. If `project_validation.status` is `skipped`, run the missing project checks from [references/validation.md](references/validation.md) or rerun with explicit validation declarations.
+9. If the report is not `success` or `project_validation.status` is `failed`, load [references/failure-and-retry.md](references/failure-and-retry.md) and inspect the full log only if needed.
 
 ## Usage Examples
 
@@ -66,6 +72,13 @@ Use bounded creation when the task needs a new file:
   --require-change src/example-helper.ts \
   -- \
   "Extract the shared helper from example.ts into example-helper.ts and update example.ts to consume it. Preserve runtime behavior and exports."
+```
+
+Use manifest mode when the planning step already knows the exact file and validation contract:
+
+```bash
+./peashooter.sh \
+  --manifest task.json
 ```
 
 ## Additional References

@@ -41,6 +41,11 @@ The agent chooses. The rule is: every project check that would catch a
 regression in the modified code must run before the agent considers
 the edit done. There is no fixed list.
 
+When the correct checks are already known, prefer declaring them up front at
+wrapper invocation time with `--validate` (and `--validation-kind` when useful)
+or via a manifest. The wrapper will then report those results in
+`project_validation`.
+
 If a check has an expected-but-unrelated diff (a snapshot update, a
 generated file, a lockfile, formatter output), the agent must extend
 the wrapper contract up front with `--allow` / `--create` / `--delete`,
@@ -61,8 +66,10 @@ changes as `validation_failed`.
 | snapshot, generated files | project | agent |
 | integration, smoke | project | agent |
 
-If the wrapper is extended to run extra checks, project-specific
-validation still remains outside the wrapper by default.
+If `project_validation.status` is `skipped`, the task is still incomplete from
+an orchestration perspective even though the wrapper returned `status: "success"`.
+Either run the missing checks manually or rerun the wrapper with explicit
+validation declarations.
 
 ## When a project check fails
 

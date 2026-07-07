@@ -57,6 +57,11 @@ Streaming is only relevant when the wrapper itself needs progress
 monitoring, heartbeats, or timeout logic. That code lives inside the
 wrapper; the agent does not change to enable it.
 
+For long-running calls, inspect the status sidecar at
+`.agent-runs/<run-id>.status.json` before opening the full log. The sidecar is
+the wrapper's lifecycle summary and includes phase, heartbeat timestamps,
+elapsed time, and timeout budget.
+
 If a future version of the wrapper exposes streamed output, the
 invocation will look like:
 
@@ -69,8 +74,8 @@ agent -p --force \
 
 The agent should not consume every streamed message. The wrapper
 summarises progress internally and returns the same compact final
-report. Streaming is for the wrapper's bookkeeping, not for the
-agent's.
+report plus the status sidecar. Streaming is for the wrapper's
+bookkeeping, not for the agent's.
 
 ## Concurrency
 
