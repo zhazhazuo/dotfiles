@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+write_json_file() {
+	local path="$1"
+	local payload="$2"
+	printf '%s\n' "$payload" >"$path"
+}
+
+now_epoch() {
+	date +%s
+}
+
 json_array_from_lines() {
 	jq -R -s 'split("\n") | map(select(length > 0))'
 }
