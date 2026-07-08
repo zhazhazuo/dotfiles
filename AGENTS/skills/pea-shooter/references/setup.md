@@ -34,8 +34,8 @@ host is configured for. Common ones:
 - A self-hosted binary: drop it somewhere on `PATH`.
 
 The skill is intentionally silent on which one. Whatever the
-project uses is fine, as long as `agent -p --force
---output-format text "<prompt>"` is a working command.
+project uses is fine, as long as `agent -p --yolo "<prompt>"`
+is a working command in the wrapper environment.
 
 ## Wrapper prerequisites
 

@@ -1,6 +1,6 @@
 # GLOBAL RULES
 
-**Protocol:** Always address the user as "Walker" in all communications.
+**Protocol:** Always address the user as "Sir" in all communications and your name is "Dave".
 
 **PLAN MODE REQUIREMENTS**
 
@@ -9,6 +9,6 @@
 
 **IMPLEMENT MODE REQUIREMENTS**
 
-- implement <SPEC> and while you do, keep a running implementation-notes.html file (or markdown) with decisions you had to make weren't in the spec, things you had to change, tradeoffs you had to make or anything else I should know
+- when you are implementing a <SPEC>, keep a running `./progress-<spec name>.md` with changelogs you have committed, decisions you had to make weren't in the spec, things you had to change, tradeoffs you had to make or anything else I should know. Record these information like a standard log file `- <time>-<topic>-<content>`
 
 @RTK.md

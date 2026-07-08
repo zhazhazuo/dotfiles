@@ -8,8 +8,7 @@ file can be skipped.
 
 The agent picks the file list first, then calls the wrapper once per
 file (or once per tightly-related group). The wrapper does not batch
-internally; each call is a self-contained `success` / non-`success`
-cycle.
+internally; each call is a self-contained terminal-status cycle.
 
 ```bash
 for file in "$@"; do
@@ -37,8 +36,8 @@ Rules for batch runs:
   should expect each call to take seconds to a few minutes; long
   batch runs should set `AGENT_TIMEOUT_SECONDS` per environment.
 - The agent must inspect each report before issuing the next call. A
-  `validation_failed` mid-batch means the loop must stop and the
-  failure must be triaged — not retried blindly.
+  `validation_failed` or `project_validation_failed` mid-batch means the loop
+  must stop and the failure must be triaged — not retried blindly.
 - Different files usually need different instructions. Reusing the
   same instruction across files with different shapes is the
   leading cause of `validation_failed` reports.
@@ -59,8 +58,8 @@ wrapper; the agent does not change to enable it.
 
 For long-running calls, inspect the status sidecar at
 `.agent-runs/<run-id>.status.json` before opening the full log. The sidecar is
-the wrapper's lifecycle summary and includes phase, heartbeat timestamps,
-elapsed time, and timeout budget.
+the wrapper's lifecycle summary and includes wrapper-observable phase,
+heartbeat timestamps, elapsed time, timeout budget, and lock state.
 
 If a future version of the wrapper exposes streamed output, the
 invocation will look like:
@@ -77,10 +76,15 @@ summarises progress internally and returns the same compact final
 report plus the status sidecar. Streaming is for the wrapper's
 bookkeeping, not for the agent's.
 
+The sidecar reports only states the wrapper can directly observe, such as
+`starting`, `acquiring_lock`, `agent_running`, `validating_wrapper`,
+`validating_project`, and `completed`. It does not guess at subagent-internal
+states such as "planning" or "editing".
+
 ## Concurrency
 
 The wrapper is single-flight. The lock file at
-`.agent-runs/edit.lock` blocks a second wrapper run while the first
-is in progress. If the agent needs two edits in parallel, the
-correct move is two wrapper calls, sequentially, not two
+`.agent-runs/edit.lock` stores structured owner metadata and blocks a second
+wrapper run while the first is in progress. If the agent needs two edits in
+parallel, the correct move is two wrapper calls, sequentially, not two
 concurrently — the boundary check assumes one edit at a time.

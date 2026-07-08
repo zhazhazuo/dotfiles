@@ -1,19 +1,19 @@
 # Validation
 
 The wrapper runs only generic checks. Project-specific checks run after
-the wrapper exits `success`.
+the wrapper exits `success`, `noop`, or `project_validation_failed`.
 
 ## What the wrapper already checks
 
 - the underlying `agent` CLI exit code,
 - the bounded file contract: modified, created, deleted, and required-change paths stay inside the declared file sets,
-- `git diff --check` against the working tree,
+- `git diff --check` over the run's own tree delta,
 - a single concurrent wrapper run, enforced by a lock file.
 
 These checks catch common wrapper-level failures. They do not verify
 that the edit is correct for the project.
 
-## What the agent must run after a `success` report
+## What the agent must run after a `success` or `noop` report
 
 ```bash
 git diff -- src/example.ts src/example.spec.ts
@@ -67,9 +67,18 @@ changes as `validation_failed`.
 | integration, smoke | project | agent |
 
 If `project_validation.status` is `skipped`, the task is still incomplete from
-an orchestration perspective even though the wrapper returned `status: "success"`.
+an orchestration perspective even though the wrapper returned `status: "success"`
+or `status: "noop"`.
 Either run the missing checks manually or rerun the wrapper with explicit
 validation declarations.
+
+If `status` is `noop`, inspect `edits_applied`. A no-op run means the bounded
+state was already acceptable or no net diff was needed; it does not imply that
+source files changed.
+
+If `status` is `project_validation_failed`, treat the wrapper run as incomplete
+even though the bounded diff itself was valid. Use the reported project
+validation failures as the next bounded repair target.
 
 ## When a project check fails
 

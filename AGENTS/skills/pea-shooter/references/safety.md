@@ -28,7 +28,7 @@ Do not pass "figure out X and update everything" prompts — see
 The agent must read the wrapper's JSON report before opening the
 full log. The log may contain secrets, paths, or agent-specific
 output that does not need to be in the agent's working memory.
-Open the log only on a non-`success` report or when the report's
+Open the log only on a report whose `status` is neither `success` nor `noop`, or when the report's
 reason is genuinely insufficient.
 
 ## Log hygiene
