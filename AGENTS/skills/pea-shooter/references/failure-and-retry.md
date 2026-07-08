@@ -1,6 +1,6 @@
 # Failure and retry
 
-Load this file on the first non-`success` report.
+Load this file on the first report whose `status` is neither `success` nor `noop`.
 
 ## Read the report, then the log
 
@@ -22,7 +22,7 @@ Open the full log at `.agent-runs/<run-id>.log` only when:
 - the boundary violation lists files the agent did not expect to
   change.
 
-Do not open the log on `success`.
+Do not open the log on `success` or `noop` unless the JSON report is genuinely insufficient.
 
 ## `blocked` — fix the precondition, do not retry
 
@@ -39,10 +39,41 @@ Do not open the log on `success`.
 - not inside a git working tree — initialise git or use a
   different wrapper entry point.
 - another wrapper run is in progress — wait for the lock file at
-  `.agent-runs/edit.lock` to clear.
+  `.agent-runs/edit.lock` to clear, using `lock_owner_pid`,
+  `lock_owner_run_id`, and `lock_age_seconds` from the report.
 
 Fix the precondition and re-run the same call. Do not change the edit
 instruction.
+
+## `project_validation_failed` — bounded diff is valid, project checks are not
+
+`status: "project_validation_failed"` means the wrapper accepted the bounded
+edit, but one or more declared project validations failed.
+
+The next action is:
+
+1. inspect `project_validation.results`,
+2. identify the smallest bounded fix for the failing validation,
+3. retry with the exact failure in the new instruction,
+4. rerun the same declared validations.
+
+Do not treat `project_validation_failed` as a transport error or a wrapper bug.
+
+## `noop` — requested state already satisfied
+
+`status: "noop"` means the caller opted into idempotent convergence with
+`--allow-noop` or manifest `allow_noop`, and the wrapper finished with no
+bounded diff to apply.
+
+In shorthand: status: `noop`.
+
+Use the report to confirm:
+
+- `edits_applied == false`
+- `missing_required_changes` may still name the untouched path
+- `project_validation` shows whether any declared checks still ran
+
+Do not retry the same call unless the no-op outcome itself was unexpected.
 
 ## `failed` — inspect, then issue a targeted retry
 
@@ -88,7 +119,7 @@ boundary or generic-validation check tripped. Two cases:
 - exit `4` — one or more contract checks failed. Inspect the specific
   violation arrays first:
 
-  - `boundary_violations` — modified paths outside `--allow` or rename markers
+  - `boundary_violations` — modified paths outside `--allow`
   - `create_violations` — created paths outside `--create`
   - `delete_violations` — deleted paths outside `--delete`
   - `missing_required_changes` — paths declared in `--require-change` that did not change
