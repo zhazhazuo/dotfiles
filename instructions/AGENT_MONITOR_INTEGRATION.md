@@ -292,7 +292,7 @@ tmux show-options -g | grep agent_monitor
 Check the TSV bridge file:
 
 ```bash
-cat /tmp/agent-monitor.$(id -u).tsv
+cat ~/.cache/agent-monitor/agent-monitor.$(id -u).tsv
 ```
 
 ### Running the tests
@@ -305,6 +305,7 @@ cd ~/dotfiles/tmux
 ./tests/agent-monitor-notify.test.sh   # macOS notifications
 ./tests/agent-status.test.sh           # Status bar rendering
 ./tests/codex-agent-event.test.sh      # Codex adapter
+./tests/cursor-agent-event.test.sh    # Cursor CLI adapter
 ./tests/pi-agent-event.test.sh         # Pi integration
 ```
 
@@ -314,6 +315,51 @@ cd ~/dotfiles/sketchybar
 ```
 
 All tests use fake tmux/sketchybar binaries and a fake option store — no real tmux session needed.
+
+## Example: Cursor CLI (`agent`)
+
+The Cursor CLI is integrated via user hooks in `~/.cursor/hooks.json`. The hook script `~/.cursor/hooks/agent-monitor.sh` forwards lifecycle events to `tmux/scripts/cursor-agent-event.sh`.
+
+### Wiring
+
+`hooks.json` registers `./hooks/agent-monitor.sh` on coarse lifecycle events only: `sessionStart`, `sessionEnd`, `beforeSubmitPrompt`, `preToolUse`, `beforeShellExecution`, `beforeMCPExecution`, `subagentStart`, and `stop`. High-frequency hooks such as `afterAgentThought` are intentionally excluded.
+
+The adapter:
+
+- maps Cursor hook names to generic monitor events
+- stores `session_id → TMUX_PANE` at `sessionStart` in `@cursor_agent_session_<id>_pane`
+- resolves later events by `session_id` (supports multiple concurrent `agent` sessions)
+- uses agent name `cursor` in monitor records
+- deletes the monitor record on `sessionEnd` instead of leaving a stale pill
+
+### Event mapping
+
+| Cursor hook | Generic event | State |
+|---|---|---|
+| `sessionStart` | `SessionStart` | `idle` |
+| `beforeSubmitPrompt` | `PromptSubmit` | `running` |
+| `preToolUse`, shell/MCP hooks, `subagentStart` | `ToolStart` | `running` |
+| `afterAgentResponse`, `afterAgentThought`, `subagentStop` | `ToolEnd` | `running` |
+| `stop` | `TurnComplete` | `needs-attention` |
+| `sessionEnd` | *(delete record)* | removed |
+
+### Debugging
+
+```bash
+~/dotfiles/tmux/scripts/agent-monitor-list-items.sh
+cat ~/.cache/agent-monitor/agent-monitor.$(id -u).tsv
+```
+
+Cursor uses two ids in hook JSON: `session_id` (CLI session) and `conversation_id` (transcript). The adapter stores pane mappings for both. SketchyBar reads the shared TSV at `~/.cache/agent-monitor/agent-monitor.<uid>.tsv` (not `$TMPDIR`).
+
+### Performance
+
+Cursor monitor hooks are intentionally coarse and synchronous:
+
+- Only lifecycle hooks update the monitor (`sessionStart`, `beforeSubmitPrompt`, `preToolUse`, `stop`, etc.)
+- `afterAgentThought` / `afterAgentResponse` do **not** update the monitor
+- `agent-monitor-check.sh` skips prune/refresh when state is unchanged (e.g. repeated `ToolStart` while already `running`)
+- Prune runs only on `SessionStart` and `TurnComplete` / `Stop`
 
 ## Example: Integrating "Aider"
 
