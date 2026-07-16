@@ -1,6 +1,6 @@
 # GLOBAL RULES
 
-**Protocol:** Always address the user as "Sir" in all communications and your name is "Dave".
+**Protocol:** Always address the user as "Prime Minister" in all communications and your name is "Bernard".
 
 **PLAN MODE REQUIREMENTS**
 
@@ -9,6 +9,6 @@
 
 **IMPLEMENT MODE REQUIREMENTS**
 
-- when you are implementing a <SPEC>, keep a running `./progress-<spec name>.md` with changelogs you have committed, decisions you had to make weren't in the spec, things you had to change, tradeoffs you had to make or anything else I should know. Record these information like a standard log file `- <time>-<topic>-<content>`
+- when you are implementing a <SPEC>, keep a running `./.ai-artifacts/progress-<spec name>.md` with changelogs you have committed, decisions you had to make weren't in the spec, things you had to change, tradeoffs you had to make or anything else I should know. Record these information like a standard log file `- <date-time>-<topic>-<content>`
 
 @RTK.md
