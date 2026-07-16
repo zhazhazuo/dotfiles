@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+#
+# agent-monitor — CLI entry point
+#
+# Usage:
+#   agent-monitor reconcile <agent> <event> [json]
+#   agent-monitor prune
+#   agent-monitor state [--json|--tsv|--pretty]
+#   agent-monitor clear
+#   agent-monitor remove <id>
+#
+# Environment:
+#   AGENT_MONITOR_STATE_DIR  — override state directory
+#   AGENT_MONITOR_STATE_FILE — override state file path
+
+set -euo pipefail
+
+# Resolve symlink to find actual script location
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+	DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+	SOURCE="$(readlink "$SOURCE")"
+	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BIN_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+CORE_DIR="${BIN_DIR}/../core"
+
+usage() {
+	cat <<EOF
+Usage: agent-monitor <command> [args...]
+
+Commands:
+  reconcile <agent> <event> [json]   Reconcile an agent event
+  prune                               Remove dead agents
+  state [--json|--tsv|--pretty]       Print current state (default: pretty)
+  clear                               Clear all state
+  remove <id>                         Remove a specific agent
+
+Agents: pi, codex, cursor, opencode, claude
+Events: SessionStart, RunStart, ToolStart, ToolEnd, PermissionRequest,
+        InputRequired, TurnComplete, Stop
+EOF
+}
+
+cmd_reconcile() {
+	local agent="${1:?agent name required}"
+	local event="${2:?event name required}"
+	local json="${3:-{\}}"
+
+	source "${CORE_DIR}/reconcile.sh"
+	reconcile "$agent" "$event" "$json"
+}
+
+cmd_prune() {
+	source "${CORE_DIR}/prune.sh"
+	prune
+}
+
+cmd_state() {
+	local format="${1:---pretty}"
+
+	source "${CORE_DIR}/state.sh"
+
+	case "$format" in
+	--json|-j)
+		read_state
+		;;
+	--tsv|-t)
+		print_tsv
+		;;
+	--pretty|-p|"")
+		local count
+		count=$(read_state | jq '.agents | length' 2>/dev/null || echo 0)
+		if [[ "$count" -eq 0 ]]; then
+			echo "No active agents."
+			return 0
+		fi
+		echo "Active agents: $count"
+		echo ""
+		read_state | jq -r '
+			.agents
+			| to_entries[]
+			| "  \(.key)  \(.value.name // "?")  \(.value.state // "?")  \(.value.label // "?")"
+		' 2>/dev/null
+		;;
+	esac
+}
+
+cmd_clear() {
+	source "${CORE_DIR}/state.sh"
+	clear_state
+	echo "State cleared."
+}
+
+cmd_remove() {
+	local id="${1:?agent id required}"
+
+	source "${CORE_DIR}/state.sh"
+	if [[ -z "$(get_agent "$id")" ]]; then
+		echo "Agent $id not found."
+		return 1
+	fi
+	remove_agent "$id"
+	echo "Removed agent $id."
+}
+
+# ── Main Dispatch ────────────────────────────────────────────────────────
+
+main() {
+	local cmd="${1:-}"
+	shift 2>/dev/null || true
+
+	case "$cmd" in
+	reconcile|r)
+		cmd_reconcile "$@"
+		;;
+	prune|p)
+		cmd_prune "$@"
+		;;
+	state|s)
+		cmd_state "$@"
+		;;
+	clear)
+		cmd_clear "$@"
+		;;
+	remove|rm)
+		cmd_remove "$@"
+		;;
+	-h|--help|help|"")
+		usage
+		;;
+	*)
+		echo "Unknown command: $cmd" >&2
+		usage >&2
+		return 1
+		;;
+	esac
+}
+
+main "$@"
