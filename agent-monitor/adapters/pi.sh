@@ -26,7 +26,11 @@ case "$event" in
 AgentStart | agent_start) event="RunStart" ;;
 AgentEnd | agent_end) event="TurnComplete" ;;
 agent_settled) event="TurnComplete" ;;
-SessionShutdown | session_shutdown) event="SessionStart" ;;
+SessionShutdown | session_shutdown)
+	# Remove agent from monitor on shutdown
+	"$BIN" remove "${TMUX_PANE:-}" 2>/dev/null || true
+	exit 0
+	;;
 esac
 
 # Call reconcile

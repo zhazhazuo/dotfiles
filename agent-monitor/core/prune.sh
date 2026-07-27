@@ -81,6 +81,16 @@ prune() {
 	fi
 }
 
+# Remove a specific agent by ID (used by adapters on session end)
+remove_by_id() {
+	local id="$1"
+
+	if [[ -n "$(get_agent "$id")" ]]; then
+		remove_agent "$id"
+		refresh_sinks
+	fi
+}
+
 # Also export for use by reconcile.sh
 refresh_sinks() {
 	local sinks_dir="${SCRIPT_DIR}/../sinks"

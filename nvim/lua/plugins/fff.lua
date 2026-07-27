@@ -73,6 +73,13 @@ local config = {
 			desc = "Visual selection or word",
 			mode = { "n", "x" },
 		},
+		{
+			"<leader>fo",
+			function()
+				require("fff").find_files({ frecency = true })
+			end,
+			desc = "Frecency Files",
+		},
 	},
 }
 

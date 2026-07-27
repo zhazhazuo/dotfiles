@@ -94,6 +94,12 @@ local config = {
 						["<c-v>"] = "edit_vsplit_right",
 					},
 				},
+				preview = {
+					keys = {
+						["<c-b>"] = { "preview_scroll_up", mode = { "i", "n" } },
+						["<c-f>"] = { "preview_scroll_down", mode = { "i", "n" } },
+					},
+				},
 			},
 		},
 	},
@@ -163,11 +169,53 @@ local config = {
 			desc = "Git Log",
 		},
 		{
+			"<leader>gL",
+			function()
+				Snacks.picker.git_log_file()
+			end,
+			desc = "Git Log (Current File)",
+		},
+		{
+			"<leader>gf",
+			function()
+				Snacks.picker.git_diff_file()
+			end,
+			desc = "Git Diff (Current File)",
+		},
+		{
 			"<leader>sk",
 			function()
 				Snacks.picker.keymaps()
 			end,
 			desc = "Keymaps",
+		},
+		{
+			"<leader>:",
+			function()
+				Snacks.picker.commands()
+			end,
+			desc = "Commands",
+		},
+		{
+			"<leader>su",
+			function()
+				Snacks.picker.undo()
+			end,
+			desc = "Undo History",
+		},
+		{
+			"<leader>gs",
+			function()
+				Snacks.picker.git_status()
+			end,
+			desc = "Git Status",
+		},
+		{
+			"<leader>sq",
+			function()
+				Snacks.picker.qflist()
+			end,
+			desc = "Quickfix List",
 		},
 		-- LSP
 		{
