@@ -1,0 +1,21 @@
+id = "local.agent-monitor"
+name = "Agent Monitor"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Feed herdr agent status into agent-monitor (SketchyBar and tmux)."
+platforms = ["macos", "linux"]
+
+[[startup]]
+command = ["./on-event.sh"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["./on-event.sh"]
+
+[[events]]
+on = "pane.agent_detected"
+command = ["./on-event.sh"]
+
+[[events]]
+on = "pane.closed"
+command = ["./on-event.sh"]

@@ -123,7 +123,25 @@ assert_jq "sync adds live agent" '.agents["w2_p4"].state == "running"'
 assert_jq "sync removes stale herdr entry" '.agents["w9_p9"] == null'
 assert_jq "sync keeps tmux agents" '.agents["%3"] != null'
 
+# ── plugin dispatcher ────────────────────────────────────────────────────
+rm -rf "$AGENT_MONITOR_STATE_DIR"
+cat >"$FAKE_HERDR_SNAPSHOT" <<'JSON'
+{"id":"cli:api:snapshot","result":{"snapshot":{
+ "agents":[
+  {"agent":"pi","agent_status":"blocked","cwd":"/work/brain","pane_id":"w4:p2","tab_id":"w4:t1"}
+ ],
+ "tabs":[{"tab_id":"w4:t1","label":"BRAIN"}]
+}},"type":"session_snapshot"}
+JSON
+
+HERDR_PLUGIN_EVENT="pane.agent_status_changed" HERDR_PANE_ID="w4:p2" \
+	"$ROOT_DIR/herdr-plugin/on-event.sh"
+assert_jq "dispatcher routes event to adapter" '.agents["w4_p2"].state == "needs-help"'
+
+HERDR_PLUGIN_EVENT="startup" "$ROOT_DIR/herdr-plugin/on-event.sh"
+assert_jq "dispatcher startup runs sync" '.agents["w4_p2"] != null'
+
 if [[ "$fail" -ne 0 ]]; then
 	exit 1
 fi
-echo "all herdr adapter tests passed"
+echo "all herdr adapter and dispatcher tests passed"
