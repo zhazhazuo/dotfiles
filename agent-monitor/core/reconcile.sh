@@ -119,6 +119,15 @@ resolve_id() {
 		return 0
 	fi
 
+	# 2.5. Explicit pane_id in event JSON (herdr)
+	local pane_id
+	pane_id=$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)
+	if [[ -n "$pane_id" ]]; then
+		ensure_state_dir
+		printf '%s' "$pane_id" | tr -c '[:alnum:]_' '_'
+		return 0
+	fi
+
 	# 3. session_id
 	local session_id
 	session_id=$(printf '%s' "$json" | jq -r '.session_id // empty' 2>/dev/null)
@@ -142,6 +151,13 @@ resolve_id() {
 resolve_label() {
 	local json="$1"
 	local label
+
+	# Explicit label in event JSON wins (herdr tab label)
+	label=$(printf '%s' "$json" | jq -r '.label // empty' 2>/dev/null)
+	if [[ -n "$label" ]]; then
+		printf '%s' "$label"
+		return 0
+	fi
 
 	# Try tmux window name first
 	if [[ -n "${TMUX_PANE:-}" ]]; then
@@ -200,7 +216,7 @@ reconcile() {
 		"name=$agent_name" \
 		"state=$new_state" \
 		"label=$label" \
-		"pane=${TMUX_PANE:-}" \
+		"pane=${TMUX_PANE:-$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)}" \
 		"session_id=$session_id"
 
 	# Notify on attention transitions
