@@ -101,6 +101,7 @@ cmd_remove() {
 		return 1
 	fi
 	remove_agent "$id"
+	refresh_sinks
 	echo "Removed agent $id."
 }
 

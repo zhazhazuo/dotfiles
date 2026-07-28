@@ -51,6 +51,24 @@ assert_jq "session_id identity unchanged" '.agents["sess_1"] != null'
 TMUX_PANE="%5" "$BIN" reconcile pi RunStart '{"cwd":"/tmp/z"}'
 assert_jq "TMUX_PANE identity unchanged" '.agents["%5"] != null'
 
+# ── TSV export on refresh ────────────────────────────────────────────────
+TSV="$AGENT_MONITOR_STATE_DIR/state.tsv"
+if [[ -f "$TSV" ]] && grep -q $'^w2_p4\therdr\trunning\tSF\tw2:p4' "$TSV"; then
+	echo "ok: state.tsv exported with herdr row"
+else
+	echo "FAIL: state.tsv exported with herdr row"
+	fail=1
+fi
+
+# ── remove refreshes sinks ───────────────────────────────────────────────
+"$BIN" remove w2_p4 >/dev/null
+if ! grep -q 'w2_p4' "$TSV"; then
+	echo "ok: remove updates state.tsv"
+else
+	echo "FAIL: remove updates state.tsv"
+	fail=1
+fi
+
 if [[ "$fail" -ne 0 ]]; then
 	exit 1
 fi

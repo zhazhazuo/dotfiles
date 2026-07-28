@@ -90,18 +90,3 @@ remove_by_id() {
 		refresh_sinks
 	fi
 }
-
-# Also export for use by reconcile.sh
-refresh_sinks() {
-	local sinks_dir="${SCRIPT_DIR}/../sinks"
-
-	if [[ -x "${sinks_dir}/tmux-status.sh" ]]; then
-		"${sinks_dir}/tmux-status.sh" --refresh 2>/dev/null || true
-	fi
-
-	if command -v sketchybar >/dev/null 2>&1; then
-		(sketchybar --trigger agent_monitor_update 2>/dev/null || true) &
-	fi
-
-	tmux refresh-client -S 2>/dev/null || true
-}

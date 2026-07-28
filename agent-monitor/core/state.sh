@@ -157,3 +157,29 @@ transition_agent() {
 
 	printf '%s' "$prev_state"
 }
+
+# ── Sink Refresh ─────────────────────────────────────────────────────────
+
+# Refresh all sinks after a state change. Single definition, used by
+# reconcile.sh, prune.sh, and bin/agent-monitor.
+refresh_sinks() {
+	local core_dir sinks_dir tsv_tmp
+	core_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	sinks_dir="${core_dir}/../sinks"
+
+	# Export TSV for the SketchyBar sink (atomic write)
+	ensure_state_dir
+	tsv_tmp="${STATE_DIR}/state.tsv.$$"
+	print_tsv >"$tsv_tmp"
+	mv "$tsv_tmp" "${STATE_DIR}/state.tsv"
+
+	if [[ -x "${sinks_dir}/tmux-status.sh" ]]; then
+		"${sinks_dir}/tmux-status.sh" --refresh 2>/dev/null || true
+	fi
+
+	if command -v sketchybar >/dev/null 2>&1; then
+		(sketchybar --trigger agent_monitor_update 2>/dev/null || true) &
+	fi
+
+	tmux refresh-client -S 2>/dev/null || true
+}

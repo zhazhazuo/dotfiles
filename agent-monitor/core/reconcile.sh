@@ -230,22 +230,3 @@ reconcile() {
 	# Refresh sinks
 	refresh_sinks
 }
-
-# ── Sink Refresh ────────────────────────────────────────────────────────
-
-refresh_sinks() {
-	# Refresh tmux status if available
-	local sinks_dir="${SCRIPT_DIR}/../sinks"
-
-	if [[ -x "${sinks_dir}/tmux-status.sh" ]]; then
-		"${sinks_dir}/tmux-status.sh" --refresh 2>/dev/null || true
-	fi
-
-	# Trigger SketchyBar update if available
-	if command -v sketchybar >/dev/null 2>&1; then
-		(sketchybar --trigger agent_monitor_update 2>/dev/null || true) &
-	fi
-
-	# Refresh tmux client
-	tmux refresh-client -S 2>/dev/null || true
-}
