@@ -54,6 +54,10 @@ prune() {
 		pane=$(get_field "$id" "pane")
 		name=$(get_field "$id" "name")
 
+		# Herdr agents use herdr pane ids, not tmux panes. Their lifecycle
+		# is handled by pane.closed events and adapters/herdr.sh --sync.
+		[[ "$name" == "herdr" ]] && continue
+
 		# Skip agents without pane metadata (explicit logical IDs)
 		[[ -z "$pane" ]] && continue
 
