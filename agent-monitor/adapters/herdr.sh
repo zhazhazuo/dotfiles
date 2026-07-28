@@ -32,7 +32,12 @@ map_status() {
 }
 
 snapshot() {
-	herdr api snapshot 2>/dev/null || true
+	local output
+	output=$(herdr api snapshot 2>/dev/null) || true
+	if [[ -z "$output" ]] || ! printf '%s' "$output" | jq -e . >/dev/null 2>&1; then
+		return 0
+	fi
+	printf '%s' "$output"
 }
 
 remove_pane() {
