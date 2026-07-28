@@ -89,6 +89,7 @@ cmd_state() {
 cmd_clear() {
 	source "${CORE_DIR}/state.sh"
 	clear_state
+	refresh_sinks
 	echo "State cleared."
 }
 

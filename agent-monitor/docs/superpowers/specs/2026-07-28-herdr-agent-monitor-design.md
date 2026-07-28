@@ -105,7 +105,8 @@ own path, then calls `adapters/herdr.sh` with `$HERDR_PLUGIN_EVENT`
 ### Changed: `core/state.sh`
 
 - `refresh_sinks` now lives in `core/state.sh` and exports
-  `$STATE_DIR/state.tsv` atomically after each state write.
+  `$STATE_DIR/state.tsv` atomically after state transitions, removals,
+  and clears.
 - `agent-monitor remove` refreshes sinks after removal.
 - `sinks/sketchybar.sh` defaults `AGENT_MONITOR_STATE_FILE` to that path.
 

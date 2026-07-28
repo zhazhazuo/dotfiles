@@ -10,7 +10,7 @@ SOURCES → CORE → SINKS
 adapters/herdr.sh ─┐
 adapters/pi.sh ──┐ │
 adapters/codex.sh ┤┤──▶ bin/agent-monitor reconcile ──▶ core/reconcile.sh
-adapters/cursor.sh─┘┘           │
+adapters/cursor.sh─┘┘          │
                                ▼
                       ~/.cache/agent-monitor/state.json
                                │
@@ -121,9 +121,6 @@ agent-monitor/
 ├── tests/
 │   ├── reconcile.test.sh
 │   ├── prune.test.sh
-│   ├── herdr-adapter.test.sh
-│   ├── state.test.sh
-│   ├── pi-adapter.test.sh
-│   └── tmux-status.test.sh
+│   └── herdr-adapter.test.sh
 └── README.md
 ```
