@@ -1,203 +1,88 @@
-#!/usr/bin/env bash
-#
-# agent-monitor/sinks/sketchybar.sh — SketchyBar plugin
-#
-# Reads agent-monitor state.json and renders SketchyBar items.
-# Triggered by agent_monitor_update events.
-#
-# Install: symlink or copy to ~/.config/sketchybar/plugins/agent_monitor.sh
+#!/bin/sh
 
-set -euo pipefail
+set -eu
 
-# Resolve symlink to find actual script location
-SOURCE="${BASH_SOURCE[0]}"
-while [ -L "$SOURCE" ]; do
-	DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-	SOURCE="$(readlink "$SOURCE")"
-	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+STATE_FILE="${AGENT_MONITOR_STATE_FILE:-${XDG_CACHE_HOME:-$HOME/.cache}/agent-monitor/state.tsv}"
+CACHE_FILE="${AGENT_MONITOR_SKETCHYBAR_CACHE:-/tmp/agent_monitor_items.cache}"
+
+if [ -z "$STATE_FILE" ] || [ ! -f "$STATE_FILE" ]; then
+    sketchybar --set "$NAME" drawing=off
+    exit 0
+fi
+
+mkdir -p "$(dirname "$CACHE_FILE")"
+
+# Read current state from TSV file (skip header), sort by updated_at descending
+TMP_CURRENT=$(mktemp)
+tail -n +2 "$STATE_FILE" | sort -t$'\t' -k7 -rn > "$TMP_CURRENT"
+
+# Read cached items
+CACHED_ITEMS=""
+if [ -f "$CACHE_FILE" ]; then
+    CACHED_ITEMS=$(cat "$CACHE_FILE")
+fi
+
+# Remove stale items
+for cached in $CACHED_ITEMS; do
+    if ! grep -q "^$cached	" "$TMP_CURRENT"; then
+        sketchybar --remove "agent_monitor.$cached"
+    fi
 done
-SINK_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-CORE_DIR="${SINK_DIR}/../core"
-source "${CORE_DIR}/state.sh"
 
-# ── Configuration ────────────────────────────────────────────────────────
+# Hide the parent item
+sketchybar --set "$NAME" drawing=off
 
-ATTENTION_TIMEOUT=$(tmux show-options -gqv @agent_monitor_attention_timeout 2>/dev/null || echo 300)
+# Process current items in order
+while IFS=$'\t' read -r id name state label pane session_id updated_at; do
+    [ -z "$id" ] && continue
 
-# ── State → Color ────────────────────────────────────────────────────────
+    case "$state" in
+        running)
+            BG_COLOR="0xff238636"
+            LABEL_COLOR="0xffffffff"
+            BG_DRAWING="on"
+            ;;
+        idle)
+            BG_COLOR="0x00000000"
+            LABEL_COLOR="0xffaaaaaa"
+            BG_DRAWING="off"
+            ;;
+        needs-help)
+            BG_COLOR="0xffc0392b"
+            LABEL_COLOR="0xffffffff"
+            BG_DRAWING="on"
+            ;;
+        needs-attention)
+            BG_COLOR="0xff1f6feb"
+            LABEL_COLOR="0xffffffff"
+            BG_DRAWING="on"
+            ;;
+        *)
+            BG_COLOR="0x00000000"
+            LABEL_COLOR="0xffffffff"
+            BG_DRAWING="off"
+            ;;
+    esac
 
-color_for_state() {
-	case "$1" in
-	needs-help) printf '0xffc0392b' ;;
-	needs-attention) printf '0xff1f6feb' ;;
-	running) printf '0xff238636' ;;
-	*) printf '0xffaaaaaa' ;;
-	esac
-}
+    CLICK_SCRIPT=""
+    case "$pane" in
+        %*)
+            CLICK_SCRIPT="tmux select-window -t $pane; tmux select-pane -t $pane"
+            ;;
+        w*:p*)
+            CLICK_SCRIPT="herdr agent focus $pane"
+            ;;
+    esac
 
-# ── Timeout Decay ────────────────────────────────────────────────────────
+    sketchybar --add item "agent_monitor.$id" center
+    if [ -n "$CLICK_SCRIPT" ]; then
+        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="$label" label.color="$LABEL_COLOR" background.drawing="$BG_DRAWING" background.color="$BG_COLOR" background.corner_radius=5 background.height=20 click_script="$CLICK_SCRIPT"
+    else
+        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="$label" label.color="$LABEL_COLOR" background.drawing="$BG_DRAWING" background.color="$BG_COLOR" background.corner_radius=5 background.height=20
+    fi
+done < "$TMP_CURRENT"
 
-effective_state() {
-	local state="$1" updated_at="$2" now="$3"
-	if [[ "$state" == "needs-attention" ]] && [[ "$updated_at" =~ ^[0-9]+$ ]]; then
-		if [[ "$((now - updated_at))" -gt "$ATTENTION_TIMEOUT" ]]; then
-			printf 'idle'
-			return 0
-		fi
-	fi
-	printf '%s' "$state"
-}
+# Update cache
+cut -f1 "$TMP_CURRENT" > "$CACHE_FILE"
 
-# ── Priority for sorting ─────────────────────────────────────────────────
-
-priority_for_state() {
-	case "$1" in
-	needs-help) printf '4' ;;
-	needs-attention) printf '3' ;;
-	running) printf '2' ;;
-	idle) printf '1' ;;
-	*) printf '0' ;;
-	esac
-}
-
-# ── SketchyBar Item Management ──────────────────────────────────────────
-
-sanitize_item_id() {
-	printf '%s' "$1" | tr -c '[:alnum:]_' '_'
-}
-
-item_exists() {
-	sketchybar --query "$1" >/dev/null 2>&1
-}
-
-ensure_item() {
-	local item="$1"
-	item_exists "$item" || sketchybar --add item "$item" center
-}
-
-set_item_style() {
-	local item="$1" state="$2" label="$3" pane="$4"
-	local color click_script
-
-	color="$(color_for_state "$state")"
-
-	if [[ -n "$pane" ]]; then
-		click_script="tmux select-window -t $pane; tmux select-pane -t $pane"
-	else
-		click_script=""
-	fi
-
-	sketchybar --set "$item" \
-		drawing=on \
-		icon.drawing=off \
-		label="<$label>" \
-		label.color="$color" \
-		background.drawing=off \
-		click_script="$click_script"
-}
-
-# ── Cache (track which items we created) ────────────────────────────────
-
-cache_file() {
-	printf '%s/sketchybar-agent-monitor-items.%s' "${TMPDIR:-/tmp}" "${UID:-$(id -u)}"
-}
-
-contains_id() {
-	local needle="$1" item
-	for item in $current_ids; do
-		[[ "$item" == "$needle" ]] && return 0
-	done
-	return 1
-}
-
-remove_stale_items() {
-	local cache="$1" previous id
-	[[ -r "$cache" ]] && previous="$(cat "$cache")"
-	for id in $previous; do
-		if ! contains_id "$id"; then
-			sketchybar --remove "agent_monitor.${id}" >/dev/null 2>&1 || true
-		fi
-	done
-}
-
-# ── Main Render ──────────────────────────────────────────────────────────
-
-render() {
-	local cache now current_ids=""
-	local ids_to_render=()
-
-	cache="$(cache_file)"
-	now=$(date +%s)
-
-	# Collect agents sorted by priority (highest first)
-	while IFS=$'\t' read -r priority id state label pane updated_at; do
-		[[ -z "$id" ]] && continue
-
-		local effective
-		effective=$(effective_state "$state" "$updated_at" "$now")
-		id=$(sanitize_item_id "$id")
-		ids_to_render+=("${priority}|${id}|${effective}|${label}|${pane}")
-		current_ids="${current_ids:+$current_ids }$id"
-	done < <(
-		for id in $(list_agents); do
-			local state label pane updated_at priority effective
-			state=$(get_field "$id" "state")
-			label=$(get_field "$id" "label")
-			pane=$(get_field "$id" "pane")
-			updated_at=$(get_field "$id" "updated_at")
-			effective=$(effective_state "$state" "$updated_at" "$now")
-			priority=$(priority_for_state "$effective")
-			printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$priority" "$id" "$state" "$label" "$pane" "$updated_at"
-		done | sort -t$'\t' -k1,1nr -k2,2
-	)
-
-	# Remove stale items
-	remove_stale_items "$cache"
-
-	# Hide parent item if no agents
-	if [[ ${#ids_to_render[@]} -eq 0 ]]; then
-		sketchybar --set agent_monitor drawing=off 2>/dev/null || true
-		printf '' >"$cache"
-		return 0
-	fi
-
-	# Hide parent item (we use child items)
-	sketchybar --set agent_monitor drawing=off 2>/dev/null || true
-
-	# Render each agent as a child item
-	for entry in "${ids_to_render[@]}"; do
-		IFS='|' read -r _ id effective label pane <<<"$entry"
-		local item="agent_monitor.${id}"
-		ensure_item "$item"
-		set_item_style "$item" "$effective" "${label:-agent}" "$pane"
-	done
-
-	# Write cache
-	mkdir -p "$(dirname "$cache")"
-	printf '%s\n' "$current_ids" >"$cache"
-}
-
-# ── Entry Point ──────────────────────────────────────────────────────────
-
-case "${SENDER:-}" in
-mouse.clicked)
-	# Focus the highest-priority agent's pane
-	record="$(
-		{
-			for id in $(list_agents); do
-				state=$(get_field "$id" "state")
-				pane=$(get_field "$id" "pane")
-				priority=$(priority_for_state "$(effective_state "$state" "$(get_field "$id" "updated_at")" "$(date +%s)")")
-				printf '%s\t%s\t%s\n' "$priority" "$id" "$pane"
-			done
-		} | sort -t$'\t' -k1,1nr | head -1
-	)"
-	if [[ -n "$record" ]]; then
-		pane=$(printf '%s' "$record" | cut -f3)
-		[[ -n "$pane" ]] && tmux select-window -t "$pane" 2>/dev/null && tmux select-pane -t "$pane" 2>/dev/null
-	fi
-	;;
-*)
-	render
-	;;
-esac
+rm -f "$TMP_CURRENT"
