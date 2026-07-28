@@ -92,3 +92,13 @@ printf 'id\tname\tstate\tlabel\tpane\tsession_id\tupdated_at\n' >"$STATE_FILE"
 "$SCRIPT"
 assert_equal "--remove agent_monitor.one
 --set agent_monitor drawing=off" "$(cat "$SET_LOG")" "hides item when no agents are active"
+
+cat >"$STATE_FILE" <<'STATE'
+id	name	state	label	pane	session_id	updated_at
+w2_p4	herdr	running	SF	w2:p4		100
+one	codex	running	work	%1	session-1	90
+STATE
+: >"$SET_LOG"
+"$SCRIPT"
+expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.w2_p4 center\n--set agent_monitor.w2_p4 drawing=on icon.drawing=off label=SF label.color=0xffffffff background.drawing=on background.color=0xff238636 background.corner_radius=5 background.height=20 click_script=herdr agent focus w2:p4\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xffffffff background.drawing=on background.color=0xff238636 background.corner_radius=5 background.height=20 click_script=tmux select-window -t %1; tmux select-pane -t %1'
+assert_equal "$expected" "$(cat "$SET_LOG")" "herdr rows get herdr focus click, tmux rows unchanged"
