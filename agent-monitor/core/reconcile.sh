@@ -123,7 +123,6 @@ resolve_id() {
 	local pane_id
 	pane_id=$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)
 	if [[ -n "$pane_id" ]]; then
-		ensure_state_dir
 		printf '%s' "$pane_id" | tr -c '[:alnum:]_' '_'
 		return 0
 	fi

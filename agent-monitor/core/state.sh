@@ -31,6 +31,7 @@ read_state() {
 
 # Write state atomically (tmp + mv).
 write_state() {
+	ensure_state_dir
 	local tmp="${STATE_FILE}.$$"
 	cat >"$tmp"
 	mv "$tmp" "$STATE_FILE"
