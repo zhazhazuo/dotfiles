@@ -7,9 +7,10 @@ Event-driven agent status monitor. Hooks AI coding harnesses, syncs state to GUI
 ```
 SOURCES → CORE → SINKS
 
-adapters/pi.sh ──┐
-adapters/codex.sh ┤──▶ bin/agent-monitor reconcile ──▶ core/reconcile.sh
-adapters/cursor.sh─┘           │
+adapters/herdr.sh ─┐
+adapters/pi.sh ──┐ │
+adapters/codex.sh ┤┤──▶ bin/agent-monitor reconcile ──▶ core/reconcile.sh
+adapters/cursor.sh─┘┘           │
                                ▼
                       ~/.cache/agent-monitor/state.json
                                │
@@ -66,6 +67,23 @@ agent-monitor clear
 | `needs-attention` | blue | Finished, needs review |
 | `needs-help` | red | Blocked, needs input |
 
+## Herdr Source
+
+Herdr is the source of truth for agents running inside herdr. A herdr plugin
+(`herdr-plugin/`) pushes `pane.agent_status_changed`, `pane.agent_detected`,
+and `pane.closed` events to `adapters/herdr.sh`, plus a full snapshot sync on
+herdr startup.
+
+Status mapping: `working`→running, `blocked`→needs-help, `done`→needs-attention,
+`idle`→idle, `unknown`→removed. Labels come from herdr tab labels. Clicking a
+SketchyBar item for a herdr agent runs `herdr agent focus <pane_id>`.
+
+Install:
+
+```bash
+herdr plugin link /Users/walkerw/dotfiles/agent-monitor/herdr-plugin
+```
+
 ## Adding a New Agent
 
 1. Create `adapters/<agent>.sh`
@@ -90,14 +108,20 @@ agent-monitor/
 │   ├── prune.sh                # dead agent cleanup
 │   └── notify.sh               # macOS notifications
 ├── adapters/
+│   ├── herdr.sh                # Herdr plugin adapter
 │   ├── pi.sh                   # Pi extension adapter
 │   ├── codex.sh                # Codex hook adapter
 │   └── cursor.sh               # Cursor hook adapter
+├── herdr-plugin/
+│   ├── herdr-plugin.toml       # Plugin manifest
+│   └── on-event.sh             # Event dispatcher
 ├── sinks/
 │   ├── tmux-status.sh          # tmux topbar widget
 │   └── sketchybar.sh           # SketchyBar items
 ├── tests/
 │   ├── reconcile.test.sh
+│   ├── prune.test.sh
+│   ├── herdr-adapter.test.sh
 │   ├── state.test.sh
 │   ├── pi-adapter.test.sh
 │   └── tmux-status.test.sh

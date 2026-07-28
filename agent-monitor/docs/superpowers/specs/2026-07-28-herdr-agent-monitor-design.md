@@ -102,6 +102,13 @@ own path, then calls `adapters/herdr.sh` with `$HERDR_PLUGIN_EVENT`
 - `resolve_label`: prefer an explicit `label` field from the event JSON.
 - Both changes are additive and backward compatible.
 
+### Changed: `core/state.sh`
+
+- `refresh_sinks` now lives in `core/state.sh` and exports
+  `$STATE_DIR/state.tsv` atomically after each state write.
+- `agent-monitor remove` refreshes sinks after removal.
+- `sinks/sketchybar.sh` defaults `AGENT_MONITOR_STATE_FILE` to that path.
+
 ### Changed: `core/prune.sh`
 
 - Skip agents whose `name` is `herdr`. Their pane ids are herdr pane ids,
