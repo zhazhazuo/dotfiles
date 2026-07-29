@@ -54,6 +54,13 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
             ;;
     esac
 
+    DISPLAY_LABEL="$label"
+    case "$state" in
+        needs-help | needs-attention)
+            DISPLAY_LABEL="<$label>"
+            ;;
+    esac
+
     CLICK_SCRIPT=""
     case "$pane" in
         %*)
@@ -66,9 +73,9 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
 
     sketchybar --add item "agent_monitor.$id" center
     if [ -n "$CLICK_SCRIPT" ]; then
-        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="<$label>" label.color="$LABEL_COLOR" click_script="$CLICK_SCRIPT"
+        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="$DISPLAY_LABEL" label.color="$LABEL_COLOR" click_script="$CLICK_SCRIPT"
     else
-        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="<$label>" label.color="$LABEL_COLOR"
+        sketchybar --set "agent_monitor.$id" drawing=on icon.drawing=off label="$DISPLAY_LABEL" label.color="$LABEL_COLOR"
     fi
 done < "$TMP_CURRENT"
 
