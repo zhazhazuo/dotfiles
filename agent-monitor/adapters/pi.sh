@@ -15,7 +15,14 @@ BIN="${ADAPTER_DIR}/../bin/agent-monitor"
 event="${1:-}"
 json="$(cat 2>/dev/null || true)"
 
-# Reject subagent sessions (defense-in-depth)
+# Reject pi-subagents child processes (canonical guard).
+# pi-subagents sets these env vars on every child Pi process it spawns.
+# The adapter inherits the Pi process environment, so they are visible here.
+if [[ -n "${PI_SUBAGENT_PARENT_SESSION:-}" || -n "${PI_SUBAGENT_CHILD:-}" ]]; then
+	exit 0
+fi
+
+# Reject subagent sessions (defense-in-depth backstop: legacy run-N layout)
 session_id=$(printf '%s' "$json" | jq -r '.session_id // empty' 2>/dev/null || true)
 if printf '%s' "$session_id" | grep -qE '/run-[0-9]+/session\.jsonl$'; then
 	exit 0
