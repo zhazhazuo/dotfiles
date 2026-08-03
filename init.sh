@@ -19,6 +19,10 @@ ln -sf ~/dotfiles/fish ~/.config/fish
 rm -rf ~/.tmux.conf
 ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
+# herdr
+rm -rf ~/.config/herdr/config.toml
+ln -sf ~/dotfiles/herdr/config.toml ~/.config/herdr/config.toml
+
 # Ghostty
 rm -rf ~/.config/ghostty
 ln -sf ~/dotfiles/ghostty ~/.config/ghostty

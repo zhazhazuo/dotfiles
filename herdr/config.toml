@@ -1,0 +1,89 @@
+onboarding = false
+[keys]
+prefix = "ctrl+s"
+
+# Built-in action bindings
+new_workspace = "prefix+shift+n"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+workspace_picker = "prefix+s"        # built-in workspace switcher (was prefix+w)
+goto = "prefix+g"
+detach = "prefix+q"
+reload_config = "prefix+R"
+toggle_sidebar = "prefix+b"
+new_tab = "prefix+c"
+split_vertical = "prefix+v"
+split_horizontal = "prefix+-"
+close_pane = "prefix+x"
+close_tab = "prefix+X"
+zoom = "prefix+z"
+resize_mode = "prefix+r"
+previous_tab = "prefix+w"            # previous tab (was prefix+p)
+
+# Tab navigation
+next_tab = "prefix+n"
+rename_tab = "prefix+,"
+
+[terminal]
+default_shell = "/opt/homebrew/bin/fish"
+
+[ui]
+mouse_capture = true
+sidebar_width = 80
+sidebar_collapsed_mode = "hidden"
+sidebar_start_collapsed = true
+
+show_agent_labels_on_pane_borders = true
+agent_panel_sort = "priority"
+[theme]
+name = "catppuccin-macchiato"
+
+[theme.custom]
+panel_bg = "#000000"
+surface0 = "#000000"
+accent = "#419e2c"
+
+# Custom commands - type can be: shell, pane, popup, plugin_action
+# Project picker using fzf (type=shell runs detached)
+[[keys.command]]
+key = "prefix+t"
+type = "shell"
+command = "zoxide query -l | fzf --preview='eza -1 --color=always {}' | xargs -r -I{} herdr workspace new --name=$(basename {}) --cwd={}"
+
+# Last workspace toggle (plugin: third774/herdr-last-workspace)
+[[keys.command]]
+key = "prefix+tab"
+type = "plugin_action"
+command = "third774.last-workspace.toggle"
+description = "last workspace"
+
+# Agent launchers (type=pane opens temp zoomed pane)
+[[keys.command]]
+key = "prefix+m"
+type = "pane"
+command = "claude"
+
+[[keys.command]]
+key = "prefix+M"
+type = "pane"
+command = "codex"
+
+[[keys.command]]
+key = "prefix+o"
+type = "pane"
+command = "opencode"
+
+# Scratch terminal popup
+[[keys.command]]
+key = "prefix+T"
+type = "popup"
+command = "exec \"${SHELL:-sh}\""
+width = "80%"
+height = "80%"
+
+[ui.toast]
+delivery = "system"
+
+[experimental]
+switch_ascii_input_source_in_prefix = true
+kitty_graphics = true
