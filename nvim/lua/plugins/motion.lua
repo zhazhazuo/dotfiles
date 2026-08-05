@@ -16,6 +16,15 @@ local tmux_navigator = {
 	},
 }
 
+local hop = {
+	"smoka7/hop.nvim",
+	version = "*",
+	opts = {},
+	keys = {
+		{ "<leader>w", "<cmd>HopWordCurrentLine<cr>", desc = "Hop Word (Current Line)" },
+	},
+}
+
 local flash = {
 	"folke/flash.nvim",
 	config = function()
@@ -23,34 +32,6 @@ local flash = {
 	end,
 	opts = {},
 	keys = {
-		{
-			"<leader>w",
-			mode = { "n", "x", "o" },
-			function()
-				-- Replaces HopWordCurrentLine: label every word on the cursor line.
-				require("flash").jump({
-					search = { multi_window = false },
-					label = { after = { 0, 0 } },
-					matcher = function(win)
-						local buf = vim.api.nvim_win_get_buf(win)
-						local lnum = vim.api.nvim_win_get_cursor(win)[1]
-						local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1] or ""
-						local matches = {}
-						local init = 1
-						while true do
-							local s, e = line:find("%w+", init)
-							if not s then
-								break
-							end
-							matches[#matches + 1] = { pos = { lnum, s - 1 }, end_pos = { lnum, e - 1 } }
-							init = e + 1
-						end
-						return matches
-					end,
-				})
-			end,
-			desc = "Flash Word (Current Line)",
-		},
 		{
 			"R",
 			mode = { "n", "x", "o" },
@@ -112,4 +93,5 @@ return {
 	tmux_navigator,
 	flash,
 	leap,
+	hop,
 }
