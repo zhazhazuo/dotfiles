@@ -9,6 +9,7 @@ local config = {
 		rename = { enabled = true },
 		words = { enabled = true },
 		lazygit = { enabled = true },
+		gitbrowse = { enabled = true },
 		scope = { enabled = true },
 		statuscolumn = { enabled = true },
 		input = { enabled = true },
@@ -125,6 +126,28 @@ local config = {
 		})
 	end,
 	keys = {
+		-- gitbrowse (replaces gitlinker.nvim)
+		{
+			"<leader>gY",
+			function()
+				Snacks.gitbrowse({
+					what = "repo",
+					notify = false,
+					open = function(url)
+						vim.fn.setreg("+", url)
+						Snacks.notify("Copied: " .. url, { title = "Git Browse" })
+					end,
+				})
+			end,
+			desc = "Copy Repository URL",
+		},
+		{
+			"<leader>gB",
+			function()
+				Snacks.gitbrowse({ what = "repo" })
+			end,
+			desc = "Open Repository in Browser",
+		},
 		-- explorer
 		{
 			"<leader>fl",
