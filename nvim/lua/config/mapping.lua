@@ -1,6 +1,8 @@
 local map = vim.keymap.set
 
-map("n", "<leader>gg", "<cmd> LazyGit <CR>", {
+map("n", "<leader>gg", function()
+  Snacks.lazygit()
+end, {
   desc = "LazyGit",
 })
 
@@ -31,6 +33,7 @@ end, {
 map("n", "<leader>k", '<cmd> execute "%bdelete|edit#|bdelete#"<CR>', { desc = "Only keep current buffer" })
 
 local function reset_the_world()
+  require("lazy").load({ plugins = { "persistence.nvim" } })
   vim.defer_fn(function()
     require("persistence").load()
   end, 100)
@@ -55,7 +58,7 @@ map("i", "<C-E>", "<C-o>$", { noremap = true, desc = "move to end" })
 -- For terminal
 map("t", "<C-X>", "<C-\\><C-n>", { desc = "Quit from T mode" })
 
-map("n", "gU", [[:<C-u>s/\<./\u&/g<CR> :nohlsearch<CR>]], { desc = "Upper the First Letter" })
+map("n", "<leader>gU", [[:<C-u>s/\<./\u&/g<CR> :nohlsearch<CR>]], { desc = "Upper the First Letter" })
 
 map("n", "<leader>cp", ':let @+ = expand("%:.")<CR>', { desc = "Copy The Current File Path." })
 

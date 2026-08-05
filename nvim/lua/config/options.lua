@@ -1,5 +1,8 @@
 require("config.mapping")
 
+-- mason.nvim loads on :Mason only. Add its bin dir to PATH so LSP servers resolve without it.
+vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
+
 vim.diagnostic.config({
 	virtual_lines = {
 		current_line = true,

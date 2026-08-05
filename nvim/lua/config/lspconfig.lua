@@ -9,6 +9,12 @@ M.init = function(client)
 	end
 end
 
+-- Apply capabilities and on_init to every server (Neovim 0.11+ wildcard).
+vim.lsp.config("*", {
+	capabilities = capabilities,
+	on_init = M.init,
+})
+
 vim.filetype.add({
 	extension = {
 		hubl = "hubl",
@@ -62,19 +68,11 @@ local lsp_list = {
 	"html",
 	"cssls",
 	"tailwindcss",
-	"quick_lint_js",
 	"emmet_ls",
 	"jinja_lsp",
 	"jsonls",
 	"yamlls",
 }
-
-for _, lsp in ipairs(lsp_list) do
-	vim.lsp.config[lsp] = {
-		capabilities = capabilities,
-		on_init = M.init,
-	}
-end
 
 local function with_extra_filetypes(lsp, extra_filetypes)
 	local filetypes = vim.deepcopy(vim.lsp.config[lsp].filetypes or {})
@@ -96,19 +94,29 @@ end
 local vue_language_server_path = vim.fn.stdpath("data")
 	.. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 
--- tsgo: TypeScript-native LSP for TS/JS files
+-- Detect a Vue/Nuxt project. tsgo cannot load the Vue plugin, so in a Vue
+-- project ts_ls must own both .ts and .vue files. One server, one graph.
+local function is_vue_project()
+	local root = vim.fs.root(0, { "package.json", ".git" }) or vim.fn.getcwd()
+	if vim.fs.find({ "nuxt.config.ts", "nuxt.config.js", "vue.config.js" }, { path = root })[1] then
+		return true
+	end
+	local ok, lines = pcall(vim.fn.readfile, root .. "/package.json")
+	return ok and table.concat(lines, "\n"):match('"[%w@/-]*vue[%w-]*"%s*:') ~= nil
+end
+
+local vue_project = is_vue_project()
+
+-- tsgo: TypeScript-native LSP for TS/JS files (non-Vue projects only)
 vim.lsp.config.tsgo = {
-	capabilities = capabilities,
-	on_init = M.init,
 	cmd = { "tsgo", "--lsp", "--stdio" },
 	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
 	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 }
 
--- ts_ls: only for Vue (with @vue/typescript-plugin)
+-- ts_ls: owns Vue files always. In a Vue project it also owns TS/JS files
+-- (with @vue/typescript-plugin), so rename and references work across .vue and .ts.
 vim.lsp.config.ts_ls = {
-	capabilities = capabilities,
-	on_init = M.init,
 	init_options = {
 		plugins = {
 			{
@@ -118,30 +126,20 @@ vim.lsp.config.ts_ls = {
 			},
 		},
 	},
-	filetypes = { "vue" },
-}
-
-vim.lsp.config.quick_lint_js = {
-	capabilities = capabilities,
-	on_init = M.init,
-	filetypes = { "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
+	filetypes = vue_project
+		and { "vue", "typescript", "javascript", "typescriptreact", "javascriptreact" }
+		or { "vue" },
 }
 
 vim.lsp.config.html = {
-	capabilities = capabilities,
-	on_init = M.init,
 	filetypes = with_extra_filetypes("html", { "hubl", "jinja" }),
 }
 
 vim.lsp.config.cssls = {
-	capabilities = capabilities,
-	on_init = M.init,
 	filetypes = with_extra_filetypes("cssls", { "csshubl" }),
 }
 
 vim.lsp.config.tailwindcss = {
-	capabilities = capabilities,
-	on_init = M.init,
 	filetypes = with_extra_filetypes("tailwindcss", { "hubl", "jinja", "csshubl" }),
 	settings = {
 		tailwindCSS = {
@@ -155,22 +153,16 @@ vim.lsp.config.tailwindcss = {
 }
 
 vim.lsp.config.emmet_ls = {
-	capabilities = capabilities,
-	on_init = M.init,
 	filetypes = with_extra_filetypes("emmet_ls", { "hubl", "jinja", "csshubl" }),
 }
 
 vim.lsp.config.jinja_lsp = {
-	capabilities = capabilities,
-	on_init = M.init,
 	filetypes = with_extra_filetypes("jinja_lsp", { "hubl" }),
 	root_markers = { "jinja-lsp.toml", "pyproject.toml", "Cargo.toml", ".git" },
 }
 
 -- JSON/YAML schemas via SchemaStore.nvim
 vim.lsp.config.jsonls = {
-	capabilities = capabilities,
-	on_init = M.init,
 	settings = {
 		json = {
 			schemas = require("schemastore").json.schemas(),
@@ -180,8 +172,6 @@ vim.lsp.config.jsonls = {
 }
 
 vim.lsp.config.yamlls = {
-	capabilities = capabilities,
-	on_init = M.init,
 	settings = {
 		yaml = {
 			schemaStore = {
@@ -193,6 +183,12 @@ vim.lsp.config.yamlls = {
 	},
 }
 
--- Enable all configured LSP servers
-vim.lsp.enable({ "tsgo", "ts_ls", unpack(lsp_list) })
+-- Enable all configured LSP servers.
+-- Vue project: ts_ls (with Vue plugin) + vue_ls for template support, no tsgo.
+-- Other projects: tsgo for TS/JS, ts_ls dormant for Vue only.
+if vue_project then
+	vim.lsp.enable(vim.list_extend({ "ts_ls", "vue_ls" }, lsp_list))
+else
+	vim.lsp.enable({ "tsgo", "ts_ls", unpack(lsp_list) })
+end
 -- vim.diagnostic.config({ virtual_text = true })

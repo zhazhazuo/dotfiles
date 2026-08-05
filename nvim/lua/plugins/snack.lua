@@ -8,6 +8,7 @@ local config = {
 		quickfile = { enabled = true },
 		rename = { enabled = true },
 		words = { enabled = true },
+		lazygit = { enabled = true },
 		scope = { enabled = true },
 		statuscolumn = { enabled = true },
 		input = { enabled = true },

@@ -96,25 +96,32 @@ local context = {
   },
 }
 
-local spectre = {
-  "nvim-pack/nvim-spectre",
-  build = false,
-  cmd = "Spectre",
-  opts = { open_cmd = "noswapfile vnew" },
+local grug_far = {
+  "MagicDuck/grug-far.nvim",
+  cmd = { "GrugFar", "GrugFarWithin" },
+  opts = {},
   keys = {
     {
       "<leader>sP",
       function()
-        require("spectre").Toggle()
+        require("grug-far").toggle_instance({ instanceName = "far", staticBuffer = true })
       end,
-      desc = "Toggle Spectre",
+      desc = "Toggle Grug Far",
     },
     {
       "<leader>sp",
+      mode = { "n", "v" },
       function()
-        require("spectre").open_file_search({ select_word = true })
+        local grug = require("grug-far")
+        local search
+        if vim.fn.mode():match("[vV\22]") then
+          search = grug.get_current_visual_selection()
+        else
+          search = vim.fn.expand("<cword>")
+        end
+        grug.open({ prefills = { search = search, paths = vim.fn.expand("%") } })
       end,
-      desc = "Search Word in Current File (Spectre)",
+      desc = "Search Word in Current File (Grug Far)",
     },
   },
 }
@@ -190,7 +197,6 @@ local mason_lsp_servers = {
   "html",
   "cssls",
   "tailwindcss",
-  "quick_lint_js",
   "emmet_ls",
   "jinja_lsp",
   "tsgo",
@@ -215,7 +221,6 @@ local mason_packages = {
   "yaml-language-server",
   "bash-language-server",
   "graphql-language-service-cli",
-  "quick-lint-js",
   "jinja-lsp",
 
   "marksman",      -- markdown
@@ -234,7 +239,15 @@ local mason_packages = {
 
 local mason = {
   "williamboman/mason.nvim",
-  lazy = false,
+  cmd = {
+    "Mason",
+    "MasonInstall",
+    "MasonInstallAll",
+    "MasonUninstall",
+    "MasonUninstallAll",
+    "MasonUpdate",
+    "MasonLog",
+  },
   build = ":MasonUpdate",
   opts = {},
   config = function(_, opts)
@@ -268,6 +281,7 @@ local mason = {
 
 local mason_lspconfig = {
   "williamboman/mason-lspconfig.nvim",
+  event = { "BufReadPre", "BufNewFile" },
   dependencies = {
     "williamboman/mason.nvim",
     "neovim/nvim-lspconfig",
@@ -292,7 +306,7 @@ local quicker = {
 return {
   indentScope,
   context,
-  spectre,
+  grug_far,
   trouble,
   comment,
   mason,

@@ -1,32 +1,3 @@
-local snipe = {
-	"leath-dub/snipe.nvim",
-	event = "VimEnter",
-	keys = {
-		{
-			"<leader>fn",
-			function()
-				require("snipe").open_buffer_menu()
-			end,
-			desc = "Open Snipe buffer menu",
-		},
-	},
-	opts = {},
-}
-
-local telescope = {
-	"nvim-telescope/telescope.nvim",
-	cmd = "Telescope",
-	dependencies = {
-		{
-			"nvim-telescope/telescope-fzf-native.nvim",
-			build = "make",
-		},
-	},
-	opts = {
-		extensions_list = { "fzf" },
-	},
-}
-
 local spelunk = {
 	{
 		"EvWilson/spelunk.nvim",
@@ -34,7 +5,6 @@ local spelunk = {
 		dependencies = {
 			"folke/snacks.nvim", -- Optional: for enhanced fuzzy search capabilities
 			"nvim-treesitter/nvim-treesitter", -- Optional: for showing grammar context
-			"nvim-lualine/lualine.nvim",
 		},
 		config = function()
 			require("spelunk").setup({
@@ -63,8 +33,6 @@ local file_navigator = {
 }
 
 return {
-	-- snipe,
 	spelunk,
-	telescope,
 	file_navigator,
 }

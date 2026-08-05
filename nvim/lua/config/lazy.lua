@@ -28,4 +28,17 @@ require("lazy").setup({
     { import = "plugins" },
   },
   checker = { enabled = false },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "netrwPlugin", -- replaced by oil.nvim
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
 })
