@@ -20,6 +20,8 @@ function M.setup(opts)
 		SignColumn = { fg = palette.comment_muted, bg = bg },
 		EndOfBuffer = { fg = palette.selection, bg = bg },
 		NonText = { fg = palette.selection },
+		-- gitsigns links current-line blame to NonText (#3f3951), invisible on bg.
+		GitSignsCurrentLineBlame = { fg = palette.comment_muted, italic = true },
 		Whitespace = { fg = palette.selection },
 		WinSeparator = { fg = palette.selection },
 		VertSplit = { link = "WinSeparator" },
