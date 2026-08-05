@@ -148,6 +148,21 @@ local config = {
 			end,
 			desc = "Open Repository in Browser",
 		},
+		{
+			"<leader>gy",
+			mode = { "n", "v" },
+			function()
+				Snacks.gitbrowse({
+					what = "permalink",
+					notify = false,
+					open = function(url)
+						vim.fn.setreg("+", url)
+						Snacks.notify("Copied: " .. url, { title = "Git Browse" })
+					end,
+				})
+			end,
+			desc = "Copy Link to Line (Permalink)",
+		},
 		-- explorer
 		{
 			"<leader>fl",
