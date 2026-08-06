@@ -19,7 +19,9 @@ local tmux_navigator = {
 local hop = {
 	"smoka7/hop.nvim",
 	version = "*",
-	opts = {},
+	opts = {
+		extensions = {},
+	},
 	keys = {
 		{ "<leader>w", "<cmd>HopWordCurrentLine<cr>", desc = "Hop Word (Current Line)" },
 	},
