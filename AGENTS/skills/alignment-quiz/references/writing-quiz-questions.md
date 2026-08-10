@@ -16,6 +16,10 @@ How to select decisions and write questions and distractors that find real misal
 - Test the consequence or the boundary, not the label.
   - Bad: "What is the state called?" (tests the label)
   - Good: "The agent finds unresolved questions and sets `needs_review`. What does this mean?" (tests the consequence)
+- Stay at the idea level. A quiz checks alignment on decisions, not on implementation paths.
+  - Bad: "Which file constant renders the synonyms section?" (tests code detail — withdraw it if asked)
+  - Good: "After v2, does the create flow keep the searches column when the detail screen removes it?" (tests the decision boundary)
+- If the user answers a question with "too detailed", withdraw the question. Do not rescore it. Note the calibration for future quizzes.
 
 ## Write the Options
 
@@ -27,6 +31,16 @@ How to select decisions and write questions and distractors that find real misal
   - **A common default** the decision overturns (e.g., "auto-repair everything" when the decision is "repair only structural breaks").
   - **An over-generalization** (e.g., "skip any skill" when the decision is "skip only structural skills").
   - **A confusion with a related concept** (e.g., "call core skills directly" when the decision is "re-enter via update mode").
+
+## Present Through the Question Tool
+
+When the structured question tool is available, use it instead of a plain numbered list:
+
+- Max 4 questions per call. Split a 6–10 question quiz into two or three rounds. Keep one continuous numbering scheme across rounds.
+- Each question needs a `header` (max 16 characters) — use the decision ID or topic, for example "Merge check".
+- Each option needs a short label (max 60 characters) and a brief description.
+- Do not mark the correct option as recommended or place it always first. Vary its position across questions. Any hint corrupts the measurement.
+- The tool adds a free-text answer row to every question automatically. Custom answers are legitimate: read them as mismatches to discuss or as quiz corrections, never as failures.
 
 ## After Scoring
 
