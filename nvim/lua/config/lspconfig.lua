@@ -98,8 +98,15 @@ local vue_language_server_path = vim.fn.stdpath("data")
 -- project ts_ls must own both .ts and .vue files. One server, one graph.
 local function is_vue_project()
 	local root = vim.fs.root(0, { "package.json", ".git" }) or vim.fn.getcwd()
-	if vim.fs.find({ "nuxt.config.ts", "nuxt.config.js", "vue.config.js" }, { path = root })[1] then
-		return true
+	-- The config files live at the project root, next to package.json. Check them
+	-- directly. A recursive vim.fs.find from the root walks the whole project tree
+	-- and can freeze Neovim for seconds in large directories (for example, when an
+	-- oil buffer triggers this module).
+	local uv = vim.uv or vim.loop
+	for _, name in ipairs({ "nuxt.config.ts", "nuxt.config.js", "vue.config.js" }) do
+		if uv.fs_stat(root .. "/" .. name) then
+			return true
+		end
 	end
 	local ok, lines = pcall(vim.fn.readfile, root .. "/package.json")
 	return ok and table.concat(lines, "\n"):match('"[%w@/-]*vue[%w-]*"%s*:') ~= nil
