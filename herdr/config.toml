@@ -18,7 +18,7 @@ close_pane = "prefix+x"
 close_tab = "prefix+X"
 zoom = "prefix+z"
 resize_mode = "prefix+r"
-previous_tab = "prefix+w"            # previous tab (was prefix+p)
+previous_tab = "prefix+p"            # previous tab in order (prefix+w now toggles recent tab, see commands)
 
 # Tab navigation
 next_tab = "prefix+n"
@@ -35,8 +35,22 @@ sidebar_start_collapsed = true
 
 show_agent_labels_on_pane_borders = true
 agent_panel_sort = "priority"
+
+# Right-aligned status entries in the desktop tab bar (Herdr 0.8.2+)
+# Workspace name comes from a small script; hostname and datetime resolve
+# on the server.
+tab_bar_right = [
+  { type = "command", command = "~/.config/herdr/status-workspace.sh", interval_seconds = 3, timeout_seconds = 2 },
+  { type = "hostname" },
+  { type = "datetime", format = "%H:%M" },
+]
+tab_bar_right_separator = " · "
+
+# Title Herdr writes to the outer terminal (Ghostty tab bar).
+# Tokens: {hostname}, {workspace}, {tab}, {pane}, {terminal_title}
+window_title = "{workspace}"    # shown in Ghostty tab; options: {hostname}, {workspace}, {tab}, {pane}
 [theme]
-name = "catppuccin-macchiato"
+name = "catppuccin"
 
 [theme.custom]
 panel_bg = "#000000"
@@ -56,6 +70,13 @@ key = "prefix+tab"
 type = "plugin_action"
 command = "third774.last-workspace.toggle"
 description = "last workspace"
+
+# Recent tab toggle (plugin: QuantumDancer/herdr-last-tab) - like tmux last-window
+[[keys.command]]
+key = "prefix+w"
+type = "plugin_action"
+command = "quantumdancer.last-tab.toggle"
+description = "recent tab"
 
 # Agent launchers (type=pane opens temp zoomed pane)
 [[keys.command]]

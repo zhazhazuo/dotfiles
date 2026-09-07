@@ -1,22 +1,93 @@
 {
-  "lastChangelogVersion": "0.73.0",
-  "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
+  "lastChangelogVersion": "0.84.4",
+  "defaultProvider": "qoder",
+  "defaultModel": "GLM-5.3-Flash",
   "defaultThinkingLevel": "high",
   "packages": [
     "npm:pi-subagents",
-    "npm:pi-mermaid",
-    "npm:@uadgj/pi-superpowers-support",
-    "https://github.com/obra/superpowers",
-    "npm:pi-notify",
-    "../../Workshop/pi-brain-wiki/extensions/llm-wiki/index.ts",
-    "../../Workshop/pi-brain/pi-brain-wiki/extensions/llm-wiki/index.ts",
-    "../../Workshop/pi-brain-wiki/extensions/brain-wiki/index.ts"
+    "npm:pi-lens",
+    "npm:@plannotator/pi-extension",
+    "../../Research/pi-psyduck/extensions/pi-loop/index.ts",
+    "/Users/walkerw/Research/pi-provider-qoder/dist/index.js",
+    "npm:context-mode",
+    "git:github.com/obra/superpowers",
+    "npm:@ff-labs/pi-fff",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@juicesharp/rpiv-todo",
+    "/Users/walkerw/Research/pi-intercom",
+    "../../Research/pi-bernard",
+    "https://github.com/ayghri/i-have-adhd",
+    "npm:@rahularya01/pi-cursor",
+    "npm:confluence-cli",
+    "npm:pi-mcp-adapter"
   ],
+  "subagents": {
+    "agentOverrides": {
+      "oracle": {
+        "model": "qoder/Qwen3.8-Max",
+        "thinking": "max",
+        "fallbackModels": []
+      },
+      "advisor": {
+        "model": "qoder/Qwen3.8-Max",
+        "thinking": "max",
+        "fallbackModels": []
+      },
+      "planner": {
+        "model": "qoder/Qwen3.8-Max",
+        "thinking": "max",
+        "fallbackModels": []
+      },
+      "reviewer": {
+        "model": "qoder/Qwen3.8-Max",
+        "thinking": "high",
+        "fallbackModels": []
+      },
+      "context-builder": {
+        "model": "qoder/DeepSeek-V4-Flash",
+        "thinking": "max",
+        "fallbackModels": []
+      },
+      "worker": {
+        "model": "qoder/DeepSeek-V4-Flash",
+        "thinking": "max",
+        "fallbackModels": []
+      },
+      "researcher": {
+        "model": "qoder/DeepSeek-V4-Flash",
+        "thinking": "high",
+        "fallbackModels": []
+      },
+      "scout": {
+        "model": "qoder/DeepSeek-V4-Flash",
+        "thinking": "high",
+        "fallbackModels": []
+      },
+      "delegate": {
+        "model": "qoder/DeepSeek-V4-Flash",
+        "thinking": "high",
+        "fallbackModels": []
+      }
+    }
+  },
   "terminal": {
     "showTerminalProgress": true
   },
   "showHardwareCursor": true,
   "hideThinkingBlock": true,
-  "theme": "dark"
+  "theme": "dark",
+  "showCacheMissNotices": false,
+  "collapseChangelog": true,
+  "outputPad": 1,
+  "autocompleteMaxVisible": 3,
+  "transport": "auto",
+  "tuiMode": "fullscreen",
+  "extensions": [
+    "/Users/walkerw/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs"
+  ],
+  "enableSkillCommands": true,
+  "editorPaddingX": 0,
+  "markdown": {
+    "mermaid": "final"
+  }
 }

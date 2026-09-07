@@ -27,7 +27,7 @@ local obsidian = {
 		workspaces = {
 			{
 				name = "personal",
-				path = "~/Library/Mobile Documents/iCloud~md~obsidian/Documents",
+				path = "~/Research/Brain",
 			},
 		},
 		attachments = {

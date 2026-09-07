@@ -26,5 +26,9 @@
   "tui.select.cancel": ["escape", "ctrl+c"],
   "app.model.select": [],
   "app.model.cycleForward": [],
-  "app.model.cycleBackward": []
+  "app.model.cycleBackward": [],
+  "tui.altScreen.lineUp": "ctrl+k",
+  "tui.altScreen.lineDown": "ctrl+j",
+  "tui.altScreen.halfPageUp": "ctrl+h",
+  "tui.altScreen.halfPageDown": "ctrl+l"
 }
