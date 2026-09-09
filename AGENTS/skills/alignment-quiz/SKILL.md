@@ -1,6 +1,7 @@
 ---
 name: alignment-quiz
 description: Use when a design or brainstorming session has produced a set of decisions and you need to verify the agent and the user are aligned before finalizing a document or transitioning to implementation.
+disable-model-invocation: true
 ---
 
 # Alignment Quiz

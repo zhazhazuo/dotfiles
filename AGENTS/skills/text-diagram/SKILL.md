@@ -3,6 +3,7 @@ name: text-diagram
 description: Use when a human needs to process raw text faster by identifying invariant content, skip-worthy filler, and a better-than-linear reading order.
 argument-hint: "[text to analyze]"
 allowed-tools: Read, Write, Bash
+disable-model-invocation: true
 ---
 
 # Text-to-Diagram Reading Map

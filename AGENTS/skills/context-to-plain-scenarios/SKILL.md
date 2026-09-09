@@ -1,6 +1,7 @@
 ---
 name: context-to-plain-scenarios
 description: Build a plain scenarios document from a context document (PRD, proposal, or spec) with stable S- identifiers and source references tracing each scenario back to the originating lines. Use when Walker asks to distill a PRD or spec into traceable plain scenarios that support a QA test scenario doc, when a feature needs a scenario list for discussion/estimation with auditable provenance, or as the companion to context-to-qa-scenarios.
+disable-model-invocation: true
 ---
 
 # Context → Plain Scenarios

@@ -5,6 +5,7 @@ description: Transform iterative working documents (SPECs, plans, design docs, a
   revision history, discussion artifacts, and superseded decisions while preserving
   the current objective, accepted decisions, active constraints, assumptions, open
   questions, and execution-critical context
+disable-model-invocation: true
 ---
 
 # Context Distillation Skill

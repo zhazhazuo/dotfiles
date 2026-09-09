@@ -1,6 +1,7 @@
 ---
 name: pea-shooter
 description: use this skill when you need a subagent to do a task.
+disable-model-invocation: true
 ---
 
 # Pea Shooter

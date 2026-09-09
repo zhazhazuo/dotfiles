@@ -1,6 +1,7 @@
 ---
 name: context-to-qa-scenarios
 description: Compare a context document (PRD, proposal, or Jira bug description) against the current codebase implementation and produce a behavior-driven QA test scenario list for unit tests and E2E tests. Each test scenario links to a stable S-N identifier from the companion plain scenarios doc so coverage is traceable to source. Use when Walker asks to derive test cases / QA scenarios from a spec, proposal, or bug report, when a feature or phase needs test coverage, when a context doc is updated and scenarios need refresh, or when asking "what do we need to test" for a feature or fix.
+disable-model-invocation: true
 ---
 
 # Context → QA Test Scenarios
