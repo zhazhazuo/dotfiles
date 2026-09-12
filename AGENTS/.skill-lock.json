@@ -1,0 +1,50 @@
+{
+  "version": 3,
+  "skills": {
+    "install-anti-slop": {
+      "source": "dmmulroy/anti-slop",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/dmmulroy/anti-slop.git",
+      "skillPath": "skills/install-anti-slop/SKILL.md",
+      "skillFolderHash": "89044d21c75a367eac1ddbaf208e650b1a7d5820",
+      "installedAt": "2026-08-15T11:45:17.764Z",
+      "updatedAt": "2026-09-12T06:03:14.443Z"
+    },
+    "show-me": {
+      "source": "humanlayer/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/humanlayer/skills.git",
+      "skillPath": "plugins/show-me/skills/show-me/SKILL.md",
+      "skillFolderHash": "0bdb821a21e793a4f6f82a7078c052154447e5cc",
+      "installedAt": "2026-09-10T15:09:18.176Z",
+      "updatedAt": "2026-09-10T15:09:18.176Z"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "skillFolderHash": "d79e2a5bb4df4a386c2adcdd9ab8709bba28c3f6",
+      "pluginName": "example-skills",
+      "installedAt": "2026-09-10T15:10:17.179Z",
+      "updatedAt": "2026-09-10T15:10:17.179Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "cline",
+    "codex",
+    "cursor",
+    "droid",
+    "gemini-cli",
+    "github-copilot",
+    "kilo",
+    "kimi-code-cli",
+    "opencode",
+    "warp",
+    "zed"
+  ]
+}

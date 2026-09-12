@@ -53,15 +53,14 @@ ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.agents/AGENTS.md
-mkdir -p ~/.agents/skills
-for item in ~/dotfiles/AGENTS/skills/*; do
-  ln -sf "$item" ~/.agents/skills/
-done
 
-# Third-party skills
-# Installed and updated with: npx -y skills add <owner/repo> -g -a universal --skill '*' -y
-# The CLI stores real files in ~/.agents/skills and tracks them in ~/.agents/.skill-lock.json.
-# Do not add entries for npx-installed skills here; they are managed by the lockfile.
+# Skills store: custom skills and npx-installed skills live together as real
+# directories in ~/dotfiles/AGENTS/skills. npx skills writes there through the
+# symlink and never touches the root, so a symlink is safe.
+mkdir -p ~/.agents
+rm -rf ~/.agents/skills ~/.agents/.skill-lock.json
+ln -sf ~/dotfiles/AGENTS/skills ~/.agents/skills
+ln -sf ~/dotfiles/AGENTS/.skill-lock.json ~/.agents/.skill-lock.json
 
 # Pi
 rm -f ~/.pi/agent/AGENTS.md
