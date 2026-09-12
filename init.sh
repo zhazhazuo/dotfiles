@@ -58,6 +58,19 @@ for item in ~/dotfiles/AGENTS/skills/*; do
   ln -sf "$item" ~/.agents/skills/
 done
 
+# Third-party agent skills (npx skills, universal store)
+# The store is version-controlled in dotfiles; npx skills writes real files here.
+mkdir -p ~/.config/agents
+rm -rf ~/.config/agents/skills
+ln -sf ~/dotfiles/AGENTS/third-party-skills ~/.config/agents/skills
+if [ -f ~/dotfiles/AGENTS/third-party-skills/skills.txt ]; then
+  while IFS= read -r pkg; do
+    case "$pkg" in ''|'#'*) continue ;; esac
+    npx -y skills add "$pkg" -g -a universal --skill '*' -y \
+      || echo "warning: failed to install $pkg"
+  done < ~/dotfiles/AGENTS/third-party-skills/skills.txt
+fi
+
 # Pi
 rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md

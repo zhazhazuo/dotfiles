@@ -1,0 +1,4 @@
+# Third-party skill packages, one owner/repo per line.
+# Lines starting with # and empty lines are skipped.
+# Example:
+# vercel-labs/agent-skills
