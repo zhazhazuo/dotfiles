@@ -58,18 +58,10 @@ for item in ~/dotfiles/AGENTS/skills/*; do
   ln -sf "$item" ~/.agents/skills/
 done
 
-# Third-party agent skills (npx skills, universal store)
-# The store is version-controlled in dotfiles; npx skills writes real files here.
-mkdir -p ~/.config/agents
-rm -rf ~/.config/agents/skills
-ln -sf ~/dotfiles/AGENTS/third-party-skills ~/.config/agents/skills
-if [ -f ~/dotfiles/AGENTS/third-party-skills/skills.txt ]; then
-  while IFS= read -r pkg; do
-    case "$pkg" in ''|'#'*) continue ;; esac
-    npx -y skills add "$pkg" -g -a universal --skill '*' -y \
-      || echo "warning: failed to install $pkg"
-  done < ~/dotfiles/AGENTS/third-party-skills/skills.txt
-fi
+# Third-party skills
+# Installed and updated with: npx -y skills add <owner/repo> -g -a universal --skill '*' -y
+# The CLI stores real files in ~/.agents/skills and tracks them in ~/.agents/.skill-lock.json.
+# Do not add entries for npx-installed skills here; they are managed by the lockfile.
 
 # Pi
 rm -f ~/.pi/agent/AGENTS.md
