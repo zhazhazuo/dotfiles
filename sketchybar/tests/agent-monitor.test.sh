@@ -102,3 +102,12 @@ STATE
 "$SCRIPT"
 expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.w2_p4 center\n--set agent_monitor.w2_p4 drawing=on icon.drawing=off label=SF label.color=0xff238636 click_script=herdr agent focus w2:p4\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
 assert_equal "$expected" "$(cat "$SET_LOG")" "herdr rows get herdr focus click, tmux rows unchanged"
+
+cat >"$STATE_FILE" <<'STATE'
+id	name	state	label	pane	session_id	updated_at
+w3_p47	herdr	subagents-running	AI-Report	w3:p47		130
+STATE
+: >"$SET_LOG"
+"$SCRIPT"
+expected=$'--remove agent_monitor.w2_p4\n--remove agent_monitor.one\n--set agent_monitor drawing=off\n--add item agent_monitor.w3_p47 center\n--set agent_monitor.w3_p47 drawing=on icon.drawing=off label=<AI-Report> label.color=0xffd29922 click_script=herdr agent focus w3:p47'
+assert_equal "$expected" "$(cat "$SET_LOG")" "renders subagents-running in orange with attention brackets"

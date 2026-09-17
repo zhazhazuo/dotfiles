@@ -47,12 +47,15 @@ color_for_state() {
 	running) tmux_global_option @thm_green ;;
 	needs-help) tmux_global_option @thm_red ;;
 	needs-attention) tmux_global_option @thm_blue ;;
+	subagents-running) tmux_global_option @thm_peach ;;
 	*) tmux_global_option @thm_overlay_0 ;;
 	esac
 }
 
 # ── Timeout Decay ────────────────────────────────────────────────────────
 
+# Only needs-attention decays. subagents-running deliberately does not: subagent
+# runs last minutes, and a stale one is corrected in the store by prune instead.
 effective_state() {
 	local state="$1" updated_at="$2" now="$3"
 

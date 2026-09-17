@@ -41,12 +41,45 @@ agent_process_exists() {
 	printf '%s\n' "$processes" | grep -Eiq "(^|[[:space:]/])${name}([[:space:]]|$)"
 }
 
+# ── Stale Subagent Demotion ──────────────────────────────────────────────
+
+# pi-subagents refreshes its pane labels every 45s while subagents run, and
+# herdr expires them on its own TTL. A parked main agent whose heartbeat stopped
+# is therefore abandoned (parent died, labels never cleared): demote it to
+# needs-attention so the indicator does not claim work that is not happening.
+# No notification — only the agent-side transition into needs-attention notifies.
+SUBAGENT_STALE_SECONDS="${AGENT_MONITOR_SUBAGENT_STALE_SECONDS:-150}"
+
+demote_abandoned_subagents() {
+	local now id state checked age
+	now=$(date +%s)
+
+	for id in $(list_agents); do
+		state=$(get_field "$id" "state")
+		[[ "$state" == "subagents-running" ]] || continue
+
+		checked=$(get_field "$id" "subagents_checked_at")
+		[[ "$checked" =~ ^[0-9]+$ ]] || checked=0
+
+		age=$((now - checked))
+		if [[ "$age" -gt "$SUBAGENT_STALE_SECONDS" ]]; then
+			demote_subagents "$id"
+			printf '%s\n' "$id"
+		fi
+	done
+}
+
 # Main prune logic
 prune() {
 	local live_pane_ids
 	live_pane_ids=$(live_panes)
 
 	local ids_to_remove=()
+	local subagents_demoted
+
+	# Abandoned parked agents first: herdr entries are skipped by the liveness
+	# sweep below, so this is their only cleanup path in here.
+	subagents_demoted=$(demote_abandoned_subagents)
 
 	for id in $(list_agents); do
 		local pane name
@@ -79,8 +112,10 @@ prune() {
 		for id in "${ids_to_remove[@]}"; do
 			remove_agent "$id"
 		done
+	fi
 
-		# Refresh sinks after pruning
+	# Refresh sinks after any state change
+	if [[ ${#ids_to_remove[@]} -gt 0 || -n "$subagents_demoted" ]]; then
 		refresh_sinks
 	fi
 }

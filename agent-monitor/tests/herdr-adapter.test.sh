@@ -39,14 +39,33 @@ cat >"$FAKE_HERDR_SNAPSHOT" <<'JSON'
   {"agent":"pi","agent_status":"done","cwd":"/work/wiki","pane_id":"w5:p1","tab_id":"w5:t1"},
   {"agent":"pi","agent_status":"idle","cwd":"/work/play","pane_id":"w6:p1","tab_id":"w6:t1"},
   {"agent":"pi","agent_status":"unknown","cwd":"/work/none","pane_id":"w7:p1","tab_id":"w7:t1"},
-  {"agent":"pi","agent_status":"working","cwd":"/work/fallback","pane_id":"w8:p1","tab_id":"w8:t9"}
+  {"agent":"pi","agent_status":"working","cwd":"/work/fallback","pane_id":"w8:p1","tab_id":"w8:t9"},
+  {"agent":"pi","agent_status":"done","cwd":"/work/subs","pane_id":"w9:p1","tab_id":"w9:t1",
+   "state_labels":{"idle":"⏳ 1 subagent (sdd-implementer)","done":"⏳ 1 subagent (sdd-implementer)","working":"⏳ 1 subagent (sdd-implementer)"},
+   "tokens":{"summary":"⏳ 1 subagent (sdd-implementer)"}},
+  {"agent":"pi","agent_status":"idle","cwd":"/work/many","pane_id":"w9:p2","tab_id":"w9:t2",
+   "state_labels":{"idle":"⏳ 3 subagents (a, b, c)"}},
+  {"agent":"pi","agent_status":"working","cwd":"/work/busy","pane_id":"w9:p3","tab_id":"w9:t3",
+   "state_labels":{"working":"⏳ 1 subagent (a)"}},
+  {"agent":"pi","agent_status":"blocked","cwd":"/work/stuck","pane_id":"w9:p4","tab_id":"w9:t4",
+   "state_labels":{"blocked":"⏳ 1 subagent (a)"}},
+  {"agent":"pi","agent_status":"done","cwd":"/work/tokenonly","pane_id":"w9:p5","tab_id":"w9:t5",
+   "tokens":{"summary":"⏳ 2 subagents (a, b)"}},
+  {"agent":"pi","agent_status":"done","cwd":"/work/indexer","pane_id":"w9:p6","tab_id":"w9:t6",
+   "state_labels":{"done":"indexing"},"tokens":{"summary":"indexing"}}
  ],
  "tabs":[
   {"tab_id":"w2:t1","label":"SF"},
   {"tab_id":"w4:t1","label":"BRAIN"},
   {"tab_id":"w5:t1","label":"WIKI"},
   {"tab_id":"w6:t1","label":"PLAY"},
-  {"tab_id":"w7:t1","label":"NONE"}
+  {"tab_id":"w7:t1","label":"NONE"},
+  {"tab_id":"w9:t1","label":"SUBS"},
+  {"tab_id":"w9:t2","label":"MANY"},
+  {"tab_id":"w9:t3","label":"BUSY"},
+  {"tab_id":"w9:t4","label":"STUCK"},
+  {"tab_id":"w9:t5","label":"TOKENONLY"},
+  {"tab_id":"w9:t6","label":"INDEXER"}
  ]
 }},"type":"session_snapshot"}
 JSON
@@ -81,6 +100,59 @@ assert_jq "unknown -> not tracked" '.agents["w7_p1"] == null'
 
 HERDR_PANE_ID="w8:p1" "$ADAPTER" pane.agent_status_changed
 assert_jq "missing tab -> cwd basename label" '.agents["w8_p1"].label == "fallback"'
+
+# ── subagent state: parked main agent, workers still running ─────────────
+HERDR_PANE_ID="w9:p1" "$ADAPTER" pane.agent_status_changed
+assert_jq "done + subagent labels -> subagents-running" '.agents["w9_p1"].state == "subagents-running"'
+assert_jq "subagent count stored" '.agents["w9_p1"].subagents_count == 1'
+assert_jq "heartbeat recorded" '.agents["w9_p1"].subagents_checked_at > 0'
+
+HERDR_PANE_ID="w9:p2" "$ADAPTER" pane.agent_detected
+assert_jq "idle + subagent labels -> subagents-running" '.agents["w9_p2"].state == "subagents-running"'
+assert_jq "plural count parsed" '.agents["w9_p2"].subagents_count == 3'
+
+HERDR_PANE_ID="w9:p3" "$ADAPTER" pane.agent_status_changed
+assert_jq "working wins over subagent labels" '.agents["w9_p3"].state == "running"'
+
+HERDR_PANE_ID="w9:p4" "$ADAPTER" pane.agent_status_changed
+assert_jq "blocked wins over subagent labels" '.agents["w9_p4"].state == "needs-help"'
+
+HERDR_PANE_ID="w9:p5" "$ADAPTER" pane.agent_status_changed
+assert_jq "summary token alone detects subagents" '.agents["w9_p5"].state == "subagents-running"'
+
+HERDR_PANE_ID="w9:p6" "$ADAPTER" pane.agent_status_changed
+assert_jq "unrelated metadata does not fake subagents" '.agents["w9_p6"].state == "needs-attention"'
+
+# ── repeated report refreshes keep a parked agent alive ──────────────────
+# pi-subagents republishes its labels every 45s. That is a no-op transition
+# (still subagents-running), but it must refresh the heartbeat — otherwise
+# prune would demote a working session as abandoned, and the sinks must not
+# see updated_at move (they sort on it).
+OLD=$(( $(date +%s) - 400 ))
+jq --argjson ts "$OLD" '.agents["w9_p2"].subagents_checked_at = $ts | .agents["w9_p2"].updated_at = 123' \
+	"$AGENT_MONITOR_STATE_DIR/state.json" >"$AGENT_MONITOR_STATE_DIR/tmp.json"
+mv "$AGENT_MONITOR_STATE_DIR/tmp.json" "$AGENT_MONITOR_STATE_DIR/state.json"
+
+HERDR_PANE_ID="w9:p2" "$ADAPTER" pane.agent_status_changed
+assert_jq "refresh keeps the parked state" '.agents["w9_p2"].state == "subagents-running"'
+assert_jq "refresh renews the heartbeat" ".agents[\"w9_p2\"].subagents_checked_at > $OLD"
+assert_jq "refresh leaves updated_at alone" '.agents["w9_p2"].updated_at == 123'
+
+AGENT_MONITOR_SUBAGENT_STALE_SECONDS=150 "$BIN" prune
+assert_jq "refreshed parked agent survives prune" '.agents["w9_p2"].state == "subagents-running"'
+
+# ── exiting the subagent state ───────────────────────────────────────────
+cat >"$FAKE_HERDR_SNAPSHOT" <<'JSON'
+{"id":"cli:api:snapshot","result":{"snapshot":{
+ "agents":[
+  {"agent":"pi","agent_status":"done","cwd":"/work/subs","pane_id":"w9:p1","tab_id":"w9:t1"}
+ ],
+ "tabs":[{"tab_id":"w9:t1","label":"SUBS"}]
+}},"type":"session_snapshot"}
+JSON
+HERDR_PANE_ID="w9:p1" "$ADAPTER" pane.agent_status_changed
+assert_jq "labels cleared -> needs-attention" '.agents["w9_p1"].state == "needs-attention"'
+assert_jq "count reset on exit" '.agents["w9_p1"].subagents_count == 0'
 
 # ── unknown event removes a tracked agent ────────────────────────────────
 HERDR_PANE_ID="w6:p1" "$ADAPTER" pane.agent_status_changed # idle, tracked

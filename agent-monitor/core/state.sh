@@ -158,6 +158,40 @@ transition_agent() {
 	printf '%s' "$prev_state"
 }
 
+# ── Subagent Heartbeat ───────────────────────────────────────────────────
+
+# Record the subagent heartbeat for a parked main agent.
+# Deliberately does not bump updated_at: that field tracks real state changes
+# and the sinks sort on it, so a 45s refresh must not reshuffle the status bar.
+touch_subagents() {
+	local id="$1" count="${2:-0}" now
+	[[ "$count" =~ ^[0-9]+$ ]] || count=0
+	now=$(date +%s)
+
+	read_state | jq --arg id "$id" --argjson n "$count" --arg ts "$now" \
+		'.agents[$id] = ((.agents[$id] // {}) * {subagents_count: $n, subagents_checked_at: ($ts | tonumber)})' \
+		| write_state
+}
+
+# Demote a parked main agent to needs-attention. Used when its subagent
+# heartbeat went stale: the parent died without clearing its pane labels.
+demote_subagents() {
+	local id="$1"
+
+	read_state | jq --arg id "$id" \
+		'.agents[$id] = ((.agents[$id] // {}) * {state: "needs-attention", subagents_count: 0})' \
+		| write_state
+}
+
+# Clear the subagent bookkeeping once the main agent is no longer parked.
+clear_subagents() {
+	local id="$1"
+
+	read_state | jq --arg id "$id" \
+		'.agents[$id] = ((.agents[$id] // {}) * {subagents_count: 0, subagents_checked_at: null})' \
+		| write_state
+}
+
 # ── Sink Refresh ─────────────────────────────────────────────────────────
 
 # Refresh all sinks after a state change. Single definition, used by

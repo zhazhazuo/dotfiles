@@ -37,7 +37,6 @@ cat >"$AGENT_MONITOR_STATE_DIR/state.json" <<'JSON'
 JSON
 
 "$BIN" prune
-
 fail=0
 assert_jq() {
 	local desc="$1" filter="$2"
@@ -51,6 +50,27 @@ assert_jq() {
 
 assert_jq "dead tmux pane pruned" '.agents["%99"] == null'
 assert_jq "herdr agent kept despite non-tmux pane id" '.agents["w2_p4"] != null'
+
+# ── stale subagent demotion ──────────────────────────────────────────────
+# herdr entries are skipped by the tmux sweep, so an abandoned orange is only
+# cleaned up by the heartbeat check.
+NOW=$(date +%s)
+export AGENT_MONITOR_SUBAGENT_STALE_SECONDS=150
+cat >"$AGENT_MONITOR_STATE_DIR/state.json" <<JSON
+{"version":1,"agents":{
+ "w3_p47":{"name":"herdr","state":"subagents-running","label":"AI-Report","pane":"w3:p47","session_id":"","updated_at":100,"subagents_count":1,"subagents_checked_at":$((NOW - 300))},
+ "w4_p11":{"name":"herdr","state":"subagents-running","label":"FRESH","pane":"w4:p11","session_id":"","updated_at":100,"subagents_count":1,"subagents_checked_at":$((NOW - 10))},
+ "w5_p12":{"name":"herdr","state":"subagents-running","label":"NOHEARTBEAT","pane":"w5:p12","session_id":"","updated_at":100},
+ "w6_p13":{"name":"herdr","state":"needs-attention","label":"BLUE","pane":"w6:p13","session_id":"","updated_at":100}
+}}
+JSON
+
+"$BIN" prune
+assert_jq "stale parked agent demoted to needs-attention" '.agents["w3_p47"].state == "needs-attention"'
+assert_jq "stale demotion clears the count" '.agents["w3_p47"].subagents_count == 0'
+assert_jq "fresh heartbeat survives prune" '.agents["w4_p11"].state == "subagents-running"'
+assert_jq "missing heartbeat is treated as abandoned" '.agents["w5_p12"].state == "needs-attention"'
+assert_jq "needs-attention untouched" '.agents["w6_p13"].state == "needs-attention"'
 
 if [[ "$fail" -ne 0 ]]; then
 	exit 1

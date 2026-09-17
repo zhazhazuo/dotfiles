@@ -38,7 +38,7 @@ Commands:
 
 Agents: pi, codex, cursor, opencode, claude
 Events: SessionStart, RunStart, ToolStart, ToolEnd, PermissionRequest,
-        InputRequired, TurnComplete, Stop
+        InputRequired, TurnComplete, Stop, SubagentsRunning
 EOF
 }
 

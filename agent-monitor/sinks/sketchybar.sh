@@ -49,6 +49,9 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
         needs-attention)
             LABEL_COLOR="0xff1f6feb"
             ;;
+        subagents-running)
+            LABEL_COLOR="0xffd29922"
+            ;;
         *)
             LABEL_COLOR="0xffffffff"
             ;;
@@ -56,7 +59,7 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
 
     DISPLAY_LABEL="$label"
     case "$state" in
-        needs-help | needs-attention)
+        needs-help | needs-attention | subagents-running)
             DISPLAY_LABEL="<$label>"
             ;;
     esac

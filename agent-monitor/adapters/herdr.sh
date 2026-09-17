@@ -44,11 +44,41 @@ remove_pane() {
 	"$BIN" remove "$(sanitize_id "$1")" >/dev/null 2>&1 || true
 }
 
+# ── Subagent Detection ───────────────────────────────────────────────────
+
+# pi-subagents owns pane display metadata while background subagents run:
+#   --state-label idle=done=working="⏳ N subagent(s) (names)" --token summary=...
+# The label that applies is the pane's current status; the summary token is a
+# fallback for a report that arrived without labels. Matched case-insensitively
+# on "subagent" so a label of another reporter cannot be read as one.
+subagent_count() {
+	local entry="$1" status="$2" text
+
+	text=$(printf '%s' "$entry" | jq -r --arg st "$status" '
+		[ (.state_labels // {})[$st],
+		  ((.state_labels // {}) | to_entries[]? | .value),
+		  (.tokens.summary // empty) ]
+		| map(select(type == "string") | select(test("subagent"; "i")))
+		| first // empty' 2>/dev/null || true)
+
+	if [[ -z "$text" ]]; then
+		printf '0'
+		return 0
+	fi
+
+	if [[ "$text" =~ ([0-9]+)[[:space:]]+[Ss]ubagents? ]]; then
+		printf '%s' "${BASH_REMATCH[1]}"
+		return 0
+	fi
+
+	printf '1'
+}
+
 # Reconcile one herdr pane from a snapshot.
 # Usage: reconcile_pane <snapshot_json> <pane_id>
 reconcile_pane() {
 	local snap="$1" pane_id="$2"
-	local entry status event tab_id label cwd
+	local entry status event tab_id label cwd count=0
 
 	entry=$(printf '%s' "$snap" | jq -c --arg pid "$pane_id" \
 		'first(.result.snapshot.agents[]? | select(.pane_id == $pid)) // empty')
@@ -65,14 +95,24 @@ reconcile_pane() {
 		return 0
 	fi
 
+	# Main agent parked with background subagents still running: report the
+	# distinct state so the indicator is not read as "finished, review me".
+	# blocked/working keep their own state — those are the urgent/active ones.
+	if [[ "$status" == "done" || "$status" == "idle" ]]; then
+		count=$(subagent_count "$entry" "$status")
+		if [[ "$count" -gt 0 ]]; then
+			event="SubagentsRunning"
+		fi
+	fi
+
 	tab_id=$(printf '%s' "$entry" | jq -r '.tab_id // empty')
 	label=$(printf '%s' "$snap" | jq -r --arg tid "$tab_id" \
 		'first(.result.snapshot.tabs[]? | select(.tab_id == $tid) | .label) // empty' 2>/dev/null || true)
 	cwd=$(printf '%s' "$entry" | jq -r '.cwd // empty')
 
 	"$BIN" reconcile herdr "$event" "$(jq -nc \
-		--arg pid "$pane_id" --arg label "$label" --arg cwd "$cwd" \
-		'{pane_id: $pid, label: $label, cwd: $cwd}')"
+		--arg pid "$pane_id" --arg label "$label" --arg cwd "$cwd" --argjson subs "$count" \
+		'{pane_id: $pid, label: $label, cwd: $cwd, subagents: $subs}')"
 }
 
 event_pane_id() {

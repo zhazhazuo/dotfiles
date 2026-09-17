@@ -10,6 +10,11 @@
 #   PromptSubmit/RunStart/Tool*   → running
 #   PermissionRequest/InputRequired → needs-help
 #   TurnComplete/Stop             → needs-attention
+#   SubagentsRunning              → subagents-running
+#
+# SubagentsRunning: the main agent is parked (its turn ended) while background
+# subagents it spawned are still running. Distinct from needs-attention so the
+# indicator is not read as "finished, review me" — no notification is sent.
 #
 # Agent-specific overrides only when legacy event names differ.
 
@@ -40,6 +45,10 @@ map_event_to_state() {
 		;;
 	TurnComplete | Stop)
 		printf 'needs-attention'
+		return 0
+		;;
+	SubagentsRunning)
+		printf 'subagents-running'
 		return 0
 		;;
 	esac
@@ -201,22 +210,43 @@ reconcile() {
 	id=$(resolve_id "$agent_name" "$json")
 	label=$(resolve_label "$json")
 
+	# Subagent count (herdr publishes it alongside its pane labels)
+	local subagents
+	subagents=$(printf '%s' "$json" | jq -r '.subagents // 0' 2>/dev/null)
+	[[ "$subagents" =~ ^[0-9]+$ ]] || subagents=0
+
 	# Get current state for transition detection
 	local prev_state
 	prev_state=$(get_field "$id" "state")
 
 	# Skip if state unchanged and stable
 	if [[ "$prev_state" == "$new_state" ]] && [[ -n "$prev_state" ]]; then
+		# A parked main agent still needs its heartbeat refreshed: pi-subagents
+		# republishes its labels every 45s, and prune uses the heartbeat to tell
+		# a live wait from an abandoned one.
+		if [[ "$new_state" == "subagents-running" ]]; then
+			touch_subagents "$id" "$subagents"
+		fi
 		return 0
 	fi
 
 	# Apply state transition
-	upsert_agent "$id" \
-		"name=$agent_name" \
-		"state=$new_state" \
-		"label=$label" \
-		"pane=${TMUX_PANE:-$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)}" \
+	local fields=(
+		"name=$agent_name"
+		"state=$new_state"
+		"label=$label"
+		"pane=${TMUX_PANE:-$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)}"
 		"session_id=$session_id"
+	)
+
+	upsert_agent "$id" "${fields[@]}"
+
+	# Subagent bookkeeping is numeric, so it bypasses the string-only upsert.
+	if [[ "$new_state" == "subagents-running" ]]; then
+		touch_subagents "$id" "$subagents"
+	elif [[ "$prev_state" == "subagents-running" ]]; then
+		clear_subagents "$id"
+	fi
 
 	# Notify on attention transitions
 	if [[ "$prev_state" != "$new_state" ]]; then

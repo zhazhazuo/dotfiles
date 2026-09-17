@@ -64,6 +64,7 @@ agent-monitor clear
 |-------|-------|---------|
 | `idle` | gray | Agent exists, not active |
 | `running` | green | Agent is working |
+| `subagents-running` | orange | Main agent parked, background subagents still running |
 | `needs-attention` | blue | Finished, needs review |
 | `needs-help` | red | Blocked, needs input |
 
@@ -77,6 +78,28 @@ herdr startup.
 Status mapping: `working`→running, `blocked`→needs-help, `done`→needs-attention,
 `idle`→idle, `unknown`→removed. Labels come from herdr tab labels. Clicking a
 SketchyBar item for a herdr agent runs `herdr agent focus <pane_id>`.
+
+### Subagent state (`subagents-running`)
+
+When pi-subagents runs background subagents, it publishes pane display metadata:
+`--state-label idle=done=working="⏳ N subagent(s) (names)"` alongside a
+`summary` token, refreshed every 45s and cleared when the runs finish. A parked
+main agent (`done`/`idle`) carrying that metadata is reported as
+`subagents-running` (orange) instead of `needs-attention` (blue), and no
+notification is sent. When the labels clear, the same event type fires and the
+agent transitions to `needs-attention` — that is when you get the "finished"
+notification.
+
+Precedence: `blocked` → needs-help, `working` → running, otherwise a positive
+subagent count → subagents-running, `done` → needs-attention, `idle` → idle.
+Detection reads the state label for the pane's current status, then any label,
+then the `summary` token, matching on "subagent" case-insensitively.
+
+Because herdr expires pane metadata on its own TTL without emitting an event,
+`agent-monitor prune` demotes a `subagents-running` agent whose heartbeat
+(`subagents_checked_at`) is older than `AGENT_MONITOR_SUBAGENT_STALE_SECONDS`
+(default 150) back to `needs-attention`. Herdr entries are otherwise skipped by
+prune, so this is their only cleanup path there.
 
 Install:
 

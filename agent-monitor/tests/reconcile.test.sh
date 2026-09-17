@@ -19,7 +19,12 @@ for tool in sketchybar tmux; do
 	printf '#!/usr/bin/env bash\nexit 0\n' >"$TMP_DIR/bin/$tool"
 	chmod +x "$TMP_DIR/bin/$tool"
 done
+# Record notifications instead of sending them
+printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$*" >>"${NOTIFY_LOG:?}"\n' >"$TMP_DIR/bin/osascript"
+chmod +x "$TMP_DIR/bin/osascript"
 export PATH="$TMP_DIR/bin:$PATH"
+export NOTIFY_LOG="$TMP_DIR/notify.log"
+: >"$NOTIFY_LOG"
 
 fail=0
 assert_jq() { # <description> <jq-filter>
@@ -50,6 +55,31 @@ assert_jq "session_id identity unchanged" '.agents["sess_1"] != null'
 
 TMUX_PANE="%5" "$BIN" reconcile pi RunStart '{"cwd":"/tmp/z"}'
 assert_jq "TMUX_PANE identity unchanged" '.agents["%5"] != null'
+
+# ── subagents-running: parked main agent ─────────────────────────────────
+"$BIN" reconcile herdr SubagentsRunning '{"pane_id":"w3:p47","label":"AI-Report","subagents":2}'
+assert_jq "SubagentsRunning -> subagents-running" '.agents["w3_p47"].state == "subagents-running"'
+assert_jq "count stored as a number" '.agents["w3_p47"].subagents_count == 2'
+
+if [[ -s "$NOTIFY_LOG" ]]; then
+	echo "FAIL: entering subagents-running must not notify"
+	fail=1
+else
+	echo "ok: entering subagents-running does not notify"
+fi
+
+# Finishing the last subagent is the moment the user is pinged.
+export AGENT_MONITOR_FRONT_APP="Safari"
+"$BIN" reconcile herdr TurnComplete '{"pane_id":"w3:p47","label":"AI-Report"}'
+assert_jq "last subagent done -> needs-attention" '.agents["w3_p47"].state == "needs-attention"'
+assert_jq "count cleared" '.agents["w3_p47"].subagents_count == 0'
+if [[ -s "$NOTIFY_LOG" ]]; then
+	echo "ok: finishing last subagent notifies"
+else
+	echo "FAIL: finishing last subagent should notify"
+	fail=1
+fi
+export AGENT_MONITOR_FRONT_APP="Ghostty"
 
 # ── TSV export on refresh ────────────────────────────────────────────────
 TSV="$AGENT_MONITOR_STATE_DIR/state.tsv"
