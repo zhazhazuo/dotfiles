@@ -14,6 +14,7 @@ System facts:
 - User-owned skills live in `~/.agents/skills` and sync through dotfiles. Package skills live under `~/.pi/agent/npm` or `~/.pi/agent/git` and revert on package update.
 - `~/.pi/agent/AGENTS.md` holds the navigator list and the install mandate. It is the registry, not a table copy.
 - Navigators are visible by design. The group list is data, not a constant.
+- Third-party skill visibility is enforced by the `skill-guard` extension (`~/.pi/agent/extensions/skill-guard.ts`): every skill a configured package provides is silenced with `disable-model-invocation: true` at session start, except the packages and paths named in the `skillGuard.keepVisible` whitelist in `~/.pi/agent/settings.json`. Package updates no longer need manual re-patching.
 
 ## Flow
 
@@ -27,7 +28,7 @@ System facts:
 ## Visibility rule
 
 - User-owned concrete skill: add `disable-model-invocation: true` to its frontmatter. It stays runnable through `/skill:name`.
-- Package-owned concrete skill: use the settings filter (`"skills": [...]`) when full removal is acceptable. A frontmatter patch inside a package reverts on package update; re-apply it after updates.
+- Package-owned concrete skill: silent by default — `skill-guard` covers every skill a configured package provides, including skills a later package update adds. Nothing to do. Add the package source (or a single skill path) to `skillGuard.keepVisible` in `~/.pi/agent/settings.json` only when the skill should stay in the model's prompt, then run `/skill-guard` or restart. Use the settings filter (`"skills": [...]`) instead when full removal is acceptable — it also removes `/skill:name`.
 - Extension tools: nothing to silence. Decide scope: repo-specific extensions go to that repo's `.pi/settings.json`; general extensions stay global.
 - Navigator skills: never silenced.
 
@@ -54,6 +55,7 @@ System facts:
 - Expand `~` to the home directory. Confirm every routed path exists.
 - Frontmatter: `name` equals the folder name. Description starts with `Use when`.
 - After any settings edit: the JSON parses.
+- After adding a package to `skillGuard.keepVisible`: run `/skill-guard` and confirm it reports no problems (a `whitelist entry not found` problem means the source string does not resolve, and a `whitelisted but still silenced` conflict means the flag must be removed by hand).
 - After a navigator change: start a fresh session and check the prompt lists the navigator set.
 
 ## Constraints

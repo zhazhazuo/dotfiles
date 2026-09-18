@@ -11,6 +11,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 |---|---|---|
 | Visual prototype (Vite + React + shadcn/ui) to discuss UI screens before implementation | visual-design-poc | `~/.agents/skills/visual-design-poc/SKILL.md` |
 | Aesthetic direction or typography for new or reshaped UI | frontend-design | `~/.agents/skills/frontend-design/SKILL.md` |
+| UI polish/craft: hover/press states, borders, shadows, radius, icons, motion, typography details when building or reviewing components | craft-design-engineering | `~/.agents/skills/craft-design-engineering/SKILL.md` |
 | shadcn/ui work: components.json, presets, `--preset` codes, adding, fixing, or composing components | shadcn | `~/.agents/skills/shadcn/SKILL.md` |
 | Explain the current topic with concise diagrams, code-shape sketches, or focused HTML artifacts | show-me | `~/.agents/skills/show-me/SKILL.md` |
 | Make raw text faster to read | text-diagram | `~/.agents/skills/text-diagram/SKILL.md` |
