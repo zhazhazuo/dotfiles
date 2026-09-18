@@ -1,72 +1,82 @@
 {
-  "lastChangelogVersion": "0.84.4",
+  "lastChangelogVersion": "0.85.1",
   "defaultProvider": "qoder",
   "defaultModel": "GLM-5.3-Flash",
   "defaultThinkingLevel": "high",
   "packages": [
-    "npm:pi-subagents",
-    "npm:pi-lens",
-    "npm:@plannotator/pi-extension",
-    "../../Research/pi-psyduck/extensions/pi-loop/index.ts",
-    "/Users/walkerw/Research/pi-provider-qoder/dist/index.js",
-    "npm:context-mode",
-    "git:github.com/obra/superpowers",
+    {
+      "source": "npm:pi-subagents",
+      "skills": [
+        "skills/pi-subagents/SKILL.md"
+      ]
+    },
+    {
+      "source": "npm:pi-lens",
+      "skills": []
+    },
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": []
+    },
+    "/Users/walkerw/Research/pi-provider-qoder",
+    {
+      "source": "npm:context-mode",
+      "skills": []
+    },
+    {
+      "source": "git:github.com/obra/superpowers",
+      "extensions": [],
+      "skills": [
+        "skills"
+      ]
+    },
     "npm:@ff-labs/pi-fff",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:@juicesharp/rpiv-todo",
-    "/Users/walkerw/Research/pi-intercom",
-    "../../Research/pi-bernard",
     "https://github.com/ayghri/i-have-adhd",
     "npm:@rahularya01/pi-cursor",
-    "npm:confluence-cli",
-    "npm:pi-mcp-adapter"
+    {
+      "source": "npm:confluence-cli",
+      "skills": []
+    },
+    "npm:pi-agent-browser-native"
   ],
+  "skillGuard": {
+    "keepVisible": [
+      "npm:pi-subagents",
+      "~/.agents/skills/dev-nav",
+      "~/.agents/skills/dev-flow-nav",
+      "~/.agents/skills/design-nav",
+      "~/.agents/skills/ops-nav",
+      "~/.agents/skills/integrate-capability"
+    ]
+  },
   "subagents": {
+    "defaultModel": "qoder/GLM-5.3-Flash",
     "agentOverrides": {
       "oracle": {
         "model": "qoder/Qwen3.8-Max",
-        "thinking": "max",
-        "fallbackModels": []
+        "thinking": "max"
       },
       "advisor": {
         "model": "qoder/Qwen3.8-Max",
-        "thinking": "max",
-        "fallbackModels": []
+        "thinking": "max"
       },
       "planner": {
         "model": "qoder/Qwen3.8-Max",
-        "thinking": "max",
-        "fallbackModels": []
+        "thinking": "max"
       },
       "reviewer": {
         "model": "qoder/Qwen3.8-Max",
-        "thinking": "high",
-        "fallbackModels": []
+        "thinking": "max"
       },
       "context-builder": {
-        "model": "qoder/DeepSeek-V4-Flash",
-        "thinking": "max",
-        "fallbackModels": []
-      },
-      "worker": {
-        "model": "qoder/DeepSeek-V4-Flash",
-        "thinking": "max",
-        "fallbackModels": []
-      },
-      "researcher": {
-        "model": "qoder/DeepSeek-V4-Flash",
-        "thinking": "high",
-        "fallbackModels": []
+        "model": "qoder/DeepSeek-Flash",
+        "thinking": "max"
       },
       "scout": {
-        "model": "qoder/DeepSeek-V4-Flash",
-        "thinking": "high",
-        "fallbackModels": []
-      },
-      "delegate": {
-        "model": "qoder/DeepSeek-V4-Flash",
-        "thinking": "high",
-        "fallbackModels": []
+        "model": "qoder/DeepSeek-Flash",
+        "thinking": "high"
       }
     }
   },
@@ -88,6 +98,8 @@
   "enableSkillCommands": true,
   "editorPaddingX": 0,
   "markdown": {
-    "mermaid": "final"
-  }
+    "mermaid": "streaming"
+  },
+  "quietStartup": false,
+  "fullscreenScrollbar": "auto"
 }
