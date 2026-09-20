@@ -1,6 +1,6 @@
 # One-Pager Template
 
-Use when Gate 1 fails because the one-pager is missing, too long, or padded. Draft it with the user, not for them — every field must reflect their intent. Exactly one page; anything that does not fit is out of scope or must replace something already on the page.
+Use only to hand the owner a fill-in shape after their first free-form draft attempt — when a failing field has no home in the draft. The owner fills it; you never do — every field must reflect their intent. Exactly one page; anything that does not fit is out of scope or must replace something already on the page.
 
 ````markdown
 # <Product name>
@@ -26,6 +26,6 @@ What this is not. Contention points end here: if it is not on this page, it is n
 
 Rules:
 
-- If it cannot be filled without fluff, the idea is not ready: research, plan, prototype, then write it again.
-- If it needs more than one page, it is too complex: trim or split.
+- If it cannot be filled without fluff, the idea is not ready: research, plan, prototype, then write it again — the owner, not the agent.
+- If it needs more than one page, it is too complex: trim or split — by the owner.
 - Keep it current: amend it explicitly when scope changes; never let drift accumulate outside it.

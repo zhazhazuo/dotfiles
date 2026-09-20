@@ -1,6 +1,6 @@
 ---
 name: dev-flow-nav
-description: Use when the task involves brainstorming a new feature or idea before building, writing or executing an implementation plan, running subagent-driven or parallel-agent development, isolating work in a git worktree, finishing or merging a development branch, or reviewing a plan or idea against the before-you-build build gates.
+description: Use when the task involves brainstorming a new feature or idea before building, writing or executing an implementation plan, running subagent-driven or parallel-agent development, isolating work in a git worktree, finishing or merging a development branch, or authoring or gating a one-pager against the three build gates before building.
 ---
 
 # Dev flow skills router
@@ -16,7 +16,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | Facing 2+ independent tasks without shared state or sequential dependencies | dispatching-parallel-agents | `~/.pi/agent/git/github.com/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md` |
 | Feature work needs isolation from current workspace, or before executing implementation plans | using-git-worktrees | `~/.pi/agent/git/github.com/obra/superpowers/skills/using-git-worktrees/SKILL.md` |
 | Implementation complete, tests pass, deciding how to integrate the work | finishing-a-development-branch | `~/.pi/agent/git/github.com/obra/superpowers/skills/finishing-a-development-branch/SKILL.md` |
-| Review a plan or idea against the before-you-build build gates before building | before-you-build | `~/.agents/skills/before-you-build/SKILL.md` |
+| Author or gate a one-pager before building (three build gates) | one-pager-gate | `~/.agents/skills/one-pager-gate/SKILL.md` |
 
 ## Notes
 
