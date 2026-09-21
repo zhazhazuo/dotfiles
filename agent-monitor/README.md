@@ -101,6 +101,24 @@ Because herdr expires pane metadata on its own TTL without emitting an event,
 (default 150) back to `needs-attention`. Herdr entries are otherwise skipped by
 prune, so this is their only cleanup path there.
 
+### Blocked on human input (`ask_user_question`)
+
+While a Pi session waits for a reply to the `ask_user_question` tool, the pane
+must read as blocked rather than `working`. Nothing in herdr's own Pi
+integration emits that: `ask_user_question` (from
+`@juicesharp/rpiv-ask-user-question`) publishes `rpiv:ask-user:blocked`
+`{active}` around the questionnaire, but herdr only reacts to `herdr:blocked`.
+
+The bridge lives in the Pi extension `pi/extensions/ask-user-attention.ts`
+(symlinked into `~/.pi/agent/extensions/`), not in this repo's adapters. It
+maps the rpiv event — with the first question text as the message — to
+`herdr:blocked`, plus core `ui_prompt_start`/`ui_prompt_end` as a backstop for
+any blocking extension prompt. Herdr then reports `agent_status=blocked`, which
+`adapters/herdr.sh` maps to `PermissionRequest` → `needs-help` (red) with the
+usual notification. The bridge is herdr- and TUI-only and collapses overlapping
+signals into a single `herdr:blocked` pair, so herdr's counted contract is not
+double-raised.
+
 Install:
 
 ```bash
