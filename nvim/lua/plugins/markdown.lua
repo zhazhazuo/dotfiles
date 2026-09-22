@@ -1,6 +1,102 @@
+local nice_mermaid = {
+	"iurysza/nice-mermaid.nvim",
+	ft = { "markdown" },
+	cmd = { "Mermaid" },
+	build = function(plugin)
+		local result = vim.system({ "npm", "ci", "--omit=dev" }, {
+			cwd = plugin.dir .. "/bridge",
+			text = true,
+		}):wait()
+		if result.code ~= 0 then
+			error(result.stderr)
+		end
+	end,
+	opts = {},
+	keys = {
+		{ "<leader>mm", "<cmd>Mermaid toggle<cr>", desc = "Toggle Mermaid source" },
+	},
+	config = function(_, opts)
+		require("nice_mermaid").setup(opts)
+
+		-- Keep the rendered diagram visible in normal mode and reveal the editable
+		-- source as soon as an insert is requested. The preview is a separate
+		-- non-modifiable buffer, and `i` there fails with E21 before InsertEnter can
+		-- fire, so the window has to leave the preview while the key is still being
+		-- dispatched.
+		local insert_entry = {
+			["i"] = true,
+			["I"] = true,
+			["a"] = true,
+			["A"] = true,
+			["o"] = true,
+			["O"] = true,
+			["c"] = true,
+			["C"] = true,
+			["s"] = true,
+			["S"] = true,
+			["R"] = true,
+			[vim.api.nvim_replace_termcodes("<Insert>", true, false, true)] = true,
+		}
+		local previews = {}
+		local group = vim.api.nvim_create_augroup("NiceMermaidMode", { clear = true })
+		local namespace = vim.api.nvim_create_namespace("nice_mermaid_mode")
+
+		local function has_preview(source)
+			for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+				if previews[buffer] and vim.api.nvim_buf_is_loaded(buffer) then
+					local number = vim.api.nvim_buf_get_name(buffer):match("^mermaid://(%d+)/")
+					if tonumber(number) == source then
+						return true
+					end
+				end
+			end
+			return false
+		end
+
+		vim.api.nvim_create_autocmd("FileType", {
+			group = group,
+			pattern = "mermaid-preview",
+			callback = function(event)
+				previews[event.buf] = true
+			end,
+		})
+		vim.api.nvim_create_autocmd("BufWipeout", {
+			group = group,
+			callback = function(event)
+				previews[event.buf] = nil
+			end,
+		})
+		-- ModeChanged rather than InsertLeave: leaving insert with CTRL-C does not
+		-- fire InsertLeave, but it does report the transition to normal mode. Only
+		-- insert/replace transitions are matched so that :Mermaid and command-line
+		-- commands are not immediately undone.
+		vim.api.nvim_create_autocmd("ModeChanged", {
+			group = group,
+			pattern = { "i:n", "R:n" },
+			callback = function()
+				local buffer = vim.api.nvim_get_current_buf()
+				if vim.bo[buffer].filetype ~= "markdown" or vim.bo[buffer].buftype ~= "" then
+					return
+				end
+				if not has_preview(buffer) then
+					return
+				end
+				require("nice_mermaid").command("toggle")
+			end,
+		})
+
+		vim.on_key(nil, namespace)
+		vim.on_key(function(key)
+			if previews[vim.api.nvim_get_current_buf()] and insert_entry[key] then
+				require("nice_mermaid").command("source")
+			end
+		end, namespace)
+	end,
+}
+
 local render_markdown = {
 	"MeanderingProgrammer/render-markdown.nvim",
-	ft = "markdown",
+	ft = { "markdown", "mermaid-preview" },
 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
 	---@module 'render-markdown'
 	---@type render.md.UserConfig
@@ -49,6 +145,16 @@ local render_markdown = {
 			enabled = false,
 			completions = {
 				lsp = { enabled = true },
+			},
+			overrides = {
+				filetype = {
+					["mermaid-preview"] = {
+						anti_conceal = { enabled = false },
+						win_options = {
+							concealcursor = { default = "nvic", rendered = "nvic" },
+						},
+					},
+				},
 			},
 			anti_conceal = {
 				enabled = true,
@@ -189,5 +295,6 @@ local render_markdown = {
 }
 
 return {
+  nice_mermaid,
 	render_markdown,
 }
