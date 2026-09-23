@@ -10,6 +10,19 @@ disable-model-invocation: true
 
 # Context Distillation Skill
 
+## When this is not the right skill
+
+For a progress file under `./.ai-artifacts/progress/`, the writer is
+**`progress-tracking`**. It owns the nine-section schema and the Tier-1 budget, and it
+applies the rules below on the write. Running this skill over a progress file would
+replace those sections with the generic ones at the end of this file, losing Status,
+State and Next — all Tier-1 sections the next session reads.
+
+This skill is for the other case: a SPEC, plan, design doc or agent output that has
+accumulated history and needs to become a clean handoff document.
+
+---
+
 Your task is to transform a working document into a clean handoff document for a future agent.
 
 Goal:

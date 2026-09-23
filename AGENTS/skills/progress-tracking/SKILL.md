@@ -16,9 +16,10 @@ The two are complementary; a progress file must never duplicate `git log`.
 
 Two paths, both mechanical:
 
-- **`/seal`** dispatches this skill, then `distill-context`. This is the only way it
-  is invoked — it declares `disable-model-invocation: true`, so you cannot call it
-  yourself.
+- **`/seal`** dispatches this skill. This is the only way it is invoked — the skill
+  declares `disable-model-invocation: true`, so you cannot call it yourself. The
+  dispatch carries the progress directory, the section list, and the distillation and
+  budget rules, so nothing here needs inferring from context.
 - **The injected `<progress-state>` block** states the canonical section names and
   asks you to keep the active file current when the state changes. That block is
   present on every model call; this file is not.
@@ -116,13 +117,49 @@ injects **Tier 1 only**, under a hard cap.
 | 2 | Decisions, Constraints, Assumptions | Only if the budget allows |
 | 3 | Context | **Never** — a pointer is injected instead |
 
-Two consequences for whoever writes the file:
+Three consequences for whoever writes the file:
 
 - A file whose **Tier 1** exceeds 400 tokens is replaced by a SKIPPED pointer and a
   distillation warning. Put history and reasoning in `Context`, where it costs the
   block nothing.
 - Anything the next session must act on **without opening the file** belongs in
   Tier 1. Tier 2 is a bonus; Tier 3 is a promise that someone will read the file.
+- **Measure before you write, not after.** Tier 1 is the five sections above, at
+  `ceil(chars / 4)` — **not the whole file**. A session wrote six drafts of one file
+  and had three refused, because "over the 400 per-file budget" was read as a
+  whole-file cap when 400 measures Tier 1 only. The injected block now states the
+  metric; use it before the first write.
+
+## Distil as you write
+
+Distillation is not a second pass over a finished file. It is what writing the file
+means: the file records the **current state**, and anything that does not change what
+the next session does is not state.
+
+Apply this on the write:
+
+```text
+Convert history into state.
+  "We switched from A to B because ..."    ->  "Decision: B"
+
+Convert rejected options into constraints.
+  "Redis was rejected; policy forbids it"  ->  "Constraint: Redis cannot be used."
+
+Drop, entirely:
+  revision history · reasoning traces · negotiation and feedback history
+  rejected alternatives · why a decision changed · process narration
+  status updates that no longer affect future work
+```
+
+Preserve: the objective, accepted decisions, active constraints, assumptions still in
+force, open questions, interfaces and contracts, risks that still exist.
+
+The test for one line: **would removing it change what the next session does?** If
+not, it belongs in `Context` — or nowhere.
+
+`distill-context` states the same discipline for any working document. This skill is
+the writer for a progress file because only it knows the schema and the budget. They
+are not two steps to be run in sequence over the same file.
 
 The reading half is no longer your job. Previously a session-start instruction told
 the agent to open this file and the progress directory; a session that ignored it
