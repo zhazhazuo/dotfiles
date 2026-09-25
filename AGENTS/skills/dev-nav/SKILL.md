@@ -18,6 +18,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | Naming functions, types, files, or writing code that agents can find by search | write-discoverable-code | `~/.agents/skills/write-discoverable-code/SKILL.md` |
 | React or Vue component mixes render with state or logic; structure review | structuring-ui-components | `~/.agents/skills/structuring-ui-components/SKILL.md` |
 | Derive QA test scenarios from a PRD, proposal, or bug description | context-to-qa-scenarios | `~/.agents/skills/context-to-qa-scenarios/SKILL.md` |
+| A repo is full of low-signal unit tests; delete tests that would not catch a real bug the E2E suite misses, convert their intent to E2E, fan the work out across subagents | prune-low-signal-tests | `~/.agents/skills/prune-low-signal-tests/SKILL.md` |
 | Verify agent and user agree on decisions before finalizing a document or implementation | alignment-quiz | `~/.agents/skills/alignment-quiz/SKILL.md` |
 | An endpoint does not exist yet, or a backend state (empty/error/duplicate) is needed for local dev or review — mock server, stub API, fixture data | api-mock | `~/.agents/skills/api-mock/SKILL.md` |
 | Creating new skills, editing existing skills, or verifying skills work before deployment | writing-skills | `~/.pi/agent/git/github.com/obra/superpowers/skills/writing-skills/SKILL.md` |
