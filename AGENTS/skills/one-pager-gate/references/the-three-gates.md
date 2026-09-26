@@ -22,35 +22,35 @@ Fail signals:
 - Padding to fill the page → not ready to build; research, plan, prototype, rewrite, iterate.
 - Plan content outside the one-pager → scope creep: trim it, or explicitly amend the one-pager.
 
-## Gate 2 — Core tech separable from the product
+## Gate 2 — Core tech separable from the build
 
 Limits: the idea must have real leverage and originality.
 
-Core tech is a method, skill, tool, library, or methodology that supports the product but survives without it — reusable IP. Products pivot; core tech is constant and compounding. It must be aligned with the long-term vision while staying independent of the product's direction. It does not require big-company scale: a library extracted from a codebase, or a refined and committed methodology, qualifies.
+Core tech is a method, skill, tool, library, or methodology that supports the build but survives without it. It is NOT commercial or legal IP, and nothing here requires selling or owning it — "reusable" means the work outlives the artifact it was built for. Products pivot, projects end or get cancelled; the core tech stays constant and compounding either way. It must be aligned with the long-term vision while staying independent of the build's direction. It does not require big-company scale: a library extracted from a codebase, or a refined and committed methodology, qualifies.
 
 Checks:
 
 - The plan names its core tech explicitly.
-- The core tech survives the product pivoting or dying.
+- The core tech survives the product pivoting or the project being abandoned.
 - The core tech is aligned with the long-term vision.
-- Building the product advances the core tech — compounding, not throwaway.
+- Building the artifact advances the core tech — compounding, not throwaway.
 
 Fail signals:
 
 - No core tech identified → the idea is not high enough leverage.
-- The core tech is the product itself (inseparable) → a pivot or shutdown destroys all the work.
-- Generic plumbing with no reuse beyond this product → not core tech.
+- The core tech is the artifact itself (inseparable) → a pivot, shutdown, or cancellation destroys all the work.
+- Generic plumbing with no reuse beyond this build → not core tech.
 
 ## Gate 3 — One defining constraint shapes the product
 
 Limits: feature creep; forces identity.
 
-One self-imposed constraint sits front and centre: the user sees and interacts with it all the time, and it gives the product its identity. Minecraft is built entirely from blocks. IKEA is flat-pack self-assembly. The design falls out of a well-chosen constraint because it shrinks the decision space to the problems that matter.
+One self-imposed constraint sits front and centre: the user — human or agent, for a product or an internal project — sees and interacts with it all the time, and it gives the build its identity. Minecraft is built entirely from blocks. IKEA is flat-pack self-assembly. The design falls out of a well-chosen constraint because it shrinks the decision space to the problems that matter.
 
 Checks:
 
 - Exactly one defining constraint, named in the plan.
-- Users encounter it constantly; it is obvious in the experience, not an internal implementation detail.
+- Users (or consuming agents) encounter it constantly; it is obvious in the experience, not an internal implementation detail.
 - It shrinks the decision space — name the decisions it makes for you.
 - It shapes all parts of the experience, not one screen or one feature.
 
