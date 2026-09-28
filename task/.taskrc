@@ -7,16 +7,30 @@ uda.estimate.label=Estimate
 uda.estimate.default=1
 uda.estimate.values=0.5,1,1.5,2,2.5,3
 
+# Pointers to where a task lives — see ~/.agents/skills/tasks/references/task-pointers.md
+# Every pointer must be declared here. An undeclared uda.* does not error: the value is
+# silently written into the description instead, destroying it.
+uda.repo.type=string
+uda.repo.label=Repo
+uda.branch.type=string
+uda.branch.label=Branch
+uda.doc.type=string
+uda.doc.label=Doc
+uda.ticket.type=string
+uda.ticket.label=Ticket
+
 # To use the default location of the XDG directories,
 # move this configuration file from ~/.taskrc to ~/.config/task/taskrc and update location config as follows:
 
 #data.location=~/.local/share/task
 #hooks.location=~/.config/task/hooks
 
-_forcecolor=1
+# _forcecolor=1
+
+color=on
 
 # Color theme
-include $HOME/dotfiles/task/themes/catppuccin-macchiato.theme
+# include $HOME/dotfiles/task/themes/dark-256.theme
 
-report.list.columns=id,project,description,tags,priority,estimate,start,due
-report.list.labels=ID,Project,Description,Tags,Pri,Est,StartAt,Due
+# report.list.columns=id,project,description,tags,priority,estimate,start,due
+# report.list.labels=ID,Project,Description,Tags,Pri,Est,StartAt,Due
