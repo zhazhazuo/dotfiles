@@ -1,8 +1,12 @@
 {
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "0.99.1",
   "defaultProvider": "qoder",
-  "defaultModel": "GLM-5.3-Flash",
+  "defaultModel": "DeepSeek-Flash",
   "defaultThinkingLevel": "high",
+  "defaultTools": [
+    "+codemode",
+    "+tool_search"
+  ],
   "packages": [
     {
       "source": "npm:pi-subagents",
@@ -39,7 +43,8 @@
       "source": "npm:confluence-cli",
       "skills": []
     },
-    "npm:pi-agent-browser-native"
+    "npm:pi-agent-browser-native",
+    "/Users/walkerw/Research/pi-walker"
   ],
   "skillGuard": {
     "keepVisible": [
@@ -85,7 +90,7 @@
   },
   "showHardwareCursor": true,
   "hideThinkingBlock": true,
-  "theme": "dark",
+  "theme": "system",
   "showCacheMissNotices": false,
   "collapseChangelog": true,
   "outputPad": 1,
@@ -100,6 +105,6 @@
   "markdown": {
     "mermaid": "streaming"
   },
-  "quietStartup": false,
+  "quietStartup": true,
   "fullscreenScrollbar": "auto"
 }
