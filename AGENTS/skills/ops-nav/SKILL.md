@@ -1,6 +1,6 @@
 ---
 name: ops-nav
-description: Use when the task involves Confluence pages, Plannotator plan or code review, handing a plan, spec, or document to the human for annotation and review in a Herdr pane, the context-mode knowledge base or ctx tools, pi-loop evidence, anti-slop oxlint plugins, distilling a working document into a state snapshot, grilling a plan or decision, coordinating pi sessions, Herdr panes, browser automation with the agent_browser tool, delegating a quick task to a subagent, or integrating a newly installed skill, tool, or extension into the agent setup.
+description: Use when the task involves Confluence pages, Plannotator plan or code review, handing a plan, spec, or document to the human for annotation and review in a Herdr pane, the context-mode knowledge base or ctx tools, pi-loop evidence, anti-slop oxlint plugins, taskwarrior tasks or the user's task list and agenda, distilling a working document into a state snapshot, grilling a plan or decision, coordinating pi sessions, Herdr panes, browser automation with the agent_browser tool, delegating a quick task to a subagent, or integrating a newly installed skill, tool, or extension into the agent setup.
 ---
 
 # Ops skills router
@@ -19,6 +19,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | Grill a plan, decision, or idea with relentless questions | grilling | `~/.agents/skills/grilling/SKILL.md` |
 | Coordinate with other pi sessions: list, message, ask, reply | pi-intercom | `~/Research/pi-intercom/skills/pi-intercom/SKILL.md` |
 | Control Herdr terminal multiplexer panes, tabs, workspaces (needs HERDR_ENV=1) | herdr | `~/.agents/skills/herdr/SKILL.md` |
+| Capture, update, reschedule, annotate, block, complete, delete, or review tasks in the user's Taskwarrior list | tasks | `~/.agents/skills/tasks/SKILL.md` |
 | Delegate one task to a subagent | pea-shooter | `~/.agents/skills/pea-shooter/SKILL.md` |
 | Drive browser sessions, page snapshots, click flows, screenshots, or web recording with the native `agent_browser` tool | pi-agent-browser-native | `~/.pi/agent/npm/node_modules/pi-agent-browser-native/README.md` |
 | Integrate a newly installed skill, tool, or extension; create or retire navigator groups; sync AGENTS.md | integrate-capability | `~/.agents/skills/integrate-capability/SKILL.md` |
