@@ -1,0 +1,33 @@
+# Routing fixture for dev-nav.
+# One dev moment per line. Columns are tab-separated:
+#
+#   id <TAB> moment <TAB> expected_phase <TAB> expected_skill <TAB> natural_ok <TAB> note
+#
+# expected_skill is the folder name of the skill the deck must route to.
+# expected_phase is the phase number from SKILL.md, or "-" for a negative control: the moment
+# is not a dev phase, so the deck must NOT land on a dev skill. Landing on another navigator
+# (ops-nav, design-nav, dev-flow-nav) or on no skill at all both count as a pass.
+# natural_ok = no means the moment is scored in --mode route only. Use it when the fixture
+# tree is too small, or missing the right surface, for the moment to be realistic, so a
+# natural-mode miss would measure the fixture and not the deck.
+#
+# A run passes a moment when the first skill file the agent reads is expected_skill,
+# or when it reads dev-nav itself and then expected_skill.
+# A run fails a moment when it reads a non-matching skill first, or reads no skill.
+
+m01	rename the function processOrder to handleOrder across the service	5	write-discoverable-code	yes	naming a symbol
+m02	the payment webhook tests fail intermittently and I do not know why	6	systematic-debugging	yes	unexplained failure
+m03	how does the auth middleware wire the session store?	1	ripwire-router	no	natural_ok=no: a 4-file tree does not need orienting, so a natural miss measures the fixture
+m04	write the failing test before I implement the retry logic	4	test-driven-development	yes	test first
+m05	we settled the caching decisions in this session, check we agree before I write the spec	2	alignment-quiz	no	natural_ok=no: alignment-quiz presupposes a session that made decisions, which a fresh eval run has not had
+m06	derive QA scenarios from this PRD against the current implementation	3	context-to-qa-scenarios	no	natural_ok=no: the fixture ships no PRD, so blocking on it is correct behavior, not a routing miss
+m07	I think the feature is done, can I push?	8	verification-before-completion	yes	claim done
+m08	get an independent reviewer on this branch before I merge	9	requesting-code-review	yes	independent review
+m09	the reviewer says my error handling is wrong, should I just change it?	9	receiving-code-review	yes	review feedback
+m10	this repo has 400 unit tests that only assert mocks, prune them	7	prune-low-signal-tests	yes	low-signal suite
+m11	the /v2/invoices endpoint is not built yet and I need the invoice screen to render	5	api-mock	no	natural_ok=no: the fixture ships no frontend, so the screen cannot be the reason to route
+m12	this component has state, handlers and fetch logic in the same file as the markup	5	structuring-ui-components	no	natural_ok=no: the fixture ships no frontend component to restructure
+m13	capture what we learned about the retry storm as a skill	10	writing-skills	yes	codify a lesson
+m14	check my work	8	verification-before-completion	yes	AMBIGUOUS with 9: no reviewer named, so self-check
+m15	add a test for the parser	1	ripwire-router	yes	AMBIGUOUS with 4 and 7: the parser already exists, so the correct route is ripwire-write-tests via phase 1. Expectation corrected after run 1; ripwire-router or ripwire-write-tests both pass
+m16	deploy the service to staging	-	-	yes	NEGATIVE CONTROL: no dev phase; a non-dev navigator such as ops-nav passes

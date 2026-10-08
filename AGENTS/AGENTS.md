@@ -10,13 +10,14 @@
 ## Dev Principle
 
 - Before implementing anything, find the measure first: identify the evidence that will show whether the ready-to-go change is good or not.
+- When implementing, use the skill `write-discoverable-code`: read `~/.agents/skills/write-discoverable-code/SKILL.md` before writing or renaming any function, type, constant, file, error message, or doc comment.
 - E2E tests are the default verification mechanism: use them to verify complex features work. End E2E testing with a verifiable, repeatable artifact.
 - Isolated (unit-style) tests are an exception, not the norm. When you must test a system in isolation, do it in TDD order: FIRST write all the ways it could fail, THEN write the code. NEVER write unit tests after you write code.
 
 ## Skill routing
 
 - Concrete skills are silent; navigators route to them. Navigators:
-  - `dev-nav`: code, debugging, TDD, review, components, test scenarios, writing skills
+  - `dev-nav`: the dev lifecycle card book — orient, align, specify, red, implement, debug, trim, verify, review, codify
   - `dev-flow-nav`: brainstorming, plans, plan gates, plan execution, worktrees, branches, parallel agents
   - `design-nav`: UI design, prototypes, shadcn, diagrams, PRD scenarios
   - `ops-nav`: tools, Confluence, context-mode, coordination, taskwarrior
