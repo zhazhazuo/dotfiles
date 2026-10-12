@@ -37,6 +37,16 @@ local nice_mermaid = {
 			["R"] = true,
 			[vim.api.nvim_replace_termcodes("<Insert>", true, false, true)] = true,
 		}
+		-- A visual selection has to start in the markdown buffer: the preview is
+		-- re-wrapped, so its text and line numbers do not match the file, and a mapping
+		-- such as <leader>a would otherwise hand Herdr the rendered text. The submode is
+		-- entered with feedkeys because a literal CTRL-V in a :normal argument is read
+		-- as the insert-literal prefix.
+		local visual_entry = {
+			["v"] = "v",
+			["V"] = "V",
+			[vim.api.nvim_replace_termcodes("<C-v>", true, false, true)] = "\22",
+		}
 		local previews = {}
 		local group = vim.api.nvim_create_augroup("NiceMermaidMode", { clear = true })
 		local namespace = vim.api.nvim_create_namespace("nice_mermaid_mode")
@@ -58,6 +68,12 @@ local nice_mermaid = {
 			pattern = "mermaid-preview",
 			callback = function(event)
 				previews[event.buf] = true
+				for lhs, submode in pairs(visual_entry) do
+					vim.keymap.set("n", lhs, function()
+						require("nice_mermaid").command("source")
+						vim.api.nvim_feedkeys(submode, "n", false)
+					end, { buffer = event.buf, desc = "Select in Markdown source" })
+				end
 			end,
 		})
 		vim.api.nvim_create_autocmd("BufWipeout", {
