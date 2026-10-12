@@ -52,7 +52,11 @@ cat >"$FAKE_HERDR_SNAPSHOT" <<'JSON'
   {"agent":"pi","agent_status":"done","cwd":"/work/tokenonly","pane_id":"w9:p5","tab_id":"w9:t5",
    "tokens":{"summary":"⏳ 2 subagents (a, b)"}},
   {"agent":"pi","agent_status":"done","cwd":"/work/indexer","pane_id":"w9:p6","tab_id":"w9:t6",
-   "state_labels":{"done":"indexing"},"tokens":{"summary":"indexing"}}
+   "state_labels":{"done":"indexing"},"tokens":{"summary":"indexing"}},
+  {"agent":"pi","agent_status":"idle","cwd":"/work/bridge","pane_id":"w9:p7","tab_id":"w9:t7",
+   "state_labels":{"idle":"⏳ 3 subagents (alpha, beta, gamma) · 0:45","done":"⏳ 3 subagents (alpha, beta, gamma) · 0:45","working":"⏳ 3 subagents (alpha, beta, gamma) · 0:45"}},
+  {"agent":"pi","agent_status":"done","cwd":"/work/overflow","pane_id":"w9:p8","tab_id":"w9:t8",
+   "state_labels":{"done":"⏳ 6 subagents (a, b, c, d, +2) · 12:05"}}
  ],
  "tabs":[
   {"tab_id":"w2:t1","label":"SF"},
@@ -65,7 +69,9 @@ cat >"$FAKE_HERDR_SNAPSHOT" <<'JSON'
   {"tab_id":"w9:t3","label":"BUSY"},
   {"tab_id":"w9:t4","label":"STUCK"},
   {"tab_id":"w9:t5","label":"TOKENONLY"},
-  {"tab_id":"w9:t6","label":"INDEXER"}
+  {"tab_id":"w9:t6","label":"INDEXER"},
+  {"tab_id":"w9:t7","label":"BRIDGE"},
+  {"tab_id":"w9:t8","label":"OVERFLOW"}
  ]
 }},"type":"session_snapshot"}
 JSON
@@ -123,8 +129,18 @@ assert_jq "summary token alone detects subagents" '.agents["w9_p5"].state == "su
 HERDR_PANE_ID="w9:p6" "$ADAPTER" pane.agent_status_changed
 assert_jq "unrelated metadata does not fake subagents" '.agents["w9_p6"].state == "needs-attention"'
 
+# The pi-subagent-manager bridge (pi/extensions/herdr-subagents-running.ts) emits
+# this exact shape: the count first, names in parens, then the elapsed clock that
+# makes each refresh a real presentation change.
+HERDR_PANE_ID="w9:p7" "$ADAPTER" pane.agent_status_changed
+assert_jq "bridge label with elapsed clock -> subagents-running" '.agents["w9_p7"].state == "subagents-running"'
+assert_jq "bridge label count parsed across the clock" '.agents["w9_p7"].subagents_count == 3'
+
+HERDR_PANE_ID="w9:p8" "$ADAPTER" pane.agent_status_changed
+assert_jq "bridge overflow form parsed" '.agents["w9_p8"].subagents_count == 6'
+
 # ── repeated report refreshes keep a parked agent alive ──────────────────
-# pi-subagents republishes its labels every 45s. That is a no-op transition
+# The publisher refreshes its labels every 45s. That is a no-op transition
 # (still subagents-running), but it must refresh the heartbeat — otherwise
 # prune would demote a working session as abandoned, and the sinks must not
 # see updated_at move (they sort on it).

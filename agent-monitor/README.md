@@ -81,14 +81,25 @@ SketchyBar item for a herdr agent runs `herdr agent focus <pane_id>`.
 
 ### Subagent state (`subagents-running`)
 
-When pi-subagents runs background subagents, it publishes pane display metadata:
-`--state-label idle=done=working="⏳ N subagent(s) (names)"` alongside a
-`summary` token, refreshed every 45s and cleared when the runs finish. A parked
+While background subagents run, the subagent publisher sets pane display
+metadata: `--state-label idle=done=working="⏳ N subagent(s) (names)"` alongside
+a `summary` token, refreshed every 45s and cleared when the runs finish. A parked
 main agent (`done`/`idle`) carrying that metadata is reported as
 `subagents-running` (orange) instead of `needs-attention` (blue), and no
 notification is sent. When the labels clear, the same event type fires and the
 agent transitions to `needs-attention` — that is when you get the "finished"
 notification.
+
+Two publishers speak this contract:
+
+- the legacy `pi-subagents` package, from Herdr-detectable child Pi processes;
+- `pi-subagent-manager`, which runs its threads **in-process** and publishes
+  nothing to Herdr. Its labels come from the local bridge
+  `pi/extensions/herdr-subagents-running.ts`, which counts running threads in the
+  manager's `pi-subagent:registry:v1` session entry and reports
+  `⏳ N subagent(s) (names) · m:ss`. The elapsed clock is deliberate: Herdr only
+  re-emits `pane.agent_status_changed` when the pane presentation actually
+  differs, and that re-emission is what refreshes the heartbeat below.
 
 Precedence: `blocked` → needs-help, `working` → running, otherwise a positive
 subagent count → subagents-running, `done` → needs-attention, `idle` → idle.

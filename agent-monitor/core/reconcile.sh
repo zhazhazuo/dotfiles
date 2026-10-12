@@ -221,9 +221,9 @@ reconcile() {
 
 	# Skip if state unchanged and stable
 	if [[ "$prev_state" == "$new_state" ]] && [[ -n "$prev_state" ]]; then
-		# A parked main agent still needs its heartbeat refreshed: pi-subagents
-		# republishes its labels every 45s, and prune uses the heartbeat to tell
-		# a live wait from an abandoned one.
+		# A parked main agent still needs its heartbeat refreshed: the subagent
+		# publisher republishes its labels every 45s, and prune uses the heartbeat
+		# to tell a live wait from an abandoned one.
 		if [[ "$new_state" == "subagents-running" ]]; then
 			touch_subagents "$id" "$subagents"
 		fi

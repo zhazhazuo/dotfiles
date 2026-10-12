@@ -43,8 +43,8 @@ agent_process_exists() {
 
 # ── Stale Subagent Demotion ──────────────────────────────────────────────
 
-# pi-subagents refreshes its pane labels every 45s while subagents run, and
-# herdr expires them on its own TTL. A parked main agent whose heartbeat stopped
+# The subagent publisher refreshes its pane labels every 45s while subagents
+# run, and herdr expires them on its own TTL. A parked main agent whose heartbeat stopped
 # is therefore abandoned (parent died, labels never cleared): demote it to
 # needs-attention so the indicator does not claim work that is not happening.
 # No notification — only the agent-side transition into needs-attention notifies.

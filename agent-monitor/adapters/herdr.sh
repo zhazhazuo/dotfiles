@@ -46,11 +46,16 @@ remove_pane() {
 
 # ── Subagent Detection ───────────────────────────────────────────────────
 
-# pi-subagents owns pane display metadata while background subagents run:
+# The subagent publisher owns pane display metadata while background subagents
+# run:
 #   --state-label idle=done=working="⏳ N subagent(s) (names)" --token summary=...
-# The label that applies is the pane's current status; the summary token is a
-# fallback for a report that arrived without labels. Matched case-insensitively
-# on "subagent" so a label of another reporter cannot be read as one.
+# Two publishers speak this contract: the old pi-subagents package (child Pi
+# processes under Herdr), and its in-process successor's bridge, the local Pi
+# extension pi/extensions/herdr-subagents-running.ts, which emits
+# "⏳ N subagent(s) (names) · m:ss". The label that applies is the pane's current
+# status; the summary token is a fallback for a report that arrived without
+# labels. Matched case-insensitively on "subagent" so a label of another
+# reporter cannot be read as one.
 subagent_count() {
 	local entry="$1" status="$2" text
 

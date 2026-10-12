@@ -15,9 +15,11 @@ BIN="${ADAPTER_DIR}/../bin/agent-monitor"
 event="${1:-}"
 json="$(cat 2>/dev/null || true)"
 
-# Reject pi-subagents child processes (canonical guard).
-# pi-subagents sets these env vars on every child Pi process it spawns.
-# The adapter inherits the Pi process environment, so they are visible here.
+# Reject legacy pi-subagents child processes.
+# pi-subagents spawned each subagent as a full Pi process and marked it with
+# these env vars, so the child would otherwise report as its own agent on the
+# parent's tmux pane. The successor, pi-subagent-manager, runs its threads
+# in-process: it spawns no child Pi process and therefore needs no guard here.
 if [[ -n "${PI_SUBAGENT_PARENT_SESSION:-}" || -n "${PI_SUBAGENT_CHILD:-}" ]]; then
 	exit 0
 fi
