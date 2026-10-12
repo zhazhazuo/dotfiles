@@ -64,6 +64,14 @@ A recorded branch that is not the one checked out is normal — report it and le
 Never check out, switch, stash or create a worktree to make the repository match the field: the
 working tree is the user's, and changing it is a separate decision that you ask for.
 
+## Delegating execution
+
+When the user explicitly asks to delegate a task's work and the `task_delegate` tool is available,
+use it: one phase per call, the task identified as in this skill, and a self-contained worker prompt
+built from the task's state capsule, not from the session transcript. When the tool is not
+available, fall back to the manual process: run the work in the current session and record the
+outcome with `task <id> annotate`. Delegation never completes the task; that stays a user decision.
+
 ## Process
 
 1. Read the current state with the commands above before proposing anything, including any
