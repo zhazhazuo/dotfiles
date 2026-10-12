@@ -1,0 +1,26 @@
+# Fixed prompts for the reply-style measure. One prompt per line, as:
+#
+#     <shape>|<prompt>
+#
+# shape is what the reply needs, judged before the reply exists:
+#   structure  the answer has parts the reader must find without reading all of it
+#   prose      the answer is one fact, one status, or one judgement
+#
+# The shape column is the expectation the measure scores against. A reply that needs
+# labels and has none is MISSING. A reply that needs none and carries a heading, a
+# list, or a table is SPURIOUS. Both are defects.
+#
+# Capture replies with  evals/capture-replies.sh <outdir>
+# Score them with      python3 evals/count-reply-defects.py \
+#                          --prompts evals/reply-prompts.txt <outdir>/*.md
+#
+# Product names are deliberate: they must stay intact and must not be defined.
+
+structure|Summarize the tradeoffs between polling and webhooks for our partner integration.
+structure|Compare optimistic and pessimistic locking for our orders table.
+structure|Review this plan: cache the user profile in Redis with a ten minute TTL.
+structure|Our deploy failed at the migration step, and the rollback failed too. What do I check first, and what does each check tell me?
+prose|What port does Postgres listen on by default?
+prose|Which HTTP status code means the request was valid but not permitted?
+prose|What is the default port for HTTPS?
+prose|Is a 200 response with an error message in the body a good API design?

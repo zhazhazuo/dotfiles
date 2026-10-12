@@ -1,6 +1,6 @@
 ---
 name: ops-nav
-description: Use when the task involves Confluence pages, Plannotator plan or code review, handing a plan, spec, or document to the human for annotation and review in a Herdr pane, the context-mode knowledge base or ctx tools, pi-loop evidence, anti-slop oxlint plugins, taskwarrior tasks or the user's task list and agenda, distilling a working document into a state snapshot, grilling a plan or decision, coordinating pi sessions, Herdr panes, browser automation with the agent_browser tool, delegating a quick task to a subagent, or integrating a newly installed skill, tool, or extension into the agent setup.
+description: Use when the task involves Confluence pages, Plannotator plan or code review, handing a plan, spec, or document to the human for annotation and review in a Herdr pane, the context-mode knowledge base or ctx tools, pi-loop evidence, anti-slop oxlint plugins, taskwarrior tasks or the user's task list and agenda, writing documentation in plain or Simplified Technical English, distilling a working document into a state snapshot, grilling a plan or decision, coordinating pi sessions, Herdr panes, browser automation with the agent_browser tool, delegating a quick task to a subagent, or integrating a newly installed skill, tool, or extension into the agent setup.
 ---
 
 # Ops skills router
@@ -16,6 +16,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | pi-loop evidence, status, or refinement routing | pi-loop | `~/Research/pi-psyduck/skills/pi-loop/SKILL.md` |
 | Install, configure, update, or migrate vendored anti-slop Oxlint plugins | install-anti-slop | `~/.agents/skills/install-anti-slop/SKILL.md` |
 | Transform a working document (SPEC, plan, design) into a clean state snapshot for handoff | distill-context | `~/.agents/skills/distill-context/SKILL.md` |
+| Write or rewrite documentation, READMEs, runbooks, error messages, or release notes in plain technical English, or check text against ASD-STE100 | simple-english | `~/.agents/skills/simple-english/SKILL.md` |
 | Grill a plan, decision, or idea with relentless questions | grilling | `~/.agents/skills/grilling/SKILL.md` |
 | Coordinate with other pi sessions: list, message, ask, reply | pi-intercom | `~/Research/pi-intercom/skills/pi-intercom/SKILL.md` |
 | Control Herdr terminal multiplexer panes, tabs, workspaces (needs HERDR_ENV=1) | herdr | `~/.agents/skills/herdr/SKILL.md` |
