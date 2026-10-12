@@ -1,6 +1,6 @@
 # [Created by task 3.4.2 6/5/2026 22:10:58]
-data.location=$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Brain/Artifact/.task
-news.version=3.4.2
+data.location=$HOME/Research/Brain/Artifact/.task
+news.version=3.5.0
 
 uda.estimate.type=numeric
 uda.estimate.label=Estimate
@@ -28,6 +28,23 @@ uda.ticket.label=Ticket
 # _forcecolor=1
 
 color=on
+
+# Column order: `project` and `description` sit next to each other, with `due` after both.
+report.next.columns=id,start.age,entry.age,depends,priority,project,description,tags,recur,scheduled.countdown,due.relative,until.remaining,urgency
+report.next.labels=ID,Active,Age,Deps,P,Project,Description,Tag,Recur,S,Due,Until,Urg
+# next answers "today or tomorrow, or already in flight" — not every pending task.
+# The date terms are calendar-aligned: due.before:tomorrow covers overdue AND today;
+# `due.before:2d` is a different thing (a rolling 48-hour window).
+report.next.filter=+PENDING -WAITING (+ACTIVE or due.before:tomorrow or due:tomorrow or scheduled.before:tomorrow or scheduled:tomorrow) limit:page
+report.list.columns=id,start.age,entry.age,depends.indicator,priority,project,description.count,tags,recur.indicator,scheduled.countdown,due,until.remaining,urgency
+report.list.labels=ID,Active,Age,D,P,Project,Description,Tags,R,Sch,Due,Until,Urg
+
+# backlog keeps the undated rest in sight, because `next` no longer shows it.
+report.backlog.description=Pending tasks with no due and no scheduled date
+report.backlog.columns=id,entry.age,priority,project,description,tags,urgency
+report.backlog.labels=ID,Age,P,Project,Description,Tag,Urg
+report.backlog.filter=+PENDING -WAITING -ACTIVE due.none: scheduled.none: limit:page
+report.backlog.sort=urgency-
 
 # Color theme
 # include $HOME/dotfiles/task/themes/dark-256.theme

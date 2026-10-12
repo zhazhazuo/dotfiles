@@ -39,7 +39,12 @@ agent_panel_sort = "priority"
 # Right-aligned status entries in the desktop tab bar (Herdr 0.8.2+)
 # Workspace name comes from a small script; hostname and datetime resolve
 # on the server.
+# The first entry shows the focused pane's current pi step (todo in-progress
+# item -> running tool -> session name, whatever pi reports on the `pi_step`
+# pane-metadata token via ~/.pi/agent/extensions/herdr-pi-step.ts).
+# Empty output hides the segment, so shell panes and idle sessions stay clean.
 tab_bar_right = [
+  { type = "command", command = "~/.config/herdr/status-pi-step.sh", interval_seconds = 2, timeout_seconds = 1 },
   { type = "command", command = "~/.config/herdr/status-workspace.sh", interval_seconds = 3, timeout_seconds = 2 },
   { type = "hostname" },
   { type = "datetime", format = "%H:%M" },
@@ -79,8 +84,9 @@ command = "quantumdancer.last-tab.toggle"
 description = "recent tab"
 
 # Agent launchers (type=pane opens temp zoomed pane)
+# Shifted letters so the Annotate plugin keeps its upstream keys (prefix+m, prefix+o).
 [[keys.command]]
-key = "prefix+m"
+key = "prefix+C"
 type = "pane"
 command = "claude"
 
@@ -90,9 +96,47 @@ type = "pane"
 command = "codex"
 
 [[keys.command]]
-key = "prefix+o"
+key = "prefix+P"
 type = "pane"
 command = "opencode"
+
+# Annotations and document review (plugin: plannotator/herdr-annotate, full variant)
+# Upstream default keys, so they keep matching the plugin's README.
+[[keys.command]]
+key = "prefix+a"
+type = "plugin_action"
+command = "annotate.capture"
+description = "annotate text"
+
+[[keys.command]]
+key = "prefix+shift+a"
+type = "plugin_action"
+command = "annotate.copy-context"
+description = "copy annotations as context"
+
+[[keys.command]]
+key = "prefix+ctrl+a"
+type = "plugin_action"
+command = "annotate.copy-archive"
+description = "copy annotations as context and archive"
+
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "annotate.manage"
+description = "manage annotations"
+
+[[keys.command]]
+key = "prefix+o"
+type = "plugin_action"
+command = "annotate.open"
+description = "review documents in this folder"
+
+[[keys.command]]
+key = "prefix+shift+o"
+type = "plugin_action"
+command = "annotate.last"
+description = "review the agent's last reply"
 
 # Scratch terminal popup
 [[keys.command]]
@@ -104,6 +148,9 @@ height = "80%"
 
 [ui.toast]
 delivery = "system"
+
+[update]
+version_check = true
 
 [experimental]
 switch_ascii_input_source_in_prefix = true

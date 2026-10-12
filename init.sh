@@ -53,20 +53,20 @@ ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.config/opencode/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.gemini/GEMINI.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.agents/AGENTS.md
-
-# Skills store: custom skills and npx-installed skills live together as real
-# directories in ~/dotfiles/AGENTS/skills. npx skills writes there through the
-# symlink and never touches the root, so a symlink is safe.
-mkdir -p ~/.agents
-rm -rf ~/.agents/skills ~/.agents/.skill-lock.json
-ln -sf ~/dotfiles/AGENTS/skills ~/.agents/skills
-ln -sf ~/dotfiles/AGENTS/.skill-lock.json ~/.agents/.skill-lock.json
+mkdir -p ~/.agents/skills
+for item in ~/dotfiles/AGENTS/skills/*; do
+  ln -sf "$item" ~/.agents/skills/
+done
 
 # Pi
 rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
+mkdir -p ~/.pi/agent/extensions
+for item in ~/dotfiles/pi/extensions/*.ts; do
+  ln -sf "$item" ~/.pi/agent/extensions/
+done
 
 # Taskwarrior
 rm -f ~/.taskrc

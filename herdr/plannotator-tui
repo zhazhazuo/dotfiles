@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# plannotator-tui: PATH shim onto the copy staged by the herdr-annotate plugin.
+#
+# The plugin ships its own launcher at <plugin_root>/scripts/plannotator-tui.sh, which resolves
+# bin/plannotator-tui.exe relative to its own $0. Symlinking that launcher from ~/.local/bin
+# would break it, because $0 would then be this directory instead of the plugin root. So resolve
+# the plugin root at runtime and exec the launcher by its real path.
+#
+# Resolving at runtime instead of hardcoding the install directory also survives plugin updates,
+# which rename that directory after the installed commit
+# (plugins/github/annotate-<hash>/).
+set -euo pipefail
+
+plugins_json="${HOME}/.config/herdr/plugins.json"
+root=""
+
+if command -v jq >/dev/null 2>&1 && [ -r "$plugins_json" ]; then
+  root="$(jq -r '.[] | select(.plugin_id == "annotate") | .plugin_root // empty' "$plugins_json" 2>/dev/null | head -n 1)"
+fi
+
+# Fallback for a missing or unreadable plugin registry: newest annotate install wins.
+if [ -z "$root" ] || [ ! -x "$root/scripts/plannotator-tui.sh" ]; then
+  root="$(ls -dt "${HOME}"/.config/herdr/plugins/github/annotate-*/ 2>/dev/null | head -n 1)"
+  root="${root%/}"
+fi
+
+launcher="${root}/scripts/plannotator-tui.sh"
+if [ -z "$root" ] || [ ! -x "$launcher" ]; then
+  echo "plannotator-tui is not installed. Reinstall the plugin: herdr plugin install plannotator/herdr-annotate" >&2
+  exit 1
+fi
+
+exec "$launcher" "$@"
