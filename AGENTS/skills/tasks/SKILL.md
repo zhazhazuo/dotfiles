@@ -66,6 +66,10 @@ working tree is the user's, and changing it is a separate decision that you ask 
 
 ## Delegating execution
 
+The commands in this skill run in the current session. Never spawn a subagent to run a `task`
+command: the list is the session's to hold, a worker does not own it, and a capture or a pointer
+change is one or two commands. Delegation is for a task's work, not for its upkeep.
+
 When the user explicitly asks to delegate a task's work and the `task_delegate` tool is available,
 use it: one phase per call, the task identified as in this skill, and a self-contained worker prompt
 built from the task's state capsule, not from the session transcript. When the tool is not
