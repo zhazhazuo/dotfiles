@@ -11,7 +11,7 @@
 # list, or a table is SPURIOUS. Both are defects.
 #
 # Capture replies with  evals/capture-replies.sh <outdir>
-# Score them with      python3 evals/count-reply-defects.py \
+# Score them with      python3 evals/score-replies.py \
 #                          --prompts evals/reply-prompts.txt <outdir>/*.md
 #
 # Product names are deliberate: they must stay intact and must not be defined.
@@ -24,3 +24,4 @@ prose|What port does Postgres listen on by default?
 prose|Which HTTP status code means the request was valid but not permitted?
 prose|What is the default port for HTTPS?
 prose|Is a 200 response with an error message in the body a good API design?
+prose|A review of our data pipeline change came back with these results, and the release is scheduled for tomorrow. Blocking: the citation splitter corrupts heading paths that contain a slash, and a field-shape instruction lets the model write flat keys instead of a nested object. Medium: schema validation runs in the wrong place, one claim about a red test is false, and one metric conflates two measures. Additions: a second instruction edit belongs in the same payload pass, and a table-of-contents row wastes a model call. One hypothesis was refuted. Write the status update for the lead engineer.

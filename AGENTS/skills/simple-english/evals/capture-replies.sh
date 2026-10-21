@@ -11,7 +11,7 @@
 #   evals/capture-replies.sh --only 7 <outdir>     # re-capture one prompt only
 #
 # Score afterwards with:
-#   python3 evals/count-reply-defects.py /tmp/reply-baseline/*.md
+#   python3 evals/score-replies.py --prompts evals/reply-prompts.txt /tmp/reply-baseline/*.md
 set -uo pipefail
 
 OUT=""
@@ -88,4 +88,4 @@ done < "$PROMPTS"
 
 echo
 echo "replies:    ${OUT}"
-echo "score with: python3 ${ROOT}/evals/count-reply-defects.py ${OUT}/*.md"
+echo "score with: python3 ${ROOT}/evals/score-replies.py --prompts ${PROMPTS} ${OUT}/*.md"

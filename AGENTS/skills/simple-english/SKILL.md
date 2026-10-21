@@ -1,14 +1,18 @@
 ---
 name: simple-english
 description: |
-  Use when writing or rewriting documentation, READMEs, runbooks, procedures,
-  error messages, release notes, incident reports, API guides, or explanations for
-  readers outside the field, and when checking text against ASD-STE100 Simplified
-  Technical English (Issue 9). Applies short sentences, active voice, simple tenses,
-  one word one meaning, condition before command, a term defined at first use, and no
-  AI slop. Plain is the default; Strict applies the STE dictionary discipline when the
-  user names STE, ASD-STE100, or compliance. Replies are governed by the global Reply
-  Style in AGENTS.md, not by this skill.
+  Write or rewrite text in plain, layman-readable English in the spirit of
+  ASD-STE100 Simplified Technical English: short sentences, active voice,
+  simple tenses, one word one meaning, condition before command, every
+  technical term defined at first use, no AI slop. Default mode is Plain.
+  Strict mode applies full STE vocabulary compliance when the user names
+  STE, ASD-STE100, or compliance. Use for documentation, READMEs, runbooks,
+  procedures, error messages, release notes, incident reports, API guides,
+  and explanations for readers outside the field. Also use when the user
+  says "STE", "Simplified Technical English", "ASD-STE100", "plain English",
+  "layman's terms", "explain it simply", "no jargon", "de-slop", "make this
+  readable", "write for non-native readers", or asks for docs that translate
+  well. Replies follow the global Reply Style in `AGENTS.md`.
 license: MIT
 compatibility: claude-code cursor codex gemini-cli opencode
 disable-model-invocation: true
@@ -18,8 +22,20 @@ metadata:
   vendored-from: github.com/AminBlg/SimpleEnglish
   vendored-commit: a6fcb4fde098b33617cc1578d151ebf58774b883
   local-change: >
-    Reply rule 1 softened to match the global Reply Style: a table is allowed for a
-    comparison of three or more items. Upstream says no tables at all.
+    Four changes. Reply rule 1 softened to match the global Reply Style: a table is allowed for a
+    comparison of three or more items, where upstream says no tables at all. Reply rule 2 gained the
+    Pyramid Principle ordering the global section requires: governing thought, then grouped arguments,
+    then the facts, then background. The reply is no longer Plain in every mode, because the global section applies Issue
+    9 to replies. And the description is upstream verbatim except its last sentence, which upstream
+    writes as "The same rules govern the reply: answer first, prose only"; here it points at the
+    global Reply Style instead, because `AGENTS.md` is the authority for replies and permits that
+    one table.
+  vendored-assets: >
+    evals/ste_lint.py and evals/slop.tsv are upstream verbatim, MIT, same commit.
+    Update by copying the newer files over; do not edit them here. evals/score-replies.py
+    wraps them for the reply register, and `python3 score-replies.py --self-check`
+    proves its addendum does not double-count a term the vendored lexicon already
+    matches.
 ---
 
 # Simple English
@@ -62,8 +78,10 @@ After (procedural, headed, numbered):
 
 Every chat reply, in every mode, follows these rules:
 
-1. Answer in prose. A table is legal only to compare three or more items, and a code block is legal only when the reader must copy it. Otherwise: no headers, no bullet lists, no bold, no tables. The global Reply Style in `AGENTS.md` is the authority for replies.
-2. The first sentence gives the answer or the result. Do not restate the question.
+1. Answer in prose. A table is legal only to compare three or more items, and a code block is legal only when the reader must copy it. Otherwise: no headers, no bullet lists, no bold, no tables. The global Reply Style in `AGENTS.md` is the authority for replies, and it applies Issue 9 to them.
+2. The first sentence gives the answer or the result, the governing thought of the Pyramid Principle.
+   Then the arguments that support it, grouped, then the facts behind each group. Background and caveats
+   come last. Do not restate the question.
 3. No em-dashes. Name the relation ("because", "but", "for example") or write two sentences.
 4. Define a concept term in a few words the first time you use it: "idempotent (safe to run twice)". Do not define product names.
 5. No contractions. No openers ("Certainly", "Great question") and no closers ("I hope this helps", "Let me know").
@@ -79,7 +97,7 @@ After: The pods restarted and the queue lost its leader for a short time. It rec
 
 ## Modes
 
-Plain is the default and is all of the above. Strict applies when the user names STE, ASD-STE100, or compliance: read `references/strict-vocabulary.md` before you draft the document, and say once that no tool guarantees compliance. The reply stays Plain in every mode.
+Plain is the default and is all of the above. Strict applies when the user names STE, ASD-STE100, or compliance: read `references/strict-vocabulary.md` before you draft the document, and say once that no tool guarantees compliance. The reply follows the global Reply Style in `AGENTS.md`, which applies Issue 9 to replies in every mode.
 
 When asked to CHECK text instead of writing it, first open `references/rule-catalog.md`. Then report each violation as: rule number quoted from that file, the offending text, a compliant rewrite. Never cite a rule number from memory. When the user asked for compliance, end with one sentence: no tool can guarantee ASD-STE100 compliance, and the standard is a free download at asd-ste100.org.
 

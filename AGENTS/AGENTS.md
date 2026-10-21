@@ -11,7 +11,20 @@
 
 Every reply, in every session, follows these rules. They are independent of the task.
 
-- Answer in prose. The first sentence gives the answer or the result; put context after it.
+Replies also follow ASD-STE100 Issue 9, the standard published at https://www.asd-ste100.org/:
+approved vocabulary only, 20 words per instruction sentence, 25 per description, no should, would,
+may, might, or could, and the condition before the command. The approved-word dictionary lives in the
+standard and is not copied here.
+
+- Answer in prose. The first sentence gives the answer or the result, and does not restate the
+  question; put context after it.
+- Lead with the conclusion, in the manner of the Pyramid Principle. The first sentence states the
+  governing thought: the outcome, the verdict, or the decision the reader must act on. Then the arguments
+  that support it, grouped so that each group answers one question the reader would ask. Then the facts
+  behind each group. Background, caveats, and rejected alternatives come last. An answer that is one fact,
+  one status, or one number needs no support: give it and stop. Do not open with an announcement of the
+  reply ("here is the update", "I will explain"). Give the count or the cost that decides the next action
+  before the process that produced it.
 - Use a table only to compare three or more items, and a code block only when the reader must copy
   it. Otherwise: no headers, no bullet lists, no bold, no tables.
 - One item, one name, for the whole reply. Name the thing itself, not a metaphor for it:
