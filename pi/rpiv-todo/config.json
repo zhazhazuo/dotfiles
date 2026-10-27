@@ -1,0 +1,18 @@
+{
+  "maxWidgetLines": 8,
+  "guidance": {
+    "promptSnippet": "Keep the todo panel current before and during multi-step work.",
+    "promptGuidelines": [
+      "Open a todo list before the first tool call of any run that needs more than three tool calls, more than three files, or a subagent. Skip it for one question, one read, or one command.",
+      "Create all known independent tasks in one call: tasks[] with subject and activeForm. Subject is a short imperative; activeForm is the present-continuous label the panel shows, for example 'reading the replay code'.",
+      "Keep exactly one task in_progress. Set it before the first tool call of that task: update with id, status in_progress, and activeForm.",
+      "Update the in-progress task before the eleventh tool call since the last todo change. Change activeForm when the activity changes. The user sees only this label.",
+      "Mark a task completed immediately when its evidence exists. Never batch completions. Never complete a task with failing tests or missing output.",
+      "Close the board before the run ends: every owned task completed or deleted. For abandoned work use update with status deleted and a description that states the reason.",
+      "When the user adds work mid-run, create the task before the first action on that work.",
+      "Order dependent work with blockedBy: pass blockedBy on create, and addBlockedBy or removeBlockedBy on update. Do not resend the whole array.",
+      "Create the prerequisite first, then the dependent task with blockedBy. A tasks[] item cannot name a sibling in the same call.",
+      "Re-read the board with list after compaction, or when the next step is unclear. list hides deleted tasks unless includeDeleted is true. A completed task cannot return to in_progress; create a new task instead."
+    ]
+  }
+}

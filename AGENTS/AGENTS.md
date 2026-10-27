@@ -18,7 +18,7 @@ standard and is not copied here.
 
 - Answer in prose. The first sentence gives the answer or the result, and does not restate the
   question; put context after it.
-- Lead with the conclusion, in the manner of the Pyramid Principle. The first sentence states the
+- Lead with the conclusion, in the manner of the **Pyramid Principle**. The first sentence states the
   governing thought: the outcome, the verdict, or the decision the reader must act on. Then the arguments
   that support it, grouped so that each group answers one question the reader would ask. Then the facts
   behind each group. Background, caveats, and rejected alternatives come last. An answer that is one fact,
@@ -38,7 +38,7 @@ standard and is not copied here.
   "Let me know").
 - Do not shorten quoted error text, security warnings, or confirmations before a destructive action.
 
-Writing or checking a document is a separate job: read
+Writing a document is a separate job: read
 `~/.agents/skills/simple-english/SKILL.md`.
 
 ## Dev Principle
@@ -47,6 +47,17 @@ Writing or checking a document is a separate job: read
 - When implementing, use the skill `write-discoverable-code`: read `~/.agents/skills/write-discoverable-code/SKILL.md` before writing or renaming any function, type, constant, file, error message, or doc comment.
 - E2E tests are the default verification mechanism: use them to verify complex features work. End E2E testing with a verifiable, repeatable artifact.
 - Isolated (unit-style) tests are an exception, not the norm. When you must test a system in isolation, do it in TDD order: FIRST write all the ways it could fail, THEN write the code. NEVER write unit tests after you write code.
+
+## Todo protocol
+
+The todo panel is the user's live view of the run. Write the plan before acting, and keep the panel true.
+
+- Open a todo list before the first tool call of any run that needs more than three tool calls, more than three files, or a subagent. One question, one read, or one command needs no list.
+- Create every known task at once with `tasks[]`. Keep one task in_progress, and set it before the first tool call of that task.
+- Update the in-progress task before the eleventh tool call since the last todo change. Change `activeForm` when the activity changes; a long investigation under one stale label is invisible to the user.
+- Mark a task completed only when its evidence exists. Close the board before the run ends: every owned task completed or deleted, with the reason in the description.
+- Add work that appears mid-run to the list before the first action on it.
+- The todo tool carries the call shapes and the status rules in its own guidance.
 
 ## Skill routing
 
@@ -59,6 +70,26 @@ Writing or checking a document is a separate job: read
 - If the task matches a navigator, read `~/.agents/skills/<navigator>/SKILL.md`, then the routed skill file, expanding `~` to the home directory.
 - Precedence: navigators are the entry point. A concrete skill listed in `<available_skills>` is loaded directly only when its description explicitly matches the task; otherwise route through its navigator.
 - When installing a new skill, tool, or extension: read and follow `~/.agents/skills/integrate-capability/SKILL.md`.
+
+## Subagents and SDD
+
+SDD means subagent-driven development: the main thread plans and reviews, and child agents build.
+A child does not load this file: these rules bind the thread that spawns.
+
+- The spawn path decides the context. A leading slash with no `/root` prefix, for example
+  `/build-t-group`, starts a fresh child. A bare name forks the caller's conversation, and the child
+  answers the inherited thread instead of the task. Stop such a child and re-spawn it at an
+  independent root path.
+- Prove the context before you trust the child. Ask what came before the task. A fresh child answers
+  NONE. A forked child recounts the thread.
+- Delegation is a permission, not an instruction. Read the allow list of the type before you order a
+  child to delegate. A type with no `agent_spawn` stalls on that order. `toolFiltering: allowed` is
+  pinned in `~/.pi/agent/subagent-manager/settings.json`, so the allow list is the whole inventory.
+- Verify a child yourself, on disk and on the gate. Run `git status` and `find` against the paths the
+  task names. Require the gate command with its output. A success report with no changed file and no
+  output is not evidence.
+- The brief states the measured state, the closed work, the gate command and the definition of done.
+  It does not restate the plan. A long invented brief makes the child answer the brief.
 
 ## Deferred MCP tools
 
