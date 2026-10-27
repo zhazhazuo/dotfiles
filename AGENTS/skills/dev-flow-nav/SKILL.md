@@ -1,6 +1,6 @@
 ---
 name: dev-flow-nav
-description: Use when the task involves brainstorming a new feature or idea before building, writing or executing an implementation plan, running subagent-driven or parallel-agent development, isolating work in a git worktree, finishing or merging a development branch, or authoring or gating a one-pager against the three build gates before building.
+description: Use when the task involves brainstorming a new feature or idea before building, writing or executing an implementation plan, spawning or delegating to a child agent in pi, running subagent-driven or parallel-agent development, isolating work in a git worktree, finishing or merging a development branch, or authoring or gating a one-pager against the three build gates before building.
 ---
 
 # Dev flow skills router
@@ -9,6 +9,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 
 | Task | Skill | File |
 |---|---|---|
+| Any `agent_spawn`: pick the spawn path, prove the child's context, read the type's allow list, write the brief, verify the work | subagent-delegation | `~/.agents/skills/subagent-delegation/SKILL.md` |
 | New feature or component before building | brainstorming | `~/.pi/agent/git/github.com/obra/superpowers/skills/brainstorming/SKILL.md` |
 | Have a spec or requirements for a multi-step task, before touching code | writing-plans | `~/.pi/agent/git/github.com/obra/superpowers/skills/writing-plans/SKILL.md` |
 | Have a written implementation plan to execute in a separate session with review checkpoints | executing-plans | `~/.pi/agent/git/github.com/obra/superpowers/skills/executing-plans/SKILL.md` |
