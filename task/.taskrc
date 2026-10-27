@@ -7,7 +7,7 @@ uda.estimate.label=Estimate
 uda.estimate.default=1
 uda.estimate.values=0.5,1,1.5,2,2.5,3
 
-# Pointers to where a task lives — see ~/.agents/skills/tasks/references/task-pointers.md
+# Pointers to where a task lives — see ~/TaskCenter/.pi/skills/tasks/references/task-pointers.md
 # Every pointer must be declared here. An undeclared uda.* does not error: the value is
 # silently written into the description instead, destroying it.
 uda.repo.type=string
