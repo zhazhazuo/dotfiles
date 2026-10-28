@@ -94,7 +94,7 @@ end
 local vue_language_server_path = vim.fn.stdpath("data")
 	.. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 
--- Detect a Vue/Nuxt project. tsgo cannot load the Vue plugin, so in a Vue
+-- Detect a Vue/Nuxt project. tsc cannot load the Vue plugin, so in a Vue
 -- project ts_ls must own both .ts and .vue files. One server, one graph.
 local function is_vue_project()
 	local root = vim.fs.root(0, { "package.json", ".git" }) or vim.fn.getcwd()
@@ -114,12 +114,10 @@ end
 
 local vue_project = is_vue_project()
 
--- tsgo: TypeScript-native LSP for TS/JS files (non-Vue projects only)
-vim.lsp.config.tsgo = {
-	cmd = { "tsgo", "--lsp", "--stdio" },
-	filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
-	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
-}
+-- tsc: TypeScript 7 native LSP for TS/JS files (non-Vue projects only).
+-- nvim-lspconfig deprecates the `tsgo` server name in favour of `tsc`.
+-- The built-in `tsc` config searches tsc then tsgo, requires TypeScript 7+,
+-- and owns root detection, so no cmd or root_markers belong here.
 
 -- ts_ls: owns Vue files always. In a Vue project it also owns TS/JS files
 -- (with @vue/typescript-plugin), so rename and references work across .vue and .ts.
@@ -191,11 +189,11 @@ vim.lsp.config.yamlls = {
 }
 
 -- Enable all configured LSP servers.
--- Vue project: ts_ls (with Vue plugin) + vue_ls for template support, no tsgo.
--- Other projects: tsgo for TS/JS, ts_ls dormant for Vue only.
+-- Vue project: ts_ls (with Vue plugin) + vue_ls for template support, no tsc.
+-- Other projects: tsc for TS/JS, ts_ls dormant for Vue only.
 if vue_project then
 	vim.lsp.enable(vim.list_extend({ "ts_ls", "vue_ls" }, lsp_list))
 else
-	vim.lsp.enable({ "tsgo", "ts_ls", unpack(lsp_list) })
+	vim.lsp.enable({ "tsc", "ts_ls", unpack(lsp_list) })
 end
 -- vim.diagnostic.config({ virtual_text = true })
