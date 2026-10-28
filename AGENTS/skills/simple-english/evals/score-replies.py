@@ -102,7 +102,10 @@ SLOP_EXTRA = re.compile(
 
 USAGE = "usage: score-replies.py [--json] [--lead] [--prompts FILE] REPLY.md [MORE.md ...]"
 
-HARD_KEYS = ["em_dash", "contraction", "opener", "closer"]
+# An em-dash is a reported diagnostic, not a hard violation: AGENTS.md released the ban
+# on 2026-10-27, because ASD-STE100 Issue 9 Rule 8.1 permits the mark.
+HARD_KEYS = ["contraction", "opener", "closer"]
+DIAGNOSTIC_KEYS = ["em_dash"]
 STE_KEYS = [
     "sentence_over_limit",
     "banned_modal",
@@ -318,6 +321,7 @@ def main():
     print(head + "  detail")
     for r in rows:
         hard_detail = ",".join(f"{k}={r[k]}" for k in HARD_KEYS if r[k]) or "clean"
+        dash_detail = ",".join(f"{k}={r[k]}" for k in DIAGNOSTIC_KEYS if r[k]) or "none"
         deco_detail = ",".join(f"{k}={r[k]}" for k in DECORATOR_KEYS if r[k]) or "none"
         ste_detail = ",".join(f"{k}={r[k]}" for k in STE_KEYS if r[k]) or "clean"
         line = (
@@ -326,7 +330,10 @@ def main():
         )
         if show_shape:
             line += f"  {r['shape']:<8}"
-        print(line + f"  hard[{hard_detail}] ste[{ste_detail}] deco[{deco_detail}]")
+        print(
+            line
+            + f"  hard[{hard_detail}] ste[{ste_detail}] deco[{deco_detail}] dash[{dash_detail}]"
+        )
 
     words = sum(r["words"] for r in rows) or 1
     hard = sum(r["hard"] for r in rows)

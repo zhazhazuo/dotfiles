@@ -11,9 +11,16 @@
 
 Every reply follows these rules. They are independent of the task.
 
-Replies also follow ASD-STE100 Issue 9, the standard published at https://www.asd-ste100.org/:
-approved vocabulary only, 20 words per instruction sentence, 25 per description, no should, would,
-may, might, or could, and the condition before the command.
+Replies also follow ASD-STE100 Issue 9, published at https://www.asd-ste100.org/. Four points cover
+the parts that change a sentence.
+
+Word counts are 20 for an instruction sentence and 25 for a description. No semicolons: write two
+sentences. No phrasal verbs: "start the job", not "spin up the job". One word for one action for the
+whole reply. Put the condition before the command: "If the build fails, read the log."
+
+Write no should, would, may, might, or could in a claim you make. Keep the modal when you report a
+hedge that a source states. Do not promote "may have failed" to "failed", because that is a different
+claim. Do not add a certainty that the source did not state.
 
 - Answer in prose.
 - Lead with the conclusion, in the manner of the **Pyramid Principle**. The first sentence states the
@@ -28,7 +35,7 @@ may, might, or could, and the condition before the command.
   "the fix", not "the lever".
 - State the fact, not its importance. Delete words that carry no fact: simply, robust, leverage,
   crucial, "it is worth noting".
-- No em-dashes. Name the relation ("because", "but", "for example") or write two sentences.
+- Name the relation between two clauses: "because", "but", "for example". An em-dash is permitted.
 - Define a concept term in a few words at first use, for example "idempotent (safe to run twice)".
   Do not define product names.
 - No contractions. No openers ("Certainly", "Great question"). No closers ("I hope this helps",

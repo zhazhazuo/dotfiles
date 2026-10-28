@@ -22,7 +22,9 @@ metadata:
   vendored-from: github.com/AminBlg/SimpleEnglish
   vendored-commit: a6fcb4fde098b33617cc1578d151ebf58774b883
   local-change: >
-    Four changes. Reply rule 1 softened to match the global Reply Style: a table is allowed for a
+    Five changes. The Reply Style in `AGENTS.md` released the em-dash ban on 2026-10-27, because
+    ASD-STE100 Issue 9 Rule 8.1 permits the mark, so both registers now permit an em-dash and forbid
+    only the semicolon. Reply rule 1 softened to match the global Reply Style: a table is allowed for a
     comparison of three or more items, where upstream says no tables at all. Reply rule 2 gained the
     Pyramid Principle ordering the global section requires: governing thought, then grouped arguments,
     then the facts, then background. The reply is no longer Plain in every mode, because the global section applies Issue
@@ -52,7 +54,7 @@ When asked to write or rewrite documentation, apply these rules to the prose:
 4. Use simple tenses and active voice. No present perfect ("has completed" → "completed"). No "-ing" verb after a comma (", making it easy" → new sentence). Name the actor: "You run the migration."
 5. Modals: can, will, must. Never should, would, may, might, could. A required "should" becomes "must". An optional one is deleted.
 6. Use complete grammar. No contractions, keep articles, keep "that". Write short sentences, not telegraph style.
-7. No semicolons and no em-dashes. Write two sentences, or name the relation.
+7. No semicolons. Write two sentences, or name the relation. An em-dash is permitted.
 8. One word, one meaning, for the whole document. Use `make sure that` for check, verify, confirm, validate, ensure. Use `configuration` for config, settings, options. Break noun chains over three words with a preposition ("the timeout value for the connection pool").
 9. Give the reader each term and each fact before the step that needs it. Define a concept term at its first use, under ten words, one per sentence. Do not define product names, standard names (Postgres, S3, HTTP), or the tool the document is about. Also name the host, the flag, or the prior step that a command depends on. "Restart the service" becomes "Restart the `sync` service on the host that runs the job."
 10. State the fact, not its importance. Delete words that carry no fact: simply, seamlessly, robust, powerful, comprehensive, leverage, crucial, "in order to", "it is worth noting". No "not just X, it is Y". No decorative triplets. No "in conclusion".
@@ -82,7 +84,7 @@ Every chat reply, in every mode, follows these rules:
 2. The first sentence gives the answer or the result, the governing thought of the Pyramid Principle.
    Then the arguments that support it, grouped, then the facts behind each group. Background and caveats
    come last. Do not restate the question.
-3. No em-dashes. Name the relation ("because", "but", "for example") or write two sentences.
+3. Name the relation between two clauses: "because", "but", "for example". An em-dash is permitted.
 4. Define a concept term in a few words the first time you use it: "idempotent (safe to run twice)". Do not define product names.
 5. No contractions. No openers ("Certainly", "Great question") and no closers ("I hope this helps", "Let me know").
 6. Do not shorten quoted error text, security warnings, or confirmations before a destructive action.
@@ -92,8 +94,8 @@ After: The pods restarted and the queue lost its leader for a short time. It rec
 
 ## Self-Check Before You Deliver
 
-1. Reply: search for `—`, `**`, `#`, and a line that starts with `-`. Remove each one.
-2. Document: count the words in your three longest sentences. Over 20 or 25, split. Search for `'`, `has been`, `should`, `may`, `;`, `—`, `, making`, `**`, `check`, `verify`, `config`, and any heading that covers fewer than three sentences. Fix each hit. Read each step: does it name a host, a flag, or a prior step the reader must already have? If not, add it or point to it.
+1. Reply: search for `**`, `#`, and a line that starts with `-`. Remove each one.
+2. Document: count the words in your three longest sentences. Over 20 or 25, split. Search for `'`, `has been`, `should`, `may`, `;`, `, making`, `**`, `check`, `verify`, `config`, and any heading that covers fewer than three sentences. Fix each hit. Read each step: does it name a host, a flag, or a prior step the reader must already have? If not, add it or point to it.
 
 ## Modes
 
