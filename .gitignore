@@ -1,5 +1,13 @@
+# Secrets
 .env
+
+# Local agent scratch data
+.ai-artifacts/
+**/.ai-artifacts/
+.agent-runs/
+**/.agent-runs/
 **/.loop-data/
 
-
-.agent-runs/
+# macOS metadata
+.DS_Store
+**/.DS_Store
