@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.99.1",
+  "lastChangelogVersion": "1.4.0",
   "defaultProvider": "qoder",
   "defaultModel": "DeepSeek-Flash",
   "defaultThinkingLevel": "high",
@@ -7,13 +7,10 @@
     "+codemode",
     "+tool_search"
   ],
+  "codemode": {
+    "mode": "on"
+  },
   "packages": [
-    {
-      "source": "npm:pi-subagents",
-      "skills": [
-        "skills/pi-subagents/SKILL.md"
-      ]
-    },
     {
       "source": "npm:pi-lens",
       "skills": []
@@ -23,67 +20,25 @@
       "skills": []
     },
     "/Users/walkerw/Research/pi-provider-qoder",
-    {
-      "source": "npm:context-mode",
-      "skills": []
-    },
-    {
-      "source": "git:github.com/obra/superpowers",
-      "extensions": [],
-      "skills": [
-        "skills"
-      ]
-    },
     "npm:@ff-labs/pi-fff",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:@juicesharp/rpiv-todo",
-    "https://github.com/ayghri/i-have-adhd",
-    "npm:@rahularya01/pi-cursor",
     {
       "source": "npm:confluence-cli",
       "skills": []
     },
     "npm:pi-agent-browser-native",
-    "/Users/walkerw/Research/pi-walker"
+    "/Users/walkerw/Research/pi-walker",
+    "npm:pi-subagent-manager",
+    "npm:pi-btw",
+    "npm:@juicesharp/rpiv-todo"
   ],
   "skillGuard": {
     "keepVisible": [
-      "npm:pi-subagents",
       "~/.agents/skills/dev-nav",
       "~/.agents/skills/dev-flow-nav",
       "~/.agents/skills/design-nav",
-      "~/.agents/skills/ops-nav",
-      "~/.agents/skills/integrate-capability"
+      "~/.agents/skills/ops-nav"
     ]
-  },
-  "subagents": {
-    "defaultModel": "qoder/GLM-5.3-Flash",
-    "agentOverrides": {
-      "oracle": {
-        "model": "qoder/Qwen3.8-Max",
-        "thinking": "max"
-      },
-      "advisor": {
-        "model": "qoder/Qwen3.8-Max",
-        "thinking": "max"
-      },
-      "planner": {
-        "model": "qoder/Qwen3.8-Max",
-        "thinking": "max"
-      },
-      "reviewer": {
-        "model": "qoder/Qwen3.8-Max",
-        "thinking": "max"
-      },
-      "context-builder": {
-        "model": "qoder/DeepSeek-Flash",
-        "thinking": "max"
-      },
-      "scout": {
-        "model": "qoder/DeepSeek-Flash",
-        "thinking": "high"
-      }
-    }
   },
   "terminal": {
     "showTerminalProgress": true
@@ -106,5 +61,9 @@
     "mermaid": "streaming"
   },
   "quietStartup": true,
-  "fullscreenScrollbar": "auto"
+  "fullscreenScrollbar": "auto",
+  "compaction": {
+    "enabled": true
+  },
+  "steeringMode": "all"
 }

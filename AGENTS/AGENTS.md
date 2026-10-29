@@ -71,6 +71,27 @@ claim. Do not add a certainty that the source did not state.
 - Do not add unsolicited warnings, disclaimers, approval flows, or safety checklists for hypothetical
   risk.
 
+### Subagents
+
+- Spawn each independent child with `wait: false`, all in one call. Do not call `agent_wait`. End
+  the turn. The completion message wakes the session with the results.
+- The `codemode` sandbox has two workers for the whole pi process, and a long script holds one. If
+  children run long scripts, set `PI_CODEMODE_MAX_WORKERS` or expect waits.
+
+### Codemode
+
+- If a task touches more than ten items, or needs a bulk fan-out, write one `codemode` script. Loop
+  over the items inside the script and return the summary.
+- If you must judge each item before the next call, call the tools directly. A script removes the
+  evidence you need.
+- If one tool call answers the whole task, call the tool directly. A `codemode` script adds a round
+  trip and saves nothing.
+- Write one script for the whole batch. Do not write one script for each item.
+- If a script fails on an argument, fix the argument and run it again. Do not rewrite the script.
+- Do not declare a top-level variable named `tools`. The sandbox passes `tools` as a parameter.
+- The `codemode` sandbox has no file system, no network, and no timers. Call `tools.bash` inside the
+  script for file system and network work.
+
 ### Shell output
 
 - Do not chain shell commands with separators such as `echo "====";` or `printf '---'`. The output
@@ -86,10 +107,10 @@ claim. Do not add a certainty that the source did not state.
 ## Skill routing
 
 - Concrete skills are silent; navigators route to them. Navigators:
-  - `dev-nav`: the dev lifecycle card book — orient, align, specify, red, implement, debug, trim, verify, review, codify
-  - `dev-flow-nav`: brainstorming, plans, plan gates, plan execution, worktrees, branches, parallel agents, subagent spawning
+  - `dev-nav`: the dev lifecycle card book — orient, align, specify, implement, debug, trim
+  - `dev-flow-nav`: one-pager gates, parallel agents, subagent spawning and delegation
   - `design-nav`: UI design, prototypes, shadcn, diagrams, PRD scenarios
-  - `ops-nav`: tools, Confluence, context-mode, coordination, document and plain-English writing
+  - `ops-nav`: tools, Confluence, coordination, document and plain-English writing
   - `knowledge-nav`: repository evidence before reading, and the repoWiki knowledge base
 - If the task matches a navigator, read `~/.agents/skills/<navigator>/SKILL.md`, then the routed skill file, expanding `~` to the home directory.
 - Precedence: navigators are the entry point. A concrete skill listed in `<available_skills>` is loaded directly only when its description explicitly matches the task; otherwise route through its navigator.
