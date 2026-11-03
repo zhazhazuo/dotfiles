@@ -1,0 +1,24 @@
+{
+  "keepDeclared": [
+    "read",
+    "bash",
+    "edit",
+    "write",
+    "grep",
+    "find",
+    "todo",
+    "ask_user_question",
+    "codemode",
+    "tool_search",
+    "run_tool",
+    "agent_types",
+    "agent_spawn",
+    "agent_steer",
+    "agent_wait",
+    "agent_status",
+    "agent_output",
+    "agent_update",
+    "agent_pause",
+    "agent_stop"
+  ]
+}
