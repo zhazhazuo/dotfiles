@@ -6,8 +6,8 @@ font-family = LXGW WenKai Screen
 
 # BACKGROUND
 background = #000000
-background-opacity = 0.8
-background-blur-radius = 15
+# background-opacity = 0.6
+# background-blur-radius = 15
 
 # TITLE_BAR
 macos-titlebar-style = hidden
