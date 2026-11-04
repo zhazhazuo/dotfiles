@@ -14,6 +14,10 @@ end
 
 # ── Paths ─────────────────────────────────────────────────────────────
 
+# PROXY
+export HTTP_PROXY=http://127.0.0.1:7897
+export HTTPS_PROXY=http://127.0.0.1:7897
+
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 fish_add_path $PYENV_ROOT/bin
@@ -33,5 +37,19 @@ fish_add_path $BUN_INSTALL/bin
 # NVM
 export NVM_DIR="$HOME/.nvm"
 
+# Qoder
+export QODERCN_PAT=
+export QODER_REGION=
+
 # local bins
 fish_add_path $HOME/.local/bin
+
+# Github, Qoder and Confluence credentials live in .env, which is gitignored.
+
+# Confluence
+export CONFLUENCE_READ_ONLY=false
+export CONFLUENCE_PI_WRITES=true
+export CONFLUENCE_PI_WRITE_SPACES=OF
+
+# Pi-MCP-Adapter
+export MCP_UI_VIEWER=none
