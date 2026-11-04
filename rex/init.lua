@@ -1,0 +1,207 @@
+-- Rex configuration, migrated from tmux, Herdr and Ghostty.
+-- Prefix is ctrl+s, as in every source.
+
+-- ~/dotfiles/tmux/options.conf:23
+rex.bind("ctrl+s>ctrl+s", "pane.send_key", { key = "ctrl+s" })
+
+-- ~/dotfiles/tmux/binds.conf:4
+rex.bind("ctrl+s>shift+\\", "pane.split", { direction = "right" })
+
+-- ~/dotfiles/tmux/binds.conf:15-18
+rex.bind("ctrl+s>h", "pane.focus", { direction = "left" })
+rex.bind("ctrl+s>j", "pane.focus", { direction = "down" })
+rex.bind("ctrl+s>k", "pane.focus", { direction = "up" })
+rex.bind("ctrl+s>l", "pane.focus", { direction = "right" })
+
+-- ~/dotfiles/tmux/binds.conf:34
+rex.bind("ctrl+s>ctrl+c", "session.switch")
+
+-- ~/.config/herdr/config.toml:20 resize mode
+rex.mode("resize", { exclusive = true })
+rex.bind("resize/enter", "client.mode.exit")
+rex.bind("resize/escape", "client.mode.exit")
+rex.bind("ctrl+s>r", "client.mode.enter", { name = "resize" })
+rex.bind("resize/left", "pane.resize", { direction = "left" })
+rex.bind("resize/down", "pane.resize", { direction = "down" })
+rex.bind("resize/up", "pane.resize", { direction = "up" })
+rex.bind("resize/right", "pane.resize", { direction = "right" })
+
+-- ~/.config/herdr/config.toml sessions
+rex.bind("ctrl+s>shift+n", "session.new")
+rex.bind("ctrl+s>shift+w", "session.rename")
+rex.bind("ctrl+s>shift+d", "session.close")
+rex.bind("ctrl+s>s", "session.switch")
+rex.bind("ctrl+s>g", "session.switch")
+
+-- ~/.config/herdr/config.toml client
+rex.bind("ctrl+s>shift+r", "client.config.reload")
+rex.bind("ctrl+s>b", "client.sidebar.toggle")
+
+-- ~/.config/herdr/config.toml tabs
+rex.bind("ctrl+s>c", "client.tab.new")
+rex.bind("ctrl+s>shift+x", "client.tab.close")
+rex.bind("ctrl+s>p", "client.tab.previous")
+rex.bind("ctrl+s>n", "client.tab.next")
+rex.bind("ctrl+s>,", "client.tab.rename")
+
+-- ~/.config/herdr/config.toml panes
+rex.bind("ctrl+s>v", "pane.split", { direction = "right" })
+rex.bind("ctrl+s>-", "pane.split", { direction = "down" })
+rex.bind("ctrl+s>x", "pane.close")
+rex.bind("ctrl+s>z", "pane.zoom")
+
+-- ~/.config/herdr/config.toml:9 detach. Herdr leaves the server running.
+-- Rex always keeps its server running, so this closes the window instead.
+rex.bind("ctrl+s>q", "client.window.close")
+
+-- ~/.config/herdr/config.toml:110 prefix+w recent tab toggle.
+-- Herdr swaps the two most recent tabs. Rex steps back one tab in order.
+rex.bind("ctrl+s>w", "client.tab.previous")
+
+-- ~/.config/herdr/config.toml:111 prefix+tab last workspace toggle.
+-- Herdr swaps the two most recent workspaces. Rex steps back one session.
+rex.bind("ctrl+s>tab", "session.previous")
+
+-- ~/.config/herdr/config.toml:117-128 prefix+C, prefix+M, prefix+P agent panes.
+-- Herdr opens a temporary zoomed pane. This splits and zooms instead.
+rex.action{
+  name  = "agent_pane",
+  title = "Open Agent Pane",
+  args  = { agent = "string", zoom = "boolean?" },
+  run   = function(ctx, args)
+    local split, err = rex.session.new_split{
+      anchor_id = ctx.block_id,
+      direction = "horizontal",
+      side      = "after",
+      focus     = true,
+      layout    = rex.layout.block{
+        flavor  = "com.superlogical.terminal.shell",
+        options = { command = { args.agent } },
+      },
+    }
+    if err ~= nil then error(err, 0) end
+
+    local block_id = split.block_ids[1]
+    if args.zoom ~= false then
+      rex.session.zoom_block{ block_id = block_id, zoom = true }
+    end
+    return { block_id = block_id, agent = args.agent }
+  end,
+}
+rex.bind("ctrl+s>shift+c", "agent_pane", { agent = "claude" })
+rex.bind("ctrl+s>shift+m", "agent_pane", { agent = "codex" })
+rex.bind("ctrl+s>shift+p", "agent_pane", { agent = "opencode" })
+
+-- ~/.config/herdr/config.toml:141 prefix+T scratch popup, 80% by 80%.
+-- A floating layer replaces the popup window.
+rex.action{
+  name  = "scratch",
+  title = "Open Scratch Popup",
+  run   = function(ctx, args)
+    local layer, err = rex.session.new_layer{
+      bounds = { 0.1, 0.1, 0.8, 0.8 },
+      focus  = true,
+      layout = rex.layout.block{ flavor = "com.superlogical.terminal.shell" },
+    }
+    if err ~= nil then error(err, 0) end
+    return { layer_id = layer.layer_id, block_id = layer.block_ids[1] }
+  end,
+}
+rex.bind("ctrl+s>shift+t", "scratch")
+
+-- Pane movement. Herdr bound neither move nor swap, so these keys are new.
+-- pane.move swaps the pane with its neighbour in that direction.
+rex.bind("ctrl+s>shift+h", "pane.move", { direction = "left" })
+rex.bind("ctrl+s>shift+j", "pane.move", { direction = "down" })
+rex.bind("ctrl+s>shift+k", "pane.move", { direction = "up" })
+rex.bind("ctrl+s>shift+l", "pane.move", { direction = "right" })
+
+-- Move the pane out of this tab: to a chosen tab, or into a new one.
+rex.bind("ctrl+s>shift+o", "pane.move_to_tab")
+rex.bind("ctrl+s>shift+a", "pane.move_to_new_tab")
+
+-- Rex actions with no key of their own and no app default.
+rex.bind("ctrl+s>e", "pane.balance")
+rex.bind("ctrl+s>shift+q", "client.visibility.toggle")
+rex.bind("ctrl+s>shift+tab", "session.next")
+
+-- Flip the orientation of the split that holds the focused pane: a row of
+-- panes becomes a stack, and a stack becomes a row. Rex sets a split's
+-- direction when the split is created, so this moves the pane to the
+-- perpendicular side of its sibling and lets the server rebuild the split.
+local function layout_leaves(node, out)
+  out = out or {}
+  if type(node) ~= "table" then return out end
+  if node.block_id ~= nil then
+    table.insert(out, node.block_id)
+  elseif node.split ~= nil then
+    layout_leaves(node.split.before, out)
+    layout_leaves(node.split.after, out)
+  end
+  return out
+end
+
+-- Returns the split that holds block_id directly, and which side it is on.
+local function split_around(node, block_id)
+  if type(node) ~= "table" or node.split == nil then return nil end
+  for _, side in ipairs({ "before", "after" }) do
+    local child = node.split[side]
+    if type(child) == "table" then
+      if child.block_id == block_id then
+        return node.split, side
+      end
+      local found, where = split_around(child, block_id)
+      if found ~= nil then return found, where end
+    end
+  end
+  return nil
+end
+
+rex.action{
+  name        = "flip_split",
+  title       = "Flip Split Orientation",
+  description = "Turn the focused pane's row into a stack, or its stack into a row.",
+  args        = { block = "string?" },
+  run         = function(ctx, args)
+    local target = args.block or ctx.block_id
+    if target == nil then error("no focused pane to flip", 0) end
+
+    local view, verr = rex.session.view{}
+    if view == nil then error(verr, 0) end
+
+    for _, window in ipairs(view.windows or {}) do
+      for _, layer in ipairs(window.layers or {}) do
+        local split, side = split_around(layer.layout, target)
+        if split ~= nil then
+          local other = split[side == "before" and "after" or "before"]
+          local anchor = layout_leaves(other)[1]
+          if anchor == nil then error("the other side of the split is empty", 0) end
+
+          local direction = split.direction == "horizontal" and "vertical" or "horizontal"
+          local moved, merr = rex.session.move_block{
+            block_id        = target,
+            anchor_block_id = anchor,
+            direction       = direction,
+            side            = side,
+            ratio           = split.ratio,
+          }
+          if moved == nil then error(merr, 0) end
+
+          return {
+            block_id        = target,
+            direction       = direction,
+            side            = side,
+            anchor_block_id = anchor,
+          }
+        end
+      end
+    end
+
+    error("the focused pane is not inside a split", 0)
+  end,
+}
+rex.bind("ctrl+s>space", "flip_split")
+
+-- Not migrated: ~/.config/herdr/config.toml:131-139, six Annotate plugin keys
+-- (prefix+a, prefix+shift+a, prefix+ctrl+a, prefix+m, prefix+o, prefix+shift+o).
+-- Rex has no plugin surface or selection hook, so these keys stay unbound.

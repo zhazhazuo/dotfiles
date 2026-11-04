@@ -23,6 +23,12 @@ ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 rm -rf ~/.config/herdr/config.toml
 ln -sf ~/dotfiles/herdr/config.toml ~/.config/herdr/config.toml
 
+# Rex
+rm -rf ~/.config/rex
+ln -sf ~/dotfiles/rex ~/.config/rex
+# The Raycast extension switches windows through this, and it is off by default.
+defaults write com.superlogical.rex rex.client.remoteControl -bool true
+
 # Ghostty
 rm -rf ~/.config/ghostty
 ln -sf ~/dotfiles/ghostty ~/.config/ghostty
