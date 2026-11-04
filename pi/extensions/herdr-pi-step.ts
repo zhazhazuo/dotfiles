@@ -171,19 +171,6 @@ export function toolPhrase(toolName: unknown, args: unknown): string | undefined
       return "listing files";
     case "agent_browser":
       return "browsing the web";
-    case "ctx_execute":
-      return "running a sandbox snippet";
-    case "ctx_execute_file": {
-      const file = fileLabel(a.path);
-      return file ? `analyzing ${file}` : "analyzing a file";
-    }
-    case "ctx_batch_execute":
-      return "running a command batch";
-    case "ctx_search":
-      return "searching the knowledge base";
-    case "ctx_index":
-    case "ctx_fetch_and_index":
-      return "indexing reference docs";
     case "lens_diagnostics":
       return "checking diagnostics";
     case "ask_user_question":

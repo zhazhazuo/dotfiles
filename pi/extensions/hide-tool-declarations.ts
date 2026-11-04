@@ -79,6 +79,9 @@ export const WHITELIST_COMMAND_NAME = "tool-whitelist"
  * `ask_user_question` stays because it is the only way to offer selectable options. The
  * subagent tools stay because delegation is routine work rather than an occasional reach
  * for a domain tool.
+ *
+ * `ls` stays because all ten subagent type definitions allow it, and a hidden declaration
+ * contradicts every one of them.
  */
 const defaultToolsKeptDeclared: readonly string[] = [
   "read",
@@ -87,6 +90,7 @@ const defaultToolsKeptDeclared: readonly string[] = [
   "write",
   "grep",
   "find",
+  "ls",
   "todo",
   "ask_user_question",
   "codemode",

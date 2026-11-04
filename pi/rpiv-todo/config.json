@@ -1,5 +1,5 @@
 {
-  "maxWidgetLines": 8,
+  "maxWidgetLines": 12,
   "guidance": {
     "promptSnippet": "Keep the todo panel current before and during multi-step work.",
     "promptGuidelines": [

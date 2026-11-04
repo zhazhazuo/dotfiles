@@ -18,9 +18,12 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `extensions/ask-user-attention.ts` | `dotfiles/pi/extensions/ask-user-attention.ts` |
 | `extensions/herdr-pi-step.ts` | `dotfiles/pi/extensions/herdr-pi-step.ts` |
 | `extensions/herdr-subagents-running.ts` | `dotfiles/pi/extensions/herdr-subagents-running.ts` |
+| `extensions/agent-monitor.ts` | `dotfiles/agent-monitor/extensions/agent-monitor.ts` |
 
-`extensions/tokenswitch-provider.ts` is the one extension link that points outside this repo. It
-resolves to `~/Work/Tools/tokenswitch-provider/tokenswitch-provider.ts`.
+Two extensions load from outside this repo. `extensions/tokenswitch-provider.ts` is a symlink to
+`~/Work/Tools/tokenswitch-provider/tokenswitch-provider.ts`. The `extensions` array in
+`settings.json` loads `~/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs`, which writes GenAI
+JSONL telemetry records and is installed and updated by LoongSuite Pilot, not by this repo.
 
 Two more links in `~/.pi/agent` sit outside this folder and are not managed here:
 `AGENTS.md` points at `dotfiles/AGENTS/AGENTS.md`, and every `skills/*` entry points into
@@ -34,12 +37,13 @@ mechanism keeps them so.
 
 | Extension | What it does |
 |---|---|
-| `hide-tool-declarations.ts` | Hides 45 of the 64 declarations but keeps every hidden tool callable. Adds the `hidden_tools` prompt section and the `/tool-whitelist` command. |
+| `hide-tool-declarations.ts` | Hides 44 of the 64 declarations but keeps every hidden tool callable. Adds the `hidden_tools` prompt section and the `/tool-whitelist` command. |
 | `skill-guard.ts` | Silences third-party package skills except the four navigators named in `settings.json` under `skillGuard.keepVisible`. |
 | `browser-instruction-broker.ts` | Stops `pi-agent-browser-native` from injecting its ~36 KB browser playbook into every prompt. The playbook moves to the `browser` subagent definition. |
 | `ask-user-attention.ts` | Reports "blocked on human" to Herdr while pi waits for a reply to a blocking prompt. |
 | `herdr-pi-step.ts` | Shows what the focused pi session is doing in the Herdr tab bar. |
 | `herdr-subagents-running.ts` | Reports "subagents running" to Herdr while the root session waits on background threads. |
+| `agent-monitor.ts` | Feeds pi lifecycle events to `agent-monitor`, whose sinks are SketchyBar and tmux. The herdr extensions own the herdr tab bar, so each surface has one owner. |
 
 Three of these cut the prompt. The prompt is the scarce resource: it is re-sent on every model
 call and it competes with the conversation for the context window.
@@ -55,9 +59,9 @@ Measured in `agents/domain-wiki` with one method on both sides:
 
 | Measure | No extension | Now |
 |---|---|---|
-| Declared tools | 64 | 19 |
+| Declared tools | 64 | 20 |
 | Declaration bytes | 47,700 | 17,554 |
-| Hidden tools | 0 | 45 |
+| Hidden tools | 0 | 44 |
 | Hidden declaration bytes | 0 | 30,146 |
 | Prompt sections | 18,398 | 18,061 |
 | Fixed prefix per request | 66,098 | 35,615 |
@@ -87,8 +91,8 @@ The file holds one key:
 
 ```json
 {
-  "keepDeclared": ["read", "bash", "edit", "write", "grep", "find", "todo",
-                   "ask_user_question", "codemode", "tool_search", "run_tool",
+  "keepDeclared": ["read", "bash", "edit", "write", "grep", "find", "ls",
+                   "todo", "ask_user_question", "codemode", "tool_search", "run_tool",
                    "agent_types", "agent_spawn", "agent_steer", "agent_wait",
                    "agent_status", "agent_output", "agent_update", "agent_pause",
                    "agent_stop"]

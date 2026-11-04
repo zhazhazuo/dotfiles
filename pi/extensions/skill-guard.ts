@@ -35,13 +35,21 @@
  * installs) is a valid declaration of intent but has no effect here: this
  * extension only ever touches skills that a package update can overwrite.
  *
- * The scan universe is every package listed in `packages[]`: the skill roots
+ * The scan universe is every package listed in `packages[]` — the skill roots
  * its manifest declares (`pi.skills`) plus its conventional `skills/`
- * directory. The settings `skills` filter is deliberately ignored — pi-lens
- * injects its skills through `resources_discover` and so bypasses the filter,
- * which means the filter is not a reliable indicator of what pi loads.
- * Packages installed but not configured are not touched, because pi does not
- * load them.
+ * directory — together with the global Agent Skills root `~/.agents/skills`,
+ * which pi loads in every session. The settings `skills` filter is
+ * deliberately ignored — pi-lens injects its skills through
+ * `resources_discover` and so bypasses the filter, which means the filter is
+ * not a reliable indicator of what pi loads. Packages installed but not
+ * configured are not touched, because pi does not load them.
+ *
+ * The global root holds two kinds of skill, and the walk separates them by
+ * shape rather than by guessing. A real directory was written by the skill
+ * installer, so an update can overwrite it and the flag needs re-asserting. A
+ * symlinked directory points at a file this extension does not own, typically
+ * a hand-authored skill in a dotfiles repository, so the walk does not descend
+ * into it and never rewrites it.
  *
  * A whitelisted skill that still carries the flag is reported as a conflict
  * rather than rewritten: the flag may be the package author's own intent, and
@@ -298,12 +306,27 @@ function writeAtomic(file: string, content: string): void {
 // ─── policy and enforcement ─────────────────────────────────────────────────
 
 type Settings = { keepVisible: string[]; packages: string[] };
+
+/** Options for a guard run. */
+export type ScanOptions = {
+  /** Global Agent Skills root to scan; defaults to ~/.agents/skills. */
+  agentSkillsRoot?: string;
+};
+
 export type Report = {
   scanned: number;
   silenced: string[];
   conflicts: string[];
   problems: string[];
 };
+
+/**
+ * The global Agent Skills root pi loads in every session. Mirrors pi's own
+ * `join(getHomeDir(), ".agents", "skills")`.
+ */
+export function globalAgentSkillsRoot(): string {
+  return join(homedir(), ".agents", "skills");
+}
 
 function readSettings(agentDir: string): Settings {
   const settingsPath = join(agentDir, "settings.json");
@@ -348,10 +371,11 @@ function displayPath(file: string, agentDir: string): string {
 }
 
 /**
- * Silence every skill a configured package provides unless the whitelist
- * allows it. Never throws: failures are collected in `problems`.
+ * Silence every skill from a configured package or the global Agent Skills
+ * root unless the whitelist allows it. Never throws: failures are collected in
+ * `problems`.
  */
-export function run(agentDir: string): Report {
+export function run(agentDir: string, options: ScanOptions = {}): Report {
   let settings: Settings;
   try {
     settings = readSettings(agentDir);
@@ -385,6 +409,9 @@ export function run(agentDir: string): Report {
     if (!pkgDir) continue;
     for (const root of packageSkillRoots(pkgDir)) collectSkillFiles(root, targets, problems);
   }
+
+  // The global Agent Skills root pi loads natively, alongside packages.
+  collectSkillFiles(options.agentSkillsRoot ?? globalAgentSkillsRoot(), targets, problems);
 
   const silenced: string[] = [];
   const conflicts: string[] = [];
