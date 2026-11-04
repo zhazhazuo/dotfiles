@@ -33,6 +33,9 @@ claim. Do not add a certainty that the source did not state.
   it. Otherwise: no headers, no bullet lists, no bold, no tables.
 - One item, one name, for the whole reply. Name the thing itself, not a metaphor for it:
   "the fix", not "the lever".
+- Name a decision by what it says, not by its code. Write "the CLI performs no model inference",
+  not `D20`, and "the four owner rulings", not `P4`. The same holds for a plan item, a ticket key
+  and a TODO number. A reader who does not hold the document cannot resolve the code.
 - State the fact, not its importance. Delete words that carry no fact: simply, robust, leverage,
   crucial, "it is worth noting".
 - Name the relation between two clauses: "because", "but", "for example". An em-dash is permitted.
@@ -73,8 +76,10 @@ claim. Do not add a certainty that the source did not state.
 
 ### Subagents
 
-- Spawn each independent child with `wait: false`, all in one call. Do not call `agent_wait`. End
-  the turn. The completion message wakes the session with the results.
+- SDD means subagent-driven development, not spec-driven development.
+- When tasks have no sequential dependence, run them in parallel with subagents. Spawn each
+  independent child with `wait: false`, all in one call. Do not call `agent_wait`. End the turn.
+  The completion message wakes the session with the results.
 - The `codemode` sandbox has two workers for the whole pi process, and a long script holds one. If
   children run long scripts, set `PI_CODEMODE_MAX_WORKERS` or expect waits.
 
@@ -91,6 +96,10 @@ claim. Do not add a certainty that the source did not state.
 - Do not declare a top-level variable named `tools`. The sandbox passes `tools` as a parameter.
 - The `codemode` sandbox has no file system, no network, and no timers. Call `tools.bash` inside the
   script for file system and network work.
+- A tool the user names runs through `run_tool` with its own arguments, even when it has no
+  declaration. Do not report a tool as unavailable before one attempt.
+- When one call answers the task, call it through `run_tool`. Do not open a script to reach one
+  hidden tool.
 
 ### Shell output
 
@@ -110,7 +119,7 @@ claim. Do not add a certainty that the source did not state.
   - `dev-nav`: the dev lifecycle card book — orient, align, specify, implement, debug, trim
   - `dev-flow-nav`: one-pager gates, parallel agents, subagent spawning and delegation
   - `design-nav`: UI design, prototypes, shadcn, diagrams, PRD scenarios
-  - `ops-nav`: tools, Confluence, coordination, document and plain-English writing
+  - `ops-nav`: tools, Confluence, coordination, plan grilling and interviews, document and plain-English writing
   - `knowledge-nav`: repository evidence before reading, and the repoWiki knowledge base
 - If the task matches a navigator, read `~/.agents/skills/<navigator>/SKILL.md`, then the routed skill file, expanding `~` to the home directory.
 - Precedence: navigators are the entry point. A concrete skill listed in `<available_skills>` is loaded directly only when its description explicitly matches the task; otherwise route through its navigator.
