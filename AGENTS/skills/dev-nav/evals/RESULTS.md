@@ -1,5 +1,10 @@
 # dev-nav routing eval — results
 
+> **Pre-change record, dated before 2026-10-28.** These results measure the ten-phase deck. On
+> 2026-10-28 the `obra/superpowers` package left the machine, four phases left the deck, and the
+> fixture lost six moments. The numbers below still describe the deck as it was measured; they are
+> not a verdict on the six-phase deck. Re-run `evals/run-routing-eval.sh` to measure that.
+
 This is the evidence behind the card-book refactor. It records what was measured, what the
 measurement found, and what it does **not** show.
 

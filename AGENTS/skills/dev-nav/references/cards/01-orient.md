@@ -12,7 +12,7 @@ Skill: `~/.agents/skills/ripwire-router/SKILL.md`
 ## Exit artifact
 
 A map: for each symbol you will write, the existing symbol to extend or reuse, the seams the
-change crosses, and the tests to run. Without it you are guessing at phase 5.
+change crosses, and the tests to run. Without it you are guessing at phase 4.
 
 ## Earns its place
 
@@ -27,9 +27,9 @@ change crosses, and the tests to run. Without it you are guessing at phase 5.
 
 - A named symbol is `ripwire-navigate`, not orient.
 - Code you did not write, or a subsystem you must size up, is `ripwire-fresh-eyes`.
-- Vetting your own diff is `ripwire-change-check`, and it belongs to phase 8.
+- Vetting your own diff before a merge is `ripwire-change-check`. It holds no phase.
 - A measurement already in hand, deciding which refactor, is `ripwire-quality-bar`.
 
 ## Handoff
 
-Phase 5 consumes the reuse candidate. Phase 4 consumes the tests-to-run list.
+Phase 4 consumes the reuse candidate and the tests-to-run list.

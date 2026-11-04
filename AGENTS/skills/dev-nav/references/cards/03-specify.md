@@ -32,8 +32,8 @@ produces it.
 ## Not this card
 
 - Adding coverage to untested existing code is `ripwire-write-tests`, not this.
-- Deleting low-signal tests is phase 7.
+- Deleting low-signal tests is phase 6.
 
 ## Handoff
 
-Phase 4 consumes the scenarios as the specification of the failing tests.
+Phase 4 consumes the scenarios as the specification of the tests it writes first.

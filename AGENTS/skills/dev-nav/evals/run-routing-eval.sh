@@ -98,41 +98,33 @@ TASK: ${moment}"
 import json, sys
 
 DEV_SKILLS = {
-    "ripwire-router", "alignment-quiz", "context-to-qa-scenarios", "test-driven-development",
-    "write-discoverable-code", "structuring-ui-components", "api-mock", "systematic-debugging",
-    "prune-low-signal-tests", "verification-before-completion", "requesting-code-review",
-    "receiving-code-review", "writing-skills",
+    "ripwire-router", "alignment-quiz", "context-to-qa-scenarios",
+    "write-discoverable-code", "structuring-ui-components", "api-mock", "ripwire-find-bug",
+    "prune-low-signal-tests",
 }
 # Orienting before the phase is legal lifecycle behaviour, so these never fail a run.
 ORIENT_SKILLS = {
     "ripwire-router", "ripwire-orient", "ripwire-navigate", "ripwire-before-you-build",
-    "ripwire-change-check", "ripwire-find-bug", "ripwire-fresh-eyes", "ripwire-graph-query",
+    "ripwire-change-check", "ripwire-fresh-eyes", "ripwire-graph-query",
     "ripwire-handoff", "ripwire-layers", "ripwire-opt-remarks", "ripwire-perf-target",
     "ripwire-quality-bar", "ripwire-reuse-first", "ripwire-security-scan",
     "ripwire-write-tests",
 }
 
-# Skills from the delivery flow (dev-flow-nav and the package skills it routes to) are legal after
-# the phase under test: finishing a branch after review is correct lifecycle behaviour, not a
+# Skills from the delivery flow (dev-flow-nav and the skills it routes to) are legal after the
+# phase under test: delegating the work after sizing it up is correct lifecycle behaviour, not a
 # routing error.
 DELIVERY_SKILLS = {
-    "dev-flow-nav", "brainstorming", "writing-plans", "executing-plans",
-    "subagent-driven-development", "dispatching-parallel-agents", "using-git-worktrees",
-    "finishing-a-development-branch", "one-pager-gate", "pi-subagents", "council-mode",
-    "using-superpowers",
+    "dev-flow-nav", "subagent-delegation", "subagent-driven-development", "one-pager-gate", "pea-shooter",
 }
 
 PHASE_SKILLS = {
     "1": {"ripwire-router"},
     "2": {"alignment-quiz"},
     "3": {"context-to-qa-scenarios"},
-    "4": {"test-driven-development"},
-    "5": {"write-discoverable-code", "structuring-ui-components", "api-mock"},
-    "6": {"systematic-debugging"},
-    "7": {"prune-low-signal-tests"},
-    "8": {"verification-before-completion"},
-    "9": {"requesting-code-review", "receiving-code-review"},
-    "10": {"writing-skills"},
+    "4": {"write-discoverable-code", "structuring-ui-components", "api-mock"},
+    "5": {"ripwire-find-bug"},
+    "6": {"prune-low-signal-tests"},
 }
 
 path, expected, phase = sys.argv[1], sys.argv[2], sys.argv[3]

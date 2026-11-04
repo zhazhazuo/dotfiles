@@ -1,13 +1,13 @@
 ---
 name: subagent-delegation
-description: Use when spawning a child agent, delegating work to one, or reviewing what a child returned in pi — choosing the spawn path, proving the child's context, reading the agent type's allow list, writing the brief, and verifying the work on disk. Also use for subagent-driven development (SDD), where the main thread plans and reviews and children build.
+description: Use when spawning a child agent, delegating work to one, or reviewing what a child returned in pi — choosing the spawn path, proving the child's context, reading the agent type's allow list, writing the brief, and verifying the work on disk.
 disable-model-invocation: true
 ---
 
 # Subagent delegation
 
-SDD means subagent-driven development: the main thread plans and reviews, and child agents build.
-These rules bind the thread that spawns. A child does not load this file.
+These rules bind the thread that spawns. A child does not load this file. For role-specific briefs,
+execution handoffs, and supervision, read `~/.agents/skills/subagent-driven-development/SKILL.md`.
 
 ## The spawn path decides the context
 
@@ -18,10 +18,11 @@ answers the inherited thread instead of the task.
 Ask what came before the task before you trust a child. A fresh child answers NONE. A forked child
 recounts the thread. Stop a forked child on a build task and re-spawn it at an independent root path.
 
-## Read the type's allow list before you delegate
+## Read the type's allow list before you order sub-delegation
 
 Delegation is a permission, not an instruction. Read the allow list of the type before you order a
-child to delegate; a type with no `agent_spawn` stalls on that order. `toolFiltering: allowed` is
+child to delegate. A type with no `agent_spawn` stalls on that order. This rule binds sub-delegation,
+not an ordinary child that only uses repository tools. `toolFiltering: allowed` is
 pinned in `~/.pi/agent/subagent-manager/settings.json`, so the allow list is the whole inventory.
 
 ## The brief

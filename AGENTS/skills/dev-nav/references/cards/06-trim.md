@@ -1,6 +1,6 @@
-# 07 Trim
+# 06 Trim
 
-Repair phase: enter from any phase, typically after phase 5; leave by returning to the phase that
+Repair phase: enter from any phase, typically after phase 4; leave by returning to the phase that
 produced the suite.
 Skill: `~/.agents/skills/prune-low-signal-tests/SKILL.md`
 
@@ -34,10 +34,10 @@ current session unless the operator asks for delegation.
 ## Not this card
 
 - Adding coverage to untested existing code is `ripwire-write-tests`.
-- Fixing one failing test is phase 6.
+- Fixing one failing test is phase 5.
 - Never delete or weaken an E2E test. A guarded behavior with no user-visible seam is load-bearing;
   keep it and record why.
 
 ## Handoff
 
-Return to whichever phase produced the suite, usually phase 5.
+Return to whichever phase produced the suite, usually phase 4.

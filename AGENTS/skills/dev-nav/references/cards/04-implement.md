@@ -1,6 +1,6 @@
-# 05 Implement
+# 04 Implement
 
-Phase gate: you cannot leave phase 5 without the artifact below.
+Phase gate: you cannot leave phase 4 without the artifact below.
 Skills, by condition: `write-discoverable-code` always; `structuring-ui-components` only when the
 target is a React or Vue component; `api-mock` only when the endpoint does not exist yet. Read
 every skill whose condition matches, and only those.
@@ -11,11 +11,12 @@ every skill whose condition matches, and only those.
 
 ## Enter
 
-- A failing test exists (phase 4), or the change is not test-coverable.
+- The behavior is specified (phase 3), or the change is not test-coverable.
+- A failing test exists, because test-first is the standing rule from `AGENTS.md`.
 
 ## Exit artifact
 
-Code that passes the phase 4 test, with names one search resolves; components whose logic sits
+Code that passes the test you wrote first, with names one search resolves; components whose logic sits
 outside markup; and, where an endpoint was missing, a local profile that is deleted in the same
 task that ships the real endpoint.
 
@@ -46,5 +47,5 @@ never invented, and the profile is deleted in the same task that ships the real 
 
 ## Handoff
 
-Phase 8 consumes the passing test. Phase 6 is entered from here whenever this phase produces an
-unexplained failure.
+Phase 5 is entered from here whenever this phase produces an unexplained failure. No phase
+consumes the passing test: its output is the evidence for the claim you make about the change.

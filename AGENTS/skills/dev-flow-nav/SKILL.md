@@ -1,6 +1,6 @@
 ---
 name: dev-flow-nav
-description: Use when the task involves brainstorming a new feature or idea before building, writing or executing an implementation plan, spawning or delegating to a child agent in pi, running subagent-driven or parallel-agent development, isolating work in a git worktree, finishing or merging a development branch, or authoring or gating a one-pager against the three build gates before building.
+description: Use when the task involves spawning or delegating to a child agent in pi, running subagent-driven or parallel-agent development, or authoring or gating a one-pager against the three build gates before building.
 ---
 
 # Dev flow skills router
@@ -9,18 +9,37 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 
 | Task | Skill | File |
 |---|---|---|
-| Any `agent_spawn`: pick the spawn path, prove the child's context, read the type's allow list, write the brief, verify the work | subagent-delegation | `~/.agents/skills/subagent-delegation/SKILL.md` |
-| New feature or component before building | brainstorming | `~/.pi/agent/git/github.com/obra/superpowers/skills/brainstorming/SKILL.md` |
-| Have a spec or requirements for a multi-step task, before touching code | writing-plans | `~/.pi/agent/git/github.com/obra/superpowers/skills/writing-plans/SKILL.md` |
-| Have a written implementation plan to execute in a separate session with review checkpoints | executing-plans | `~/.pi/agent/git/github.com/obra/superpowers/skills/executing-plans/SKILL.md` |
-| Execute a plan with independent tasks in the current session (implementer + reviewer per task) | subagent-driven-development | `~/.pi/agent/git/github.com/obra/superpowers/skills/subagent-driven-development/SKILL.md` |
-| Facing 2+ independent tasks without shared state or sequential dependencies | dispatching-parallel-agents | `~/.pi/agent/git/github.com/obra/superpowers/skills/dispatching-parallel-agents/SKILL.md` |
-| Feature work needs isolation from current workspace, or before executing implementation plans | using-git-worktrees | `~/.pi/agent/git/github.com/obra/superpowers/skills/using-git-worktrees/SKILL.md` |
-| Implementation complete, tests pass, deciding how to integrate the work | finishing-a-development-branch | `~/.pi/agent/git/github.com/obra/superpowers/skills/finishing-a-development-branch/SKILL.md` |
+| Any `agent_spawn`: pick the spawn path, prove the child's context, read the type's allow list, and inspect the result | subagent-delegation | `~/.agents/skills/subagent-delegation/SKILL.md` |
+| Delegate bounded implementation, diagnosis, research, testing, or review with role context, a coder handoff, or supervision without progress messages | subagent-driven-development | `~/.agents/skills/subagent-driven-development/SKILL.md` |
 | Author or gate a one-pager before building (three build gates) | one-pager-gate | `~/.agents/skills/one-pager-gate/SKILL.md` |
+
+## Removed on 2026-10-28
+
+The `git:github.com/obra/superpowers` package left this machine. Seven rows pointed into it, and
+the package directory is gone:
+
+| Lost skill | Moment that lost its route |
+|---|---|
+| `brainstorming` | a new feature or component, before building |
+| `writing-plans` | a spec or requirements set for a multi-step task, before code |
+| `executing-plans` | executing a written plan in a separate session with review checkpoints |
+| `subagent-driven-development` | a plan with independent tasks, implementer plus reviewer per task |
+| `dispatching-parallel-agents` | two or more independent tasks with no shared state |
+| `using-git-worktrees` | isolating feature work from the current workspace |
+| `finishing-a-development-branch` | deciding how to integrate work whose tests pass |
+
+Subagent-driven development now routes to a local `subagent-driven-development` skill. Parallel
+dispatch folds into `subagent-delegation`. The other five moments have no installed replacement:
+pre-build design, plan writing, plan execution, worktree isolation, and branch finishing now run
+from `AGENTS.md` and the operator's instruction alone.
+
+`conformance-kit` and `grilling` are installed and cover parts of the design-before-build moment.
+Neither is routed here: `ops-nav` owns `grilling`, and `conformance-kit` has no navigator row, so
+`integrate-capability` decides where it belongs.
 
 ## Notes
 
-- These skills are package-owned (`git:github.com/obra/superpowers`) and silenced via `disable-model-invocation: true` in their frontmatter. A package update wipes that patch; the `skill-guard` extension re-applies it at session start, before pi scans skills. Packages are silent by default, so no whitelist entry is needed — `skillGuard.keepVisible` in `~/.pi/agent/settings.json` lists the exceptions. Run `/skill-guard` to re-check on demand.
-- `using-superpowers` from the same package is the package's own bootstrap and is unrouted by design; the navigator system in `AGENTS.md` owns routing.
-- The package's bootstrap extension is not loaded (settings `extensions: []`) — it injects session-wide routing guidance that duplicates this navigator.
+- `using-superpowers` and the package's bootstrap extension are gone with the package. The
+  navigator system in `AGENTS.md` owns routing.
+- Every routed path was verified to exist on 2026-10-28. If one is missing, re-resolve before
+  routing around it, and correct this table in the same session.
