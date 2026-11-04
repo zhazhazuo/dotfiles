@@ -28,6 +28,10 @@ rm -rf ~/.config/rex
 ln -sf ~/dotfiles/rex ~/.config/rex
 # The Raycast extension switches windows through this, and it is off by default.
 defaults write com.superlogical.rex rex.client.remoteControl -bool true
+# Rex keeps its own copy of each theme, so the repository files need one import.
+if command -v rex >/dev/null 2>&1; then
+	~/dotfiles/rex/themes/install.sh
+fi
 
 # Ghostty
 rm -rf ~/.config/ghostty
