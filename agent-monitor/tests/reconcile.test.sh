@@ -81,6 +81,19 @@ else
 fi
 export AGENT_MONITOR_FRONT_APP="Ghostty"
 
+# ── source-level notification opt-out (Rex notifies from the app) ────────
+: >"$NOTIFY_LOG"
+export AGENT_MONITOR_FRONT_APP="Safari"
+AGENT_MONITOR_NOTIFY=off "$BIN" reconcile herdr TurnComplete '{"pane_id":"w4:p1","label":"Muted"}'
+assert_jq "opt-out still records the state" '.agents["w4_p1"].state == "needs-attention"'
+if [[ -s "$NOTIFY_LOG" ]]; then
+	echo "FAIL: AGENT_MONITOR_NOTIFY=off must suppress the notification"
+	fail=1
+else
+	echo "ok: AGENT_MONITOR_NOTIFY=off suppresses the notification"
+fi
+export AGENT_MONITOR_FRONT_APP="Ghostty"
+
 # ── TSV export on refresh ────────────────────────────────────────────────
 TSV="$AGENT_MONITOR_STATE_DIR/state.tsv"
 if [[ -f "$TSV" ]] && grep -q $'^w2_p4\therdr\trunning\tSF\tw2:p4' "$TSV"; then

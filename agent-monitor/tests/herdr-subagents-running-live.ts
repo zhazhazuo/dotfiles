@@ -110,6 +110,14 @@ async function waitForMonitor(
   return monitorEntry();
 }
 
+/**
+ * Herdr keeps a per-(pane, source) `seq` watermark and acknowledges, then drops,
+ * a report whose seq is below it. The producer stamps `Date.now() * 1000`, so a
+ * probe that stamps `Date.now()` is silently ignored after any earlier producer
+ * run on the same pane. Match the producer's scale.
+ */
+const probeSeq = () => Date.now() * 1000;
+
 const paneStatus = paneSnapshot()?.agent_status;
 if (paneStatus !== "done" && paneStatus !== "idle") {
   console.error(
@@ -137,7 +145,7 @@ check(
 );
 
 try {
-  check("herdr accepts the metadata report", await report(buildSubagentMetadataReport(PANE_ID, labels, Date.now())));
+  check("herdr accepts the metadata report", await report(buildSubagentMetadataReport(PANE_ID, labels, probeSeq())));
 
   // The adapter writes the state, then the count, as two separate store writes;
   // require both so this does not read between them.
@@ -147,7 +155,7 @@ try {
   check("monitor flips to subagents-running", parked?.state === "subagents-running", JSON.stringify(parked));
   check("monitor stores the subagent count", parked?.subagents_count === PROBE_THREADS.length, JSON.stringify(parked));
 
-  check("herdr accepts the clear report", await report(buildSubagentMetadataReport(PANE_ID, undefined, Date.now())));
+  check("herdr accepts the clear report", await report(buildSubagentMetadataReport(PANE_ID, undefined, probeSeq() + 1)));
 
   // Same two-write ordering as above: the state lands before the count clears.
   const cleared = await waitForMonitor(
@@ -157,7 +165,7 @@ try {
   check("monitor resets the subagent count", cleared?.subagents_count === 0, JSON.stringify(cleared));
 } finally {
   // Never leave a probe label behind, whatever happened above.
-  await report(buildSubagentMetadataReport(PANE_ID, undefined, Date.now()));
+  await report(buildSubagentMetadataReport(PANE_ID, undefined, probeSeq() + 2));
 }
 
 console.log(`\n${failures.length === 0 ? "PASS" : "FAIL"} — ${failures.length} failed`);

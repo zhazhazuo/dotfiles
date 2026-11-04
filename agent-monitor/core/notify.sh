@@ -82,6 +82,11 @@ APPLESCRIPT
 main() {
 	local enabled app title body
 
+	# A source can opt out of notifications entirely. Rex reports program
+	# status itself and the app sends its own macOS notifications, so the
+	# bridge exporting AGENT_MONITOR_NOTIFY=off keeps one notification, not two.
+	is_disabled "${AGENT_MONITOR_NOTIFY:-on}" && exit 0
+
 	enabled=$(option_or_default @agent_monitor_notify_enabled on)
 	is_disabled "$enabled" && exit 0
 

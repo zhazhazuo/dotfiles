@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Keeps adapters/rex.sh --watch running so SketchyBar reflects agents in Rex.
+
+  The Rex server outlives the app, so this follows the event stream whether or
+  not a window is open. The PATH must contain the rex CLI from the server
+  bundle: launchd does not inherit a login shell's PATH.
+
+  Load:    launchctl bootstrap gui/$(id -u) ~/dotfiles/agent-monitor/launchd/local.agent-monitor.rex.plist
+  Unload:  launchctl bootout gui/$(id -u)/local.agent-monitor.rex
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>local.agent-monitor.rex</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/walkerw/dotfiles/agent-monitor/adapters/rex.sh</string>
+		<string>--watch</string>
+	</array>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/walkerw/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>HOME</key>
+		<string>/Users/walkerw</string>
+	</dict>
+
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+
+	<key>StandardOutPath</key>
+	<string>/Users/walkerw/Library/Logs/agent-monitor-rex.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/walkerw/Library/Logs/agent-monitor-rex.log</string>
+</dict>
+</plist>

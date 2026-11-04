@@ -95,11 +95,16 @@ Two publishers speak this contract:
 - the legacy `pi-subagents` package, from Herdr-detectable child Pi processes;
 - `pi-subagent-manager`, which runs its threads **in-process** and publishes
   nothing to Herdr. Its labels come from the local bridge
-  `pi/extensions/herdr-subagents-running.ts`, which counts running threads in the
-  manager's `pi-subagent:registry:v1` session entry and reports
-  `⏳ N subagent(s) (names) · m:ss`. The elapsed clock is deliberate: Herdr only
+  `pi/extensions/herdr-subagents-running.ts`, which replays the manager's
+  `pi-subagent:registry:v1` session journal (one base snapshot, then a delta per
+  change) and reports `⏳ N subagent(s) (names) · m:ss`. The journal must be
+  replayed: a version 2 delta names only the threads that changed, so the newest
+  entry alone is not a thread list. The elapsed clock is deliberate: Herdr only
   re-emits `pane.agent_status_changed` when the pane presentation actually
-  differs, and that re-emission is what refreshes the heartbeat below.
+  differs, and that re-emission is what refreshes the heartbeat below. The
+  bridge repeats a clear once, because Herdr announces the change before
+  `herdr api snapshot` stops listing the labels and the adapter reads the
+  snapshot.
 
 Precedence: `blocked` → needs-help, `working` → running, otherwise a positive
 subagent count → subagents-running, `done` → needs-attention, `idle` → idle.
