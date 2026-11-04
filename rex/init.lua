@@ -202,6 +202,64 @@ rex.action{
 }
 rex.bind("ctrl+s>space", "flip_split")
 
--- Not migrated: ~/.config/herdr/config.toml:131-139, six Annotate plugin keys
--- (prefix+a, prefix+shift+a, prefix+ctrl+a, prefix+m, prefix+o, prefix+shift+o).
--- Rex has no plugin surface or selection hook, so these keys stay unbound.
+-- Not migrated: ~/.config/herdr/config.toml:131-139, five of the six Annotate
+-- plugin keys (prefix+shift+a, prefix+ctrl+a, prefix+m, prefix+o,
+-- prefix+shift+o). Rex has no plugin surface, and the clipboard and manage
+-- actions have no equivalent. prefix+a is rebuilt below as plannotator_review.
+--
+-- Herdr's annotate.capture reviews the terminal selection, which Rex has no way
+-- to read, so this reviews a named document, or the focused pane's whole text.
+-- Herdr's --deliver-to pane hand-off becomes the wrapper's job: it pastes the
+-- new annotations into the target block's prompt as one paste event.
+rex.action({
+  name        = "plannotator_review",
+  title       = "Review with Plannotator",
+  description = "Open a document, or the focused pane's text, in a floating Plannotator pane and paste the annotations into the prompt.",
+  keywords    = "annotate review plan plannotator",
+  args        = { path = "string?", target = "string?", session = "string?" },
+  run         = function(ctx, args)
+    local terminal = "com.superlogical.terminal"
+    local session = args.session or ctx.session_id
+    local target = args.target or ctx.block_id
+
+    if session == nil then error("no session to review in", 0) end
+    if target == nil then error("no block to review", 0) end
+
+    -- The review pane starts where the target's program is, so a review of the
+    -- focused pane finds its relative paths.
+    local cwd
+    local pwd = rex.call(terminal .. ".pwd", {
+      session_id = session,
+      block_id   = target,
+      args       = {},
+    })
+    if pwd ~= nil and type(pwd.pwd) == "string" then
+      -- A file URL: file://host/path, or file:///path.
+      cwd = pwd.pwd:gsub("^file://[^/]*", "")
+    end
+
+    local script = "$HOME/dotfiles/rex/scripts/plannotator-review.sh"
+    local layer, err = rex.session.new_layer({
+      bounds = { 0.05, 0.05, 0.9, 0.85 },
+      focus  = true,
+      layout = rex.layout.block({
+        flavor  = "com.superlogical.terminal.shell",
+        label   = "review",
+        options = {
+          shell   = "none",
+          cwd     = cwd,
+          command = {
+            "/bin/sh", "-c",
+            'exec "$HOME/dotfiles/rex/scripts/plannotator-review.sh" "$@"',
+            "plannotator-review", args.path or "-", session, target,
+          },
+          exit = { on_completion = true },
+        },
+      }),
+    })
+    if layer == nil then error(err, 0) end
+
+    return { block_id = layer.block_ids[1], document = args.path or "pane text" }
+  end,
+})
+rex.bind("ctrl+s>a", "plannotator_review")
