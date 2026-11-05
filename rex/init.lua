@@ -89,9 +89,6 @@ rex.action{
   end,
 }
 rex.bind("ctrl+s>shift+c", "agent_pane", { agent = "claude" })
--- shift+m restores a hidden pane, so codex keeps the same shift+c
--- neighbourhood with alt instead.
-rex.bind("ctrl+s>alt+c", "agent_pane", { agent = "codex" })
 rex.bind("ctrl+s>shift+p", "agent_pane", { agent = "opencode" })
 
 -- ~/.config/herdr/config.toml:141 prefix+T scratch popup, 80% by 80%.
