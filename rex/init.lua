@@ -202,6 +202,225 @@ rex.action{
 }
 rex.bind("ctrl+s>space", "flip_split")
 
+-- A pane is hidden by floating it and minimising the new layer, because a
+-- window must keep a visible pane and only a floating layer can be minimised.
+-- Floating takes the pane out of the layout, and the server cannot say later
+-- where it sat, so the restore point is recorded here first. The list is
+-- last-in-first-out, so two hidden panes come back in the reverse order. The
+-- record lives in the config's Lua state: reloading the config, or restarting
+-- Rex, forgets a hidden pane's place, and restore_pane then says so.
+local hidden_panes = {}
+
+-- The split that holds block_id directly, with the block to restore beside.
+-- The block next to the pane is the one to split: the last block of the other
+-- side when the pane sat after it, the first when it sat before. Splitting that
+-- one puts the pane back next to its old neighbour and in the same order.
+local function split_beside(node, block_id)
+  local split, side = split_around(node, block_id)
+  if split == nil then return nil end
+  local leaves = layout_leaves(split[side == "before" and "after" or "before"])
+  local anchor = side == "before" and leaves[1] or leaves[#leaves]
+  if anchor == nil then return nil end
+  return { anchor = anchor, direction = split.direction, side = side, ratio = split.ratio }
+end
+
+-- The layer and window that hold a block, or nil when it is not in a window.
+local function layer_of(view, block_id)
+  for _, window in ipairs(view.windows or {}) do
+    for _, layer in ipairs(window.layers or {}) do
+      for _, leaf in ipairs(layout_leaves(layer.layout)) do
+        if leaf == block_id then return layer, window end
+      end
+    end
+  end
+  return nil
+end
+
+rex.action{
+  name        = "minimise_pane",
+  title       = "Minimise Pane",
+  description = "Hide the focused pane as a minimised floating panel, and remember where it sat.",
+  keywords    = "hide minimise minimize stash shrink",
+  args        = { block = "string?", session = "string?" },
+  run         = function(ctx, args)
+    local session = args.session or ctx.session_id
+    local target = args.block or ctx.block_id
+    if session == nil then error("no session to minimise a pane in", 0) end
+    if target == nil then error("no focused pane to minimise", 0) end
+
+    local view, verr = rex.session.view{ session_id = session }
+    if view == nil then error(verr, 0) end
+
+    local layer, window = layer_of(view, target)
+    if layer == nil then error("the pane is not in a window of this session", 0) end
+
+    if layer.kind == "floating" then
+      local hidden, herr = rex.session.set_layer_state{
+        session_id = session,
+        layer_id   = layer.layer_id,
+        state      = "minimized",
+      }
+      if hidden == nil then error(herr, 0) end
+      table.insert(hidden_panes, {
+        session_id = session,
+        block_id   = target,
+        layer_id   = layer.layer_id,
+        window_id  = window.window_id,
+        floating   = true,
+      })
+      return { block_id = target, layer_id = layer.layer_id, floating = true, revision = hidden.revision }
+    end
+
+    -- A window must keep one visible pane, so its last tiled pane stays.
+    if #layout_leaves(layer.layout) < 2 then
+      error("the window has one pane, and a window must keep a visible pane", 0)
+    end
+
+    local point = split_beside(layer.layout, target)
+    local floated, ferr = rex.session.float_block{
+      session_id = session,
+      block_id   = target,
+      bounds     = { 0.1, 0.1, 0.8, 0.8 },
+    }
+    if floated == nil then error(ferr, 0) end
+
+    local hidden, herr = rex.session.set_layer_state{
+      session_id = session,
+      layer_id   = floated.layer_id,
+      state      = "minimized",
+    }
+    if hidden == nil then
+      -- Leave nothing behind: put the pane back in the split it came from.
+      rex.session.move_block{
+        session_id      = session,
+        block_id        = target,
+        anchor_block_id = point.anchor,
+        direction       = point.direction,
+        side            = point.side,
+        ratio           = point.ratio,
+      }
+      error(herr, 0)
+    end
+
+    table.insert(hidden_panes, {
+      session_id = session,
+      block_id   = target,
+      layer_id   = floated.layer_id,
+      window_id  = window.window_id,
+      floating   = false,
+      anchor     = point.anchor,
+      direction  = point.direction,
+      side       = point.side,
+      ratio      = point.ratio,
+    })
+    return {
+      block_id = target,
+      layer_id = floated.layer_id,
+      anchor_block_id = point.anchor,
+      revision = hidden.revision,
+    }
+  end,
+}
+rex.bind("ctrl+s>m", "minimise_pane")
+
+rex.action{
+  name        = "restore_pane",
+  title       = "Restore Minimised Pane",
+  description = "Put the last minimised pane back in its old split, or back on screen if it was floating.",
+  keywords    = "restore unhide minimise minimize unstash show",
+  args        = { block = "string?", session = "string?" },
+  run         = function(ctx, args)
+    local session = args.session or ctx.session_id
+    if session == nil then error("no session to restore a pane in", 0) end
+
+    local record
+    for i = #hidden_panes, 1, -1 do
+      local entry = hidden_panes[i]
+      local matches = entry.session_id == session
+      if matches and args.block ~= nil then matches = entry.block_id == args.block end
+      if matches then
+        record = table.remove(hidden_panes, i)
+        break
+      end
+    end
+    if record == nil then
+      error("no pane was minimised in this session since the config loaded", 0)
+    end
+
+    if record.floating then
+      local shown, serr = rex.session.set_layer_state{
+        session_id = session,
+        layer_id   = record.layer_id,
+        state      = "normal",
+        focus      = true,
+      }
+      if shown == nil then error(serr, 0) end
+      return { block_id = record.block_id, floating = true, revision = shown.revision }
+    end
+
+    local view, verr = rex.session.view{ session_id = session }
+    if view == nil then error(verr, 0) end
+
+    -- The pane's old neighbour may have closed while the pane was hidden. Then
+    -- the first pane left in the window takes its place as the anchor.
+    local anchors = {}
+    for _, window in ipairs(view.windows or {}) do
+      if window.window_id == record.window_id then
+        if record.anchor ~= nil then table.insert(anchors, record.anchor) end
+        if window.focused_block_id ~= nil then table.insert(anchors, window.focused_block_id) end
+        for _, layer in ipairs(window.layers or {}) do
+          if layer.kind == "tiled" then
+            for _, leaf in ipairs(layout_leaves(layer.layout)) do
+              table.insert(anchors, leaf)
+            end
+          end
+        end
+      end
+    end
+
+    local used
+    for _, anchor in ipairs(anchors) do
+      if anchor ~= record.block_id then
+        local moved, merr = rex.session.move_block{
+          session_id      = session,
+          block_id        = record.block_id,
+          anchor_block_id = anchor,
+          direction       = record.direction,
+          side            = record.side,
+          ratio           = record.ratio,
+        }
+        if moved ~= nil then
+          used = anchor
+          break
+        end
+      end
+    end
+
+    if used == nil then
+      -- Nothing in the window can hold the pane. Show it as a floating panel
+      -- rather than keep it hidden with no place to return to.
+      local shown, serr = rex.session.set_layer_state{
+        session_id = session,
+        layer_id   = record.layer_id,
+        state      = "normal",
+        focus      = true,
+      }
+      if shown == nil then error("the pane has no place to return to", 0) end
+      return { block_id = record.block_id, floating = true, fallback = true }
+    end
+
+    rex.session.focus_block{ session_id = session, block_id = record.block_id }
+    return {
+      block_id        = record.block_id,
+      anchor_block_id = used,
+      direction       = record.direction,
+      side            = record.side,
+      ratio           = record.ratio,
+    }
+  end,
+}
+rex.bind("ctrl+s>alt+m", "restore_pane")
+
 -- Not migrated: ~/.config/herdr/config.toml:131-139, five of the six Annotate
 -- plugin keys (prefix+shift+a, prefix+ctrl+a, prefix+m, prefix+o,
 -- prefix+shift+o). Rex has no plugin surface, and the clipboard and manage
