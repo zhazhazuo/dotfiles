@@ -89,7 +89,9 @@ rex.action{
   end,
 }
 rex.bind("ctrl+s>shift+c", "agent_pane", { agent = "claude" })
-rex.bind("ctrl+s>shift+m", "agent_pane", { agent = "codex" })
+-- shift+m restores a hidden pane, so codex keeps the same shift+c
+-- neighbourhood with alt instead.
+rex.bind("ctrl+s>alt+c", "agent_pane", { agent = "codex" })
 rex.bind("ctrl+s>shift+p", "agent_pane", { agent = "opencode" })
 
 -- ~/.config/herdr/config.toml:141 prefix+T scratch popup, 80% by 80%.
@@ -419,7 +421,7 @@ rex.action{
     }
   end,
 }
-rex.bind("ctrl+s>alt+m", "restore_pane")
+rex.bind("ctrl+s>shift+m", "restore_pane")
 
 -- Not migrated: ~/.config/herdr/config.toml:131-139, five of the six Annotate
 -- plugin keys (prefix+shift+a, prefix+ctrl+a, prefix+m, prefix+o,
