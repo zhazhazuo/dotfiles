@@ -62,34 +62,10 @@ rex.bind("ctrl+s>w", "client.tab.previous")
 -- Herdr swaps the two most recent workspaces. Rex steps back one session.
 rex.bind("ctrl+s>tab", "session.previous")
 
--- ~/.config/herdr/config.toml:117-128 prefix+C, prefix+M, prefix+P agent panes.
--- Herdr opens a temporary zoomed pane. This splits and zooms instead.
-rex.action{
-  name  = "agent_pane",
-  title = "Open Agent Pane",
-  args  = { agent = "string", zoom = "boolean?" },
-  run   = function(ctx, args)
-    local split, err = rex.session.new_split{
-      anchor_id = ctx.block_id,
-      direction = "horizontal",
-      side      = "after",
-      focus     = true,
-      layout    = rex.layout.block{
-        flavor  = "com.superlogical.terminal.shell",
-        options = { command = { args.agent } },
-      },
-    }
-    if err ~= nil then error(err, 0) end
-
-    local block_id = split.block_ids[1]
-    if args.zoom ~= false then
-      rex.session.zoom_block{ block_id = block_id, zoom = true }
-    end
-    return { block_id = block_id, agent = args.agent }
-  end,
-}
-rex.bind("ctrl+s>shift+c", "agent_pane", { agent = "claude" })
-rex.bind("ctrl+s>shift+p", "agent_pane", { agent = "opencode" })
+-- Not migrated: ~/.config/herdr/config.toml:117-128, prefix+C, prefix+M and
+-- prefix+P agent panes. The machine runs no claude or opencode on the pane's
+-- PATH, so the keys had nothing to start. A plain split with "-" or "v" and
+-- the agent typed into it does the same job.
 
 -- ~/.config/herdr/config.toml:141 prefix+T scratch popup, 80% by 80%.
 -- A floating layer replaces the popup window.
