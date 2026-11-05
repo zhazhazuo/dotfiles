@@ -7,6 +7,10 @@
   not a window is open. The PATH must contain the rex CLI from the server
   bundle: launchd does not inherit a login shell's PATH.
 
+  A running job keeps the adapter it started with, so after editing adapters/rex.sh
+  run launchd/install.sh: it reloads the job, where a plain load leaves the old
+  adapter running until the next login.
+
   Load:    launchctl bootstrap gui/$(id -u) ~/dotfiles/agent-monitor/launchd/local.agent-monitor.rex.plist
   Unload:  launchctl bootout gui/$(id -u)/local.agent-monitor.rex
 -->
