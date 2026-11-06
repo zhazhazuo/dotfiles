@@ -434,12 +434,14 @@ rex.action({
     end
 
     -- An agent pane is reviewed from its transcript, which holds the message
-    -- without the prompt box, the status line or the terminal's line breaks. Any
-    -- other pane has no transcript, so its screen is all there is.
+    -- without the prompt box, the status line or the terminal's line breaks. The
+    -- picker lists that transcript's messages, because the reply worth reviewing
+    -- is often not the last one. Any other pane has no transcript, so its screen
+    -- is all there is.
     local mode = "-"
     local source = args.source or "auto"
-    if source == "message" then
-      mode = "message"
+    if source == "message" or source == "pick" then
+      mode = source
     elseif source == "auto" and args.path == nil then
       local process = rex.call(terminal .. ".process", {
         session_id = session,
@@ -449,7 +451,7 @@ rex.action({
       local foreground = process and process.foreground
       local program = foreground and (foreground.argv0 or foreground.name) or nil
       if program ~= nil then program = program:gsub("^-", "") end
-      if program == "pi" then mode = "message" end
+      if program == "pi" then mode = "pick" end
     end
 
     local layer, err = rex.session.new_layer({
@@ -474,7 +476,9 @@ rex.action({
 
     return {
       block_id = layer.block_ids[1],
-      document = args.path or (mode == "message" and "last agent message") or "pane text",
+      document = args.path or (mode == "pick" and "a chosen agent message")
+        or (mode == "message" and "last agent message")
+        or "pane text",
     }
   end,
 })

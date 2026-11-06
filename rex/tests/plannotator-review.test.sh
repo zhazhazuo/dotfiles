@@ -190,6 +190,84 @@ else
 fi
 assert_equal "" "$(cat "$REX_CALLS")" "a missing message sends nothing" || true
 
+# ── Pick mode lists the transcript and reviews the chosen message ─────────
+
+sessions="$TMP_DIR/sessions/--fixture--"
+mkdir -p "$sessions"
+cat >"$sessions/2026-01-01T10-00-00Z_fixture.jsonl" <<'JL'
+{"type":"session","version":3,"id":"fixture","timestamp":"2026-01-01T10:00:00Z","cwd":"PLACEHOLDER"}
+{"type":"message","timestamp":"2026-01-01T10:01:00Z","message":{"role":"user","content":"first question"}}
+{"type":"message","timestamp":"2026-01-01T10:02:00Z","message":{"role":"assistant","content":[{"type":"text","text":"OLDEST-REPLY-BODY"}]}}
+{"type":"message","timestamp":"2026-01-01T10:03:00Z","message":{"role":"assistant","content":[{"type":"text","text":"MIDDLE-REPLY-BODY"}]}}
+{"type":"message","timestamp":"2026-01-01T10:04:00Z","message":{"role":"assistant","content":[{"type":"tool_use","id":"x","name":"bash","input":{}}]}}
+{"type":"message","timestamp":"2026-01-01T10:05:00Z","message":{"role":"assistant","content":[{"type":"text","text":"NEWEST-REPLY-BODY"}]}}
+JL
+sed -i '' "s|PLACEHOLDER|$TMP_DIR/here|" "$sessions/2026-01-01T10-00-00Z_fixture.jsonl"
+export PLANNOTATOR_PI_SESSIONS="$TMP_DIR/sessions"
+mkdir -p "$TMP_DIR/here"
+
+# fzf stand-in: records the listing it was given, then picks the line naming the
+# middle reply, which is neither the newest nor the oldest.
+cat >"$TMP_DIR/bin/fzf" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+tee "${FZF_LIST:?}" | grep MIDDLE-REPLY-BODY
+FAKE
+chmod +x "$TMP_DIR/bin/fzf"
+export FZF_LIST="$TMP_DIR/fzf-list.txt"
+
+cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+--export)
+	cat "${TUI_STATE:?}"
+	;;
+*)
+	cp "$1" "${TUI_SEEN_DOC:?}"
+	printf '%s' "$1" >"${TUI_DOC_PATH:?}"
+	next=$(grep -c '^## Annotation [0-9]' "$TUI_STATE" || true)
+	printf '## Annotation %d (line 1)\nComment on: "middle"\n> middle note\n' "$((next + 1))" >>"$TUI_STATE"
+	;;
+esac
+FAKE
+chmod +x "$TMP_DIR/bin/plannotator-tui"
+printf '# nothing yet\n' >"$TUI_STATE"
+: >"$REX_CALLS"
+(
+	cd "$TMP_DIR/here"
+	"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
+)
+assert_contains "MIDDLE-REPLY-BODY" "$(cat "$TUI_SEEN_DOC" 2>/dev/null || true)" \
+	"pick mode reviews the chosen message" || true
+assert_contains "NEWEST-REPLY-BODY" "$(cat "$FZF_LIST")" "the picker lists the newest message too" || true
+assert_contains "OLDEST-REPLY-BODY" "$(cat "$FZF_LIST")" "the picker lists older messages" || true
+if grep -q "first question" "$FZF_LIST"; then
+	printf 'not ok - the picker must list only agent messages\n' >&2
+	failures=$((failures + 1))
+else
+	printf 'ok - the picker lists agent messages only\n'
+fi
+assert_equal "message" "$(basename "$(cat "$TUI_DOC_PATH")")" "the picked document is named message" || true
+assert_contains '"type":"paste"' "$(cat "$REX_CALLS")" "a picked review delivers one paste" || true
+
+# Escape in the picker leaves without a review.
+cat >"$TMP_DIR/bin/fzf" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+cat >/dev/null
+exit 130
+FAKE
+chmod +x "$TMP_DIR/bin/fzf"
+: >"$REX_CALLS"
+: >"$TUI_SEEN_DOC"
+(
+	cd "$TMP_DIR/here"
+	"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
+)
+assert_equal "" "$(cat "$REX_CALLS")" "leaving the picker sends nothing" || true
+assert_equal "" "$(cat "$TUI_SEEN_DOC")" "leaving the picker opens no review" || true
+
 # ── Failures are visible and send nothing ─────────────────────────────────
 
 : >"$REX_CALLS"
