@@ -11,12 +11,14 @@
 # would submit the agent's prompt instead of adding a line to it.
 #
 # Usage:
-#   plannotator-review.sh <document|-> <session_id> <target_block_id>
+#   plannotator-review.sh <document|-|message> <session_id> <target_block_id>
 #
 # `-` means the target block shows no document, so its pane text is snapshotted
-# into a temporary Markdown file and reviewed instead. Only annotations added
-# during this run are delivered, because the export also holds every annotation
-# the document already had.
+# into a temporary Markdown file and reviewed instead. `message` reviews the last
+# message pi wrote, which is what you want when the pane runs an agent: the pane
+# text also carries the prompt box, the status line and the wrap of the terminal.
+# Only annotations added during this run are delivered, because the export also
+# holds every annotation the document already had.
 set -euo pipefail
 
 doc=${1:?document or -}
@@ -48,6 +50,16 @@ trap 'rm -rf "$work"' EXIT
 before="$work/before.md"
 after="$work/after.md"
 docfile=$doc
+
+if [ "$doc" = "message" ]; then
+	# The transcript, not the screen: no prompt box, no status line, and no
+	# lines broken where the terminal happened to wrap them.
+	docfile="$work/message.md"
+	if ! "$tui" last --host pi --print >"$docfile" 2>/dev/null || [ ! -s "$docfile" ]; then
+		echo "plannotator-review: pi has no message to review here" >&2
+		exit 1
+	fi
+fi
 
 if [ "$doc" = "-" ]; then
 	docfile="$work/pane.md"

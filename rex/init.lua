@@ -408,9 +408,9 @@ rex.bind("ctrl+s>shift+m", "restore_pane")
 rex.action({
   name        = "plannotator_review",
   title       = "Review with Plannotator",
-  description = "Open a document, or the focused pane's text, in a floating Plannotator pane and paste the annotations into the prompt.",
-  keywords    = "annotate review plan plannotator",
-  args        = { path = "string?", target = "string?", session = "string?" },
+  description = "Review a document, the last message an agent wrote, or a plain pane's text, in a floating Plannotator pane, and paste the annotations into that pane's prompt.",
+  keywords    = "annotate review plan plannotator message",
+  args        = { path = "string?", source = "string?", target = "string?", session = "string?" },
   run         = function(ctx, args)
     local terminal = "com.superlogical.terminal"
     local session = args.session or ctx.session_id
@@ -420,7 +420,8 @@ rex.action({
     if target == nil then error("no block to review", 0) end
 
     -- The review pane starts where the target's program is, so a review of the
-    -- focused pane finds its relative paths.
+    -- focused pane finds its relative paths, and so the message lookup reads the
+    -- transcript of the session started there.
     local cwd
     local pwd = rex.call(terminal .. ".pwd", {
       session_id = session,
@@ -432,7 +433,25 @@ rex.action({
       cwd = pwd.pwd:gsub("^file://[^/]*", "")
     end
 
-    local script = "$HOME/dotfiles/rex/scripts/plannotator-review.sh"
+    -- An agent pane is reviewed from its transcript, which holds the message
+    -- without the prompt box, the status line or the terminal's line breaks. Any
+    -- other pane has no transcript, so its screen is all there is.
+    local mode = "-"
+    local source = args.source or "auto"
+    if source == "message" then
+      mode = "message"
+    elseif source == "auto" and args.path == nil then
+      local process = rex.call(terminal .. ".process", {
+        session_id = session,
+        block_id   = target,
+        args       = {},
+      })
+      local foreground = process and process.foreground
+      local program = foreground and (foreground.argv0 or foreground.name) or nil
+      if program ~= nil then program = program:gsub("^-", "") end
+      if program == "pi" then mode = "message" end
+    end
+
     local layer, err = rex.session.new_layer({
       bounds = { 0.05, 0.05, 0.9, 0.85 },
       focus  = true,
@@ -445,7 +464,7 @@ rex.action({
           command = {
             "/bin/sh", "-c",
             'exec "$HOME/dotfiles/rex/scripts/plannotator-review.sh" "$@"',
-            "plannotator-review", args.path or "-", session, target,
+            "plannotator-review", args.path or mode, session, target,
           },
           exit = { on_completion = true },
         },
@@ -453,7 +472,10 @@ rex.action({
     })
     if layer == nil then error(err, 0) end
 
-    return { block_id = layer.block_ids[1], document = args.path or "pane text" }
+    return {
+      block_id = layer.block_ids[1],
+      document = args.path or (mode == "message" and "last agent message") or "pane text",
+    }
   end,
 })
 rex.bind("ctrl+s>a", "plannotator_review")

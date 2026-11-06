@@ -139,6 +139,54 @@ printf '# nothing yet\n' >"$TUI_STATE"
 assert_contains "REVIEW-ME-PANE-TEXT" "$(cat "$TUI_SEEN_DOC" 2>/dev/null || true)" "pane mode snapshots the block" || true
 assert_contains '"block_id":"block:1"' "$(cat "$REX_CALLS")" "the paste targets the block it snapshotted" || true
 
+# ── Message mode reviews the last agent message ───────────────────────────
+
+cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+--export)
+	cat "${TUI_STATE:?}"
+	;;
+last)
+	printf '%s\n' "$*" >"${TUI_LAST_ARGS:?}"
+	printf 'LAST-MESSAGE-THIRD-PARAGRAPH\n'
+	;;
+*)
+	cp "$1" "${TUI_SEEN_DOC:?}"
+	next=$(grep -c '^## Annotation [0-9]' "$TUI_STATE" || true)
+	printf '## Annotation %d (line 1)\nComment on: "message"\n> message note\n' "$((next + 1))" >>"$TUI_STATE"
+	;;
+esac
+FAKE
+chmod +x "$TMP_DIR/bin/plannotator-tui"
+export TUI_LAST_ARGS="$TMP_DIR/last-args.txt"
+: >"$TUI_LAST_ARGS"
+printf '# nothing yet\n' >"$TUI_STATE"
+: >"$REX_CALLS"
+"$WRAPPER" message session:1 block:1 >/dev/null 2>&1
+assert_contains "LAST-MESSAGE-THIRD-PARAGRAPH" "$(cat "$TUI_SEEN_DOC" 2>/dev/null || true)" \
+	"message mode reviews the last agent message" || true
+assert_contains "--host pi" "$(cat "$TUI_LAST_ARGS")" "message mode asks pi for its message" || true
+assert_contains '"type":"paste"' "$(cat "$REX_CALLS")" "a message review delivers one paste" || true
+
+# An agent with no message fails instead of opening an empty document.
+cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "${1:-}" == "last" ]] && exit 1
+exit 0
+FAKE
+chmod +x "$TMP_DIR/bin/plannotator-tui"
+: >"$REX_CALLS"
+if "$WRAPPER" message session:1 block:1 >/dev/null 2>&1; then
+	printf 'not ok - a missing message must fail\n' >&2
+	failures=$((failures + 1))
+else
+	printf 'ok - a missing message fails\n'
+fi
+assert_equal "" "$(cat "$REX_CALLS")" "a missing message sends nothing" || true
+
 # ── Failures are visible and send nothing ─────────────────────────────────
 
 : >"$REX_CALLS"
