@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Keeps ~/.cache/rex/listing.json current, so a reader of the listing pays no
+  wait on Rex.
+
+  The job runs rex/scripts/listing.lua, which builds the document and rewrites it
+  a quarter of a second after each change. It must stay up: the file is the only
+  thing the Raycast view reads, and a job that stops leaves that file frozen at
+  its last state.
+
+  PATH must hold the rex CLI from the server bundle, because launchd does not
+  inherit a login shell's PATH.
+
+  Load, or reload:  ~/dotfiles/rex/launchd/install.sh
+  Unload:           launchctl bootout gui/$(id -u)/local.rex-listing
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>local.rex-listing</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>mkdir -p "$HOME/.cache/rex" &amp;&amp; exec rex do "$HOME/dotfiles/rex/scripts/listing.lua" "snapshot=$HOME/.cache/rex/listing.json" --all</string>
+	</array>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/walkerw/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>HOME</key>
+		<string>/Users/walkerw</string>
+	</dict>
+
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+
+	<key>StandardOutPath</key>
+	<string>/Users/walkerw/Library/Logs/rex-listing.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/walkerw/Library/Logs/rex-listing.log</string>
+</dict>
+</plist>
