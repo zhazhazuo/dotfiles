@@ -190,6 +190,69 @@ else
 fi
 assert_equal "" "$(cat "$REX_CALLS")" "a missing message sends nothing" || true
 
+# ── Folder mode reviews the folder, and a new file's annotation counts ────
+
+mkdir -p "$TMP_DIR/folder"
+printf '# One\n\nfirst body\n' >"$TMP_DIR/folder/one.md"
+printf '# Two\n\nsecond body\n' >"$TMP_DIR/folder/two.md"
+
+# The first export holds one annotation on one.md. The review adds one on two.md,
+# which also numbers from one: a diff by number would drop it.
+cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >>"${TUI_CALLS:?}"
+case "${1:-}" in
+--export)
+	if [ -e "${TUI_REVIEWED:?}" ]; then
+		cat <<'BOTH'
+# Annotations on one.md
+
+## Annotation 1 (line 3)
+Comment on: "first body"
+> keep this
+
+# Annotations on two.md
+
+## Annotation 1 (line 3)
+Comment on: "second body"
+> NEW-FILE-ANNOTATION
+BOTH
+	else
+		cat <<'BEFORE'
+# Annotations on one.md
+
+## Annotation 1 (line 3)
+Comment on: "first body"
+> keep this
+BEFORE
+	fi
+	;;
+*)
+	: >"$TUI_REVIEWED"
+	;;
+esac
+FAKE
+chmod +x "$TMP_DIR/bin/plannotator-tui"
+export TUI_REVIEWED="$TMP_DIR/reviewed-once"
+export TUI_CALLS="$TMP_DIR/tui-calls.txt"
+rm -f "$TUI_REVIEWED"
+: >"$TUI_CALLS"
+: >"$REX_CALLS"
+(
+	cd "$TMP_DIR/folder"
+	"$WRAPPER" folder session:1 block:1 >/dev/null 2>&1
+)
+assert_contains "NEW-FILE-ANNOTATION" "$(cat "$REX_CALLS")" "folder mode pastes an annotation on a new file" || true
+if grep -q "keep this" "$REX_CALLS"; then
+	printf 'not ok - folder mode must not repeat an annotation the export already held\n' >&2
+	failures=$((failures + 1))
+else
+	printf 'ok - folder mode leaves the annotations it started with\n'
+fi
+assert_equal "$TMP_DIR/folder" "$(grep -v -- '--export' "$TUI_CALLS" | head -1)" \
+	"folder mode hands Plannotator the pane's folder" || true
+
 # ── Pick mode uses Plannotator's own picker and its review record ─────────
 
 export PLANNOTATOR_DATA_DIR="$TMP_DIR/plannotator"

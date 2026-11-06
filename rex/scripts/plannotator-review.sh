@@ -12,9 +12,11 @@
 # as a key would submit the agent's prompt instead of adding a line to it.
 #
 # Usage:
-#   plannotator-review.sh <document|-|message|pick> <session_id> <target_block_id>
+#   plannotator-review.sh <document|folder|-|message|pick> <session_id> <target_block_id>
 #
 # `-` reviews the target pane's text, for a pane that has no transcript.
+# `folder` reviews the pane's folder with Plannotator's file tree, which is what
+# the Herdr plugin's `prefix+shift+o` does.
 # `message` reviews the last message pi wrote, with no picker.
 # `pick` opens Plannotator's picker over pi's recent replies, which is what the
 # Herdr plugin does, and reviews the one chosen.
@@ -108,14 +110,19 @@ review_document() {
 	"$tui" "$document" || true
 	"$tui" --export "$document" >"$work/after.md" 2>/dev/null || true
 
-	local baseline
-	baseline=$(grep -c '^## Annotation [0-9]' "$work/before.md" 2>/dev/null || true)
-	baseline=${baseline:-0}
-
-	awk -v baseline="$baseline" '
-		/^## Annotation [0-9]+/ { keep = (substr($3, 1) + 0) > baseline }
+	# Any annotation the export did not already hold belongs to this run. The
+	# export names the file above each set, because a folder review annotates
+	# several files and each of them counts its annotations from one.
+	awk '
+		NR == FNR {
+			if ($0 ~ /^# Annotations on /) { file = $0; next }
+			if ($0 ~ /^## Annotation [0-9]+/) { held[file SUBSEP $3] = 1 }
+			next
+		}
+		/^# Annotations on / { file = $0 }
+		/^## Annotation [0-9]+/ { keep = !((file SUBSEP $3) in held) }
 		keep { print }
-	' "$work/after.md" >"$work/added.md"
+	' "$work/before.md" "$work/after.md" >"$work/added.md"
 
 	deliver "$work/added.md"
 }
@@ -145,6 +152,11 @@ pick)
 	fi
 	printf '%s' "$record" | jq -r '.feedback // ""' >"$work/feedback.md"
 	deliver "$work/feedback.md"
+	;;
+folder)
+	# The pane's folder, with the file tree herdr open shows. A folder review
+	# annotates whichever files are opened, and the export names each of them.
+	review_document "$PWD"
 	;;
 -)
 	# A pane with no transcript: its screen is all there is.
