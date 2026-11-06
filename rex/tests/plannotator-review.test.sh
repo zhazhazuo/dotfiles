@@ -190,83 +190,60 @@ else
 fi
 assert_equal "" "$(cat "$REX_CALLS")" "a missing message sends nothing" || true
 
-# ── Pick mode lists the transcript and reviews the chosen message ─────────
+# ── Pick mode uses Plannotator's own picker and its review record ─────────
 
-sessions="$TMP_DIR/sessions/--fixture--"
-mkdir -p "$sessions"
-cat >"$sessions/2026-01-01T10-00-00Z_fixture.jsonl" <<'JL'
-{"type":"session","version":3,"id":"fixture","timestamp":"2026-01-01T10:00:00Z","cwd":"PLACEHOLDER"}
-{"type":"message","timestamp":"2026-01-01T10:01:00Z","message":{"role":"user","content":"first question"}}
-{"type":"message","timestamp":"2026-01-01T10:02:00Z","message":{"role":"assistant","content":[{"type":"text","text":"OLDEST-REPLY-BODY"}]}}
-{"type":"message","timestamp":"2026-01-01T10:03:00Z","message":{"role":"assistant","content":[{"type":"text","text":"MIDDLE-REPLY-BODY"}]}}
-{"type":"message","timestamp":"2026-01-01T10:04:00Z","message":{"role":"assistant","content":[{"type":"tool_use","id":"x","name":"bash","input":{}}]}}
-{"type":"message","timestamp":"2026-01-01T10:05:00Z","message":{"role":"assistant","content":[{"type":"text","text":"NEWEST-REPLY-BODY"}]}}
-JL
-sed -i '' "s|PLACEHOLDER|$TMP_DIR/here|" "$sessions/2026-01-01T10-00-00Z_fixture.jsonl"
-export PLANNOTATOR_PI_SESSIONS="$TMP_DIR/sessions"
-mkdir -p "$TMP_DIR/here"
-
-# fzf stand-in: records the listing it was given, then picks the line naming the
-# middle reply, which is neither the newest nor the oldest.
-cat >"$TMP_DIR/bin/fzf" <<'FAKE'
-#!/usr/bin/env bash
-set -euo pipefail
-tee "${FZF_LIST:?}" | grep MIDDLE-REPLY-BODY
-FAKE
-chmod +x "$TMP_DIR/bin/fzf"
-export FZF_LIST="$TMP_DIR/fzf-list.txt"
+export PLANNOTATOR_DATA_DIR="$TMP_DIR/plannotator"
+mkdir -p "$PLANNOTATOR_DATA_DIR/feedback/project"
 
 cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
 #!/usr/bin/env bash
 set -euo pipefail
+printf '%s\n' "$*" >>"${TUI_CALLS:?}"
 case "${1:-}" in
---export)
-	cat "${TUI_STATE:?}"
-	;;
-*)
-	cp "$1" "${TUI_SEEN_DOC:?}"
-	printf '%s' "$1" >"${TUI_DOC_PATH:?}"
-	next=$(grep -c '^## Annotation [0-9]' "$TUI_STATE" || true)
-	printf '## Annotation %d (line 1)\nComment on: "middle"\n> middle note\n' "$((next + 1))" >>"$TUI_STATE"
+last)
+	# A review that ended with annotations leaves a record behind, which is what
+	# the wrapper reads instead of a second export.
+	if [ -n "${TUI_RECORD:-}" ]; then
+		index="${PLANNOTATOR_DATA_DIR:?}/feedback/project/index.jsonl"
+		ts=$(python3 -c 'import datetime;now=datetime.datetime.now(datetime.timezone.utc);print(now.strftime("%Y-%m-%dT%H:%M:%S.")+"%03dZ"%(now.microsecond//1000))')
+		jq -nc --arg ts "$ts" --arg feedback "$TUI_RECORD" \
+			'{v: 1, ts: $ts, client: "plannotator-tui", decision: "feedback", feedback: $feedback}' >>"$index"
+	fi
 	;;
 esac
+exit 0
 FAKE
 chmod +x "$TMP_DIR/bin/plannotator-tui"
-printf '# nothing yet\n' >"$TUI_STATE"
+export TUI_CALLS="$TMP_DIR/tui-calls.txt"
+
+: >"$TUI_CALLS"
 : >"$REX_CALLS"
-(
-	cd "$TMP_DIR/here"
-	"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
-)
-assert_contains "MIDDLE-REPLY-BODY" "$(cat "$TUI_SEEN_DOC" 2>/dev/null || true)" \
-	"pick mode reviews the chosen message" || true
-assert_contains "NEWEST-REPLY-BODY" "$(cat "$FZF_LIST")" "the picker lists the newest message too" || true
-assert_contains "OLDEST-REPLY-BODY" "$(cat "$FZF_LIST")" "the picker lists older messages" || true
-if grep -q "first question" "$FZF_LIST"; then
-	printf 'not ok - the picker must list only agent messages\n' >&2
+export TUI_RECORD='## Annotation 1 (line 2)
+> PICKED-REVIEW-FEEDBACK'
+"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
+assert_contains "PICKED-REVIEW-FEEDBACK" "$(cat "$REX_CALLS")" "pick mode pastes the review it recorded" || true
+assert_contains "last --host pi" "$(cat "$TUI_CALLS")" "pick mode opens Plannotator's picker over pi" || true
+if grep -q -- "--print" "$TUI_CALLS"; then
+	printf 'not ok - pick mode must not skip the picker\n' >&2
 	failures=$((failures + 1))
 else
-	printf 'ok - the picker lists agent messages only\n'
+	printf 'ok - pick mode keeps the picker\n'
 fi
-assert_equal "message" "$(basename "$(cat "$TUI_DOC_PATH")")" "the picked document is named message" || true
 assert_contains '"type":"paste"' "$(cat "$REX_CALLS")" "a picked review delivers one paste" || true
 
-# Escape in the picker leaves without a review.
-cat >"$TMP_DIR/bin/fzf" <<'FAKE'
-#!/usr/bin/env bash
-set -euo pipefail
-cat >/dev/null
-exit 130
-FAKE
-chmod +x "$TMP_DIR/bin/fzf"
+# A review that ends without annotations leaves no record, so nothing is pasted.
 : >"$REX_CALLS"
-: >"$TUI_SEEN_DOC"
-(
-	cd "$TMP_DIR/here"
-	"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
-)
-assert_equal "" "$(cat "$REX_CALLS")" "leaving the picker sends nothing" || true
-assert_equal "" "$(cat "$TUI_SEEN_DOC")" "leaving the picker opens no review" || true
+: >"$TUI_CALLS"
+unset TUI_RECORD
+"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
+assert_equal "" "$(cat "$REX_CALLS")" "a picker run with no feedback pastes nothing" || true
+
+# A record from an earlier review is not this run's feedback.
+printf '{"v":1,"ts":"2020-01-01T00:00:00.000Z","client":"plannotator-tui","decision":"feedback","feedback":"STALE-FEEDBACK"}\n' \
+	>"$PLANNOTATOR_DATA_DIR/feedback/project/index.jsonl"
+: >"$REX_CALLS"
+"$WRAPPER" pick session:1 block:1 >/dev/null 2>&1
+assert_equal "" "$(cat "$REX_CALLS")" "a stale record is not pasted" || true
 
 # ── Failures are visible and send nothing ─────────────────────────────────
 

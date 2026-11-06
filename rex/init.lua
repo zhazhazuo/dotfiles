@@ -434,10 +434,10 @@ rex.action({
     end
 
     -- An agent pane is reviewed from its transcript, which holds the message
-    -- without the prompt box, the status line or the terminal's line breaks. The
-    -- picker lists that transcript's messages, because the reply worth reviewing
-    -- is often not the last one. Any other pane has no transcript, so its screen
-    -- is all there is.
+    -- without the prompt box, the status line or the terminal's line breaks.
+    -- Plannotator's own picker lists that transcript's replies, which is the flow
+    -- the Herdr plugin uses: the reply worth reviewing is rarely the last one.
+    -- Any other pane has no transcript, so its screen is all there is.
     local mode = "-"
     local source = args.source or "auto"
     if source == "message" or source == "pick" then
