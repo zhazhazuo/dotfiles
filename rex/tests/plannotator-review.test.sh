@@ -154,6 +154,7 @@ last)
 	;;
 *)
 	cp "$1" "${TUI_SEEN_DOC:?}"
+	printf '%s' "$1" >"${TUI_DOC_PATH:?}"
 	next=$(grep -c '^## Annotation [0-9]' "$TUI_STATE" || true)
 	printf '## Annotation %d (line 1)\nComment on: "message"\n> message note\n' "$((next + 1))" >>"$TUI_STATE"
 	;;
@@ -161,6 +162,7 @@ esac
 FAKE
 chmod +x "$TMP_DIR/bin/plannotator-tui"
 export TUI_LAST_ARGS="$TMP_DIR/last-args.txt"
+export TUI_DOC_PATH="$TMP_DIR/doc-path.txt"
 : >"$TUI_LAST_ARGS"
 printf '# nothing yet\n' >"$TUI_STATE"
 : >"$REX_CALLS"
@@ -168,6 +170,7 @@ printf '# nothing yet\n' >"$TUI_STATE"
 assert_contains "LAST-MESSAGE-THIRD-PARAGRAPH" "$(cat "$TUI_SEEN_DOC" 2>/dev/null || true)" \
 	"message mode reviews the last agent message" || true
 assert_contains "--host pi" "$(cat "$TUI_LAST_ARGS")" "message mode asks pi for its message" || true
+assert_equal "message" "$(basename "$(cat "$TUI_DOC_PATH")")" "message mode names the document message, with no extension" || true
 assert_contains '"type":"paste"' "$(cat "$REX_CALLS")" "a message review delivers one paste" || true
 
 # An agent with no message fails instead of opening an empty document.

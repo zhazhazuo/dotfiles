@@ -53,8 +53,10 @@ docfile=$doc
 
 if [ "$doc" = "message" ]; then
 	# The transcript, not the screen: no prompt box, no status line, and no
-	# lines broken where the terminal happened to wrap them.
-	docfile="$work/message.md"
+	# lines broken where the terminal happened to wrap them. The file is named
+	# `message` because Plannotator titles the review after it, and the extension
+	# says nothing.
+	docfile="$work/message"
 	if ! "$tui" last --host pi --print >"$docfile" 2>/dev/null || [ ! -s "$docfile" ]; then
 		echo "plannotator-review: pi has no message to review here" >&2
 		exit 1
