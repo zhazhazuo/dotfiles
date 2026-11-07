@@ -1,29 +1,31 @@
 #!/usr/bin/env bash
 #
-# install.sh — load the listing daemon under launchd, or reload it.
+# install.sh — load the Rex daemons under launchd, or reload them.
 #
-# A running job keeps whatever script it read when it started, so editing
-# scripts/listing.lua needs the restart this script does. launchd's WatchPaths
-# starts a job that is not running, and this one is always alive by design.
+# Two jobs run here: the listing that the Raycast view reads, and the golden
+# ratio resize that follows the focus. A running job keeps the script it read
+# when it started, so editing one of those scripts needs the restart this script
+# does. launchd's WatchPaths only starts a job that is not running, and these are
+# always alive by design.
 #
-# The plist is linked into ~/Library/LaunchAgents as well, because a job loaded
-# straight from this folder lives only until the next logout, and a job that is
-# not running leaves the listing frozen at its last write.
+# The plists are linked into ~/Library/LaunchAgents as well, because a job loaded
+# straight from this folder lives only until the next logout.
 set -euo pipefail
 
-label=local.rex-listing
 script_dir=$(cd -- "$(dirname -- "$0")" && pwd)
-plist="$script_dir/$label.plist"
 agents="$HOME/Library/LaunchAgents"
 domain="gui/$(id -u)"
 
 mkdir -p "$HOME/.cache/rex" "$agents"
-ln -sf "$plist" "$agents/$label.plist"
 
-if launchctl print "$domain/$label" >/dev/null 2>&1; then
-	launchctl kickstart -k "$domain/$label"
-	printf 'reloaded %s\n' "$label"
-else
-	launchctl bootstrap "$domain" "$agents/$label.plist"
-	printf 'loaded %s\n' "$label"
-fi
+for plist in "$script_dir"/local.rex-*.plist; do
+	label=$(basename "$plist" .plist)
+	ln -sf "$plist" "$agents/$label.plist"
+	if launchctl print "$domain/$label" >/dev/null 2>&1; then
+		launchctl kickstart -k "$domain/$label"
+		printf 'reloaded %s\n' "$label"
+	else
+		launchctl bootstrap "$domain" "$agents/$label.plist"
+		printf 'loaded %s\n' "$label"
+	fi
+done
