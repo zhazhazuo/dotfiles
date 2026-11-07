@@ -60,7 +60,64 @@ rex.bind("ctrl+s>w", "client.tab.previous")
 
 -- ~/.config/herdr/config.toml:111 prefix+tab last workspace toggle.
 -- Herdr swaps the two most recent workspaces. Rex steps back one session.
-rex.bind("ctrl+s>tab", "session.previous")
+-- Herdr's prefix+tab returns to the session you were in before this one. Rex
+-- keeps no record of that: the app holds the session it shows and the server
+-- cannot ask for it. A key press does say where it is, in the session of the
+-- focused pane, so the visit order is remembered here from press to press. A
+-- session chosen another way is learned on the next press.
+local recent_sessions = {}
+local RECENT_SESSIONS_MAX = 10
+
+local function app_client()
+  for _, client in ipairs((rex.call("client.list") or {}).clients or {}) do
+    if client.info ~= nil and client.info.kind == "app" then return client end
+  end
+  return nil
+end
+
+rex.action{
+  name        = "session_toggle_recent",
+  title       = "Session: Last Two",
+  description = "Switch to the session this key last came from, and back on the next press.",
+  run         = function(ctx)
+    local session = ctx.session_id
+    if session == nil then error("no session to switch from", 0) end
+
+    local order = { session }
+    for _, visited in ipairs(recent_sessions) do
+      if visited ~= session and #order < RECENT_SESSIONS_MAX then table.insert(order, visited) end
+    end
+    recent_sessions = order
+
+    -- The second entry is where the key last came from. On the first press there
+    -- is none, so the neighbouring session in the list stands in.
+    local target = order[2]
+    if target == nil then
+      local all = (rex.call("session.list") or {}).sessions or {}
+      for index, entry in ipairs(all) do
+        if entry.session_id == session and #all > 1 then
+          target = all[index == 1 and #all or index - 1].session_id
+          break
+        end
+      end
+    end
+    if target == nil then error("no other session to switch to", 0) end
+
+    local app = app_client()
+    if app == nil then error("the Rex app is not connected", 0) end
+    local asked, err = rex.call("client.perform", {
+      client_id  = app.client_id,
+      action     = "session.select",
+      args       = { session_id = target },
+      session_id = target,
+      origin     = "key",
+    })
+    if asked == nil then error(err, 0) end
+
+    return { session_id = target }
+  end,
+}
+rex.bind("ctrl+s>tab", "session_toggle_recent")
 
 -- Not migrated: ~/.config/herdr/config.toml:117-128, prefix+C, prefix+M and
 -- prefix+P agent panes. The machine runs no claude or opencode on the pane's
