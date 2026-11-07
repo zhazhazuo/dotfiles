@@ -1,5 +1,10 @@
 -- listing.lua — every session, tab and pane as one JSON document.
 --
+-- The daemon also touches a second file, PATH.alive, every half minute. The
+-- listing is written only when something changes, so a quiet Rex and a stopped
+-- daemon look the same from the listing alone; the beat tells a reader which one
+-- it is looking at.
+--
 -- Two ways to run it:
 --
 --   rex do listing.lua                        print the listing and exit
@@ -171,21 +176,33 @@ if snapshot_path == nil then
   return build()
 end
 
-local function write()
-  local listing = build()
-  listing.generated_at = os.time()
-  local temporary = snapshot_path .. ".tmp"
+local function write_file(path, text)
+  local temporary = path .. ".tmp"
   local file = io.open(temporary, "w")
   if file == nil then
     rex.log("listing: cannot write " .. temporary)
     return
   end
-  file:write(encode(listing))
+  file:write(text)
   file:close()
-  os.rename(temporary, snapshot_path)
+  os.rename(temporary, path)
+end
+
+local function write()
+  local listing = build()
+  listing.generated_at = os.time()
+  write_file(snapshot_path, encode(listing))
+end
+
+-- Writing the beat rewrites nothing a reader displays, so a quiet session does
+-- not churn the listing file.
+local function beat()
+  write_file(snapshot_path .. ".alive", tostring(os.time()))
+  rex.after(30, beat)
 end
 
 write()
+beat()
 
 -- A status change, a new pane or a renamed tab all change the document. The
 -- changes arrive in bursts, so one rebuild follows the last of a burst.
