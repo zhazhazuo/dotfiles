@@ -51,7 +51,26 @@ if [ ! -x "$tui" ] && ! command -v "$tui" >/dev/null 2>&1; then
 fi
 
 work=$(mktemp -d -t plannotator-review)
-trap 'rm -rf "$work"' EXIT
+
+# The review sits in a floating layer with the focus, and closing that layer
+# leaves the focus on whichever pane Rex picks, not on the one being reviewed.
+# Focus is put back on the reviewed pane here, while the layer is still open, so
+# the close leaves it alone: a closing block that does not hold the focus does
+# not move it.
+focus_reviewed_pane() {
+	command -v rex >/dev/null 2>&1 || return 0
+	rex api call session.focus_block \
+		"$(jq -nc --arg s "$session" --arg b "$target" '{session_id: $s, block_id: $b}')" \
+		>/dev/null 2>&1 || true
+	# Give the focus change a moment to land before this block goes away.
+	sleep 0.15
+}
+
+cleanup() {
+	focus_reviewed_pane
+	rm -rf "$work"
+}
+trap cleanup EXIT
 
 # Where Plannotator keeps its reviews. `PLANNOTATOR_DATA_DIR` moves it, which is
 # what the tests use.

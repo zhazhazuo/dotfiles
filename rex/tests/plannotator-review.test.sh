@@ -69,7 +69,12 @@ api)
 	shift
 	[[ "${1:-}" == "call" ]] || exit 1
 	shift
-	printf '%s\n' "${@: -1}" >>"${REX_CALLS:?}"
+	# Only the paste is a delivery. The focus call the wrapper makes on the way
+	# out is recorded separately, so "sends nothing" still means nothing.
+	case "${1:-}" in
+	block.event) printf '%s\n' "${@: -1}" >>"${REX_CALLS:?}" ;;
+	session.focus_block) printf '%s\n' "${@: -1}" >>"${REX_FOCUS:?}" ;;
+	esac
 	;;
 capture)
 	cat "${PANE_TEXT:?}"
@@ -78,6 +83,7 @@ esac
 FAKE
 chmod +x "$TMP_DIR/bin/rex"
 export PATH="$TMP_DIR/bin:$PATH"
+export REX_FOCUS="$TMP_DIR/rex-focus.txt"
 
 doc="$TMP_DIR/plan.md"
 printf '# Plan\n\nRotate the token on every privilege change.\n' >"$doc"
@@ -252,6 +258,17 @@ else
 fi
 assert_equal "$TMP_DIR/folder" "$(grep -v -- '--export' "$TUI_CALLS" | head -1)" \
 	"folder mode hands Plannotator the pane's folder" || true
+
+# ── The reviewed pane takes the focus back ────────────────────────────────
+
+: >"$REX_FOCUS"
+: >"$REX_CALLS"
+(
+	cd "$TMP_DIR/folder"
+	"$WRAPPER" folder session:9 block:9 >/dev/null 2>&1
+)
+assert_contains '"block_id":"block:9"' "$(cat "$REX_FOCUS")" "the reviewed pane is focused again" || true
+assert_equal "1" "$(grep -c . "$REX_FOCUS")" "the focus is put back once" || true
 
 # ── Pick mode uses Plannotator's own picker and its review record ─────────
 
