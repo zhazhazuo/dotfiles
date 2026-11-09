@@ -11,8 +11,8 @@
   PATH must hold the rex CLI from the server bundle, because launchd does not
   inherit a login shell's PATH.
 
-  Load, or reload:  ~/dotfiles/rex/launchd/install.sh
-  Unload:           launchctl bootout gui/$(id -u)/local.rex-golden-ratio
+  Turn on, turn off, or read the state:  golden-ratio on|off|status
+  Load, or reload every daemon:          ~/dotfiles/rex/launchd/install.sh
 -->
 <plist version="1.0">
 <dict>

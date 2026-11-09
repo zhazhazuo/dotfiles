@@ -18,9 +18,17 @@ domain="gui/$(id -u)"
 
 mkdir -p "$HOME/.cache/rex" "$agents"
 
+disabled_list=$(launchctl print-disabled "$domain" 2>/dev/null || true)
+
 for plist in "$script_dir"/local.rex-*.plist; do
 	label=$(basename "$plist" .plist)
 	ln -sf "$plist" "$agents/$label.plist"
+	# A label that the user turned off stays off: `launchctl bootstrap` fails on a
+	# disabled label, and a daemon someone stopped must not come back here.
+	if printf '%s\n' "$disabled_list" | grep -Eq "\"$label\" => (disabled|true)"; then
+		printf 'skipped %s (turned off)\n' "$label"
+		continue
+	fi
 	if launchctl print "$domain/$label" >/dev/null 2>&1; then
 		launchctl kickstart -k "$domain/$label"
 		printf 'reloaded %s\n' "$label"
