@@ -259,6 +259,50 @@ fi
 assert_equal "$TMP_DIR/folder" "$(grep -v -- '--export' "$TUI_CALLS" | head -1)" \
 	"folder mode hands Plannotator the pane's folder" || true
 
+# ── Two pi panes in one folder: the pane decides the transcript ───────────
+
+shared="$TMP_DIR/sessions/--shared--"
+mkdir -p "$shared" "$TMP_DIR/shared-cwd"
+export PLANNOTATOR_PI_SESSIONS="$TMP_DIR/sessions"
+make_transcript() { # file, message
+	cat >"$shared/$1" <<JL
+{"type":"session","version":3,"id":"$1","timestamp":"2026-01-01T10:00:00Z","cwd":"$TMP_DIR/shared-cwd"}
+{"type":"message","timestamp":"2026-01-01T10:01:00Z","message":{"role":"assistant","content":[{"type":"text","text":"$2"}]}}
+JL
+}
+make_transcript "alpha.jsonl" "ALPHA-PANE-REPLY-THE-ONE-THAT-IS-ON-SCREEN-NOW and it continues"
+make_transcript "beta.jsonl" "BETA-PANE-REPLY-A-DIFFERENT-SESSION-IN-THE-SAME-FOLDER entirely"
+touch "$shared/beta.jsonl"
+
+cat >"$TMP_DIR/bin/plannotator-tui" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >>"${TUI_CALLS:?}"
+case "${1:-}" in
+last) printf 'SHARED-MESSAGE-BODY\n' ;;
+*) : ;;
+esac
+exit 0
+FAKE
+chmod +x "$TMP_DIR/bin/plannotator-tui"
+export TUI_CALLS="$TMP_DIR/shared-calls.txt"
+: >"$TUI_CALLS"
+: >"$REX_CALLS"
+# The pane's screen shows the tail of alpha.jsonl's reply, and beta.jsonl is the
+# newer file, so picking by folder alone would choose beta.
+printf 'ALPHA-PANE-REPLY-THE-ONE-THAT-IS-ON-SCREEN-NOW and it continues\n' >"$PANE_TEXT"
+(
+	cd "$TMP_DIR/shared-cwd"
+	"$WRAPPER" message session:1 block:1 >/dev/null 2>&1 || true
+)
+assert_contains "alpha.jsonl" "$(cat "$TUI_CALLS")" "the pane's own transcript is the one reviewed" || true
+if grep -q "beta.jsonl" "$TUI_CALLS"; then
+	printf 'not ok - the newer transcript in the folder must not win\n' >&2
+	failures=$((failures + 1))
+else
+	printf 'ok - the newer transcript in the folder does not win\n'
+fi
+
 # ── The reviewed pane takes the focus back ────────────────────────────────
 
 : >"$REX_FOCUS"

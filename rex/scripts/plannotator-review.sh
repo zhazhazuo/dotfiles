@@ -146,13 +146,107 @@ review_document() {
 	deliver "$work/added.md"
 }
 
+# The transcript of the pi session in this pane.
+#
+# The folder is not enough. Two pi panes can run in one folder, and the tool's own
+# lookup then takes one of them, so a review of one pane reads the other pane's
+# replies. The pane's screen tells them apart: the lines still visible there are the
+# tail of that pane's own last reply, so each candidate transcript is scored by how
+# many of those lines its last message holds. A screen with no match falls back to
+# the newest transcript in the folder, which is what the tool would have used.
+pane_transcript() {
+	local cwd="$1" session="$2" block="$3"
+	python3 - "$cwd" "$session" "$block" <<'PY'
+import json, os, re, subprocess, sys
+
+cwd, session, block = sys.argv[1], sys.argv[2], sys.argv[3]
+root = os.environ.get("PLANNOTATOR_PI_SESSIONS") or os.path.expanduser("~/.pi/agent/sessions")
+
+
+def normalise(text):
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def header_cwd(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            return json.loads(handle.readline()).get("cwd")
+    except Exception:
+        return None
+
+
+def last_message(path):
+    text = ""
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            try:
+                record = json.loads(line)
+            except Exception:
+                continue
+            if record.get("type") != "message":
+                continue
+            message = record.get("message") or {}
+            if message.get("role") != "assistant":
+                continue
+            content = message.get("content")
+            if isinstance(content, list):
+                piece = "".join(
+                    item.get("text", "") for item in content if isinstance(item, dict) and item.get("type") == "text"
+                )
+            else:
+                piece = content if isinstance(content, str) else ""
+            if piece.strip():
+                text = piece
+    return text
+
+
+files = []
+for folder in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+    directory = os.path.join(root, folder)
+    if not os.path.isdir(directory):
+        continue
+    files += [os.path.join(directory, name) for name in sorted(os.listdir(directory)) if name.endswith(".jsonl")]
+
+candidates = [path for path in files if header_cwd(path) == cwd]
+if not candidates:
+    sys.exit(4)
+
+try:
+    captured = subprocess.run(
+        ["rex", "capture", "-s", session, "-b", block], capture_output=True, text=True, timeout=10
+    ).stdout
+except Exception:
+    captured = ""
+
+visible = [normalise(line) for line in captured.splitlines()]
+visible = [line for line in visible if len(line) >= 30]
+
+best_path, best_score = None, 0
+for path in candidates:
+    message = normalise(last_message(path))
+    score = sum(1 for line in visible if line in message) if message else 0
+    if score > best_score:
+        best_path, best_score = path, score
+
+print(best_path or max(candidates, key=os.path.getmtime))
+PY
+}
+
 case "$doc" in
 message)
 	# The transcript, not the screen: no prompt box, no status line, and no
 	# lines broken where the terminal happened to wrap them. The file is named
 	# `message` because Plannotator titles the review after it, and the extension
 	# says nothing.
-	if ! "$tui" last --host pi --print >"$work/message" 2>/dev/null || [ ! -s "$work/message" ]; then
+	transcript=$(pane_transcript "$PWD" "$session" "$target" 2>/dev/null || true)
+	# bash 3.2, the system bash, errors on an empty array under `set -u`, so the
+	# two shapes are written out rather than passed through one.
+	if [ -n "$transcript" ]; then
+		"$tui" last --host pi --session "$transcript" --print >"$work/message" 2>/dev/null || true
+	else
+		"$tui" last --host pi --print >"$work/message" 2>/dev/null || true
+	fi
+	if [ ! -s "$work/message" ]; then
 		echo "plannotator-review: pi has no message to review here" >&2
 		exit 1
 	fi
@@ -162,8 +256,13 @@ pick)
 	# Plannotator's own picker over pi's replies, then its review of the chosen
 	# one. Escape leaves without a review, and a review with no annotation writes
 	# no record, so both end here with nothing pasted.
+	transcript=$(pane_transcript "$PWD" "$session" "$target" 2>/dev/null || true)
 	started=$(stamp_now)
-	"$tui" last --host pi || true
+	if [ -n "$transcript" ]; then
+		"$tui" last --host pi --session "$transcript" || true
+	else
+		"$tui" last --host pi || true
+	fi
 
 	record=$(record_since "$started")
 	if [ -z "$record" ]; then

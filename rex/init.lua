@@ -476,6 +476,10 @@ rex.action({
     if session == nil then error("no session to review in", 0) end
     if target == nil then error("no block to review", 0) end
 
+    -- A call that names another session is answered only for a stream attached to
+    -- it, so a review of a pane outside the caller's session attaches first.
+    rex.call("session.attach", { session_id = session })
+
     -- The review pane starts where the target's program is, so a review of the
     -- focused pane finds its relative paths, and so the message lookup reads the
     -- transcript of the session started there.
