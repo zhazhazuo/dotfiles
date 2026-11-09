@@ -12,6 +12,7 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `settings.json` | `dotfiles/pi/settings.json` |
 | `keybindings.json` | `dotfiles/pi/keybindings.json` |
 | `tool-whitelist.json` | `dotfiles/pi/tool-whitelist.json` |
+| `themes/` | `dotfiles/pi/themes/` |
 | `extensions/skill-guard.ts` | `dotfiles/pi/extensions/skill-guard.ts` |
 | `extensions/hide-tool-declarations.ts` | `dotfiles/pi/extensions/hide-tool-declarations.ts` |
 | `extensions/browser-instruction-broker.ts` | `dotfiles/pi/extensions/browser-instruction-broker.ts` |
@@ -110,6 +111,8 @@ tool unreachable. A missing or malformed file falls back to the default with one
 
 | Path | Purpose |
 |---|---|
+| `themes/xuanmo.json` | Dark theme selected by `settings.json`. |
+| `themes/xuanmo-dimmed.json` | The same palette with the contrast lowered. |
 | `scripts/todo-cadence.py` | Measures how often an agent updates its todo list, from the `rpiv-todo-state` entries in session files. |
 | `rpiv-todo/config.json` | Copy of the rpiv-todo package settings and prompt guidance. |
 | `.loop-data/` | Run and bundle data from the loop tooling. |
