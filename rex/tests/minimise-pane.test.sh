@@ -30,13 +30,15 @@ if [[ "$listed" == no ]]; then
 	exit 1
 fi
 
-sessions=()
-
+# `new_pane_session` runs inside a command substitution, so an array it filled would
+# be lost with the subshell. The ids are kept in a file instead.
+sessions_file=$(mktemp)
 cleanup() {
 	local s
-	for s in "${sessions[@]:-}"; do
-		[[ -n "$s" ]] && rex kill "$s" >/dev/null 2>&1
-	done
+	while read -r s; do
+		if [[ -n "$s" ]]; then rex kill "$s" >/dev/null 2>&1 || true; fi
+	done <"$sessions_file"
+	rm -f "$sessions_file"
 	if [[ -n "${REX_BLOCK:-}" && -n "${REX_SESSION:-}" ]]; then
 		rex api call session.focus_block \
 			"{\"session_id\":\"$REX_SESSION\",\"block_id\":\"$REX_BLOCK\"}" >/dev/null 2>&1
@@ -71,7 +73,7 @@ new_pane_session() {
 	local out sid
 	out=$(rex new "$1" --json -- sleep 600)
 	sid=$(jq -r .session_id <<<"$out")
-	sessions+=("$sid")
+	printf '%s\n' "$sid" >>"$sessions_file"
 	printf '%s %s\n' "$sid" "$(jq -r '.initial_windows[0].block_ids[0]' <<<"$out")"
 }
 

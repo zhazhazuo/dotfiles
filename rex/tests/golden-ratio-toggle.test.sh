@@ -33,7 +33,7 @@ sessions=()
 cleanup() {
 	local s
 	for s in "${sessions[@]:-}"; do
-		[[ -n "$s" ]] && rex kill "$s" >/dev/null 2>&1
+		if [[ -n "$s" ]]; then rex kill "$s" >/dev/null 2>&1 || true; fi
 	done
 	if [[ "$was_on" == yes ]]; then
 		"$COMMAND" on >/dev/null 2>&1 || true
