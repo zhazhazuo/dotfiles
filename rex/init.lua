@@ -547,3 +547,43 @@ rex.action({
   end,
 })
 rex.bind("ctrl+s>a", "plannotator_review")
+
+-- The golden ratio resize runs as a launchd job, and the command that switches it
+-- takes a word: on, off, or status. The palette cannot pass an argument, so each
+-- word is its own entry, and the entries share one title stem so that one search
+-- word finds all three.
+local function golden_ratio(word)
+  local result = rex.exec({
+    "/bin/sh", "-c",
+    'exec "$HOME/dotfiles/rex/bin/golden-ratio" "$1"',
+    "golden-ratio", word,
+  })
+  if result == nil or not result.ok then
+    error((result and (result.stderr or "")):gsub("%s+$", "") ~= "" and result.stderr or "golden-ratio failed", 0)
+  end
+  return { state = (result.stdout or ""):gsub("%s+$", "") }
+end
+
+rex.action({
+  name        = "golden_ratio_on",
+  title       = "Golden Ratio: On",
+  description = "Load the resize job that grows the focused pane to about 61.8% of its window, and keep it loaded after a login.",
+  keywords    = "resize pane split ratio golden 61.8 daemon launchd enable start load",
+  run         = function() return golden_ratio("on") end,
+})
+
+rex.action({
+  name        = "golden_ratio_off",
+  title       = "Golden Ratio: Off",
+  description = "Unload the resize job and keep it from starting at the next login. Panes then keep whatever ratios they were given.",
+  keywords    = "resize pane split ratio golden 61.8 daemon launchd disable stop unload",
+  run         = function() return golden_ratio("off") end,
+})
+
+rex.action({
+  name        = "golden_ratio_status",
+  title       = "Golden Ratio: Status",
+  description = "Say whether the resize job runs now, and whether it runs again after a login.",
+  keywords    = "resize pane split ratio golden 61.8 daemon launchd state check",
+  run         = function() return golden_ratio("status") end,
+})

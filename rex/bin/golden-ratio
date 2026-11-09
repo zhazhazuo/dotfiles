@@ -10,6 +10,10 @@
 #   golden-ratio off       unload the job and keep it from starting at login
 #   golden-ratio status    say whether the resize runs now and after a login
 #
+# Each word is also an entry in Rex's command palette, as Golden Ratio: On, Off,
+# and Status, defined in init.lua. The palette passes no argument, which is why
+# the three words are three actions rather than one.
+#
 # A job that is loaded and disabled runs until the next logout, and a job that is
 # unloaded and not disabled starts again at the next login. status names both.
 set -euo pipefail

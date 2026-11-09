@@ -133,6 +133,14 @@ assert_equal "$off_left" "$off_right" "the split stays put while the job is off"
 "$ROOT_DIR/launchd/install.sh" >/dev/null 2>&1 || true
 assert_equal "off" "$(loaded && echo on || echo off)" "the loader leaves a job that was turned off alone"
 
+# ── The palette offers the same three words ───────────────────────────────
+
+listed=$(rex actions 2>/dev/null || true)
+assert_contains "Golden Ratio: On" "$listed" "the palette lists Golden Ratio: On"
+assert_contains "Golden Ratio: Off" "$listed" "the palette lists Golden Ratio: Off"
+assert_contains "Golden Ratio: Status" "$listed" "the palette lists Golden Ratio: Status"
+assert_equal "$("$COMMAND" status | head -1)" "$(rex do golden_ratio_status 2>&1 | jq -r .state)" "the palette's status action reads the same state"
+
 # ── On again: the split follows the focus once more ───────────────────────
 
 "$COMMAND" on >/dev/null
