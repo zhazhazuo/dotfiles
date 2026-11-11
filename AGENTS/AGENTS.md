@@ -124,8 +124,9 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 
 - SDD means subagent-driven development, not spec-driven development.
 - When tasks have no sequential dependence, run them in parallel with subagents. Spawn each
-  independent child with `wait: false`, all in one call. Do not call `agent_wait`. End the turn.
-  The completion message wakes the session with the results.
+  independent child with `wait: false`, all in one call. Do not call `agent_wait` or poll immediately.
+  End the turn. Completion and report-only timeout events wake the session.
+- Use `agent_status` for live state and recent output. Reserve `agent_output` for completed children.
 - The `codemode` sandbox has two workers for the whole pi process, and a long script holds one. If
   children run long scripts, set `PI_CODEMODE_MAX_WORKERS` or expect waits.
 
@@ -151,6 +152,19 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 
 - Do not chain shell commands with separators such as `echo "====";` or `printf '---'`. The output
   becomes noisy in a way that makes the user's side of the conversation worse.
+
+## Rex
+
+- When `REX_BLOCK` is set, this session runs in a Rex pane. Name that pane before the first task
+  action, because the label is how the user finds the work.
+- `rex block rename -s "$REX_SESSION" "$REX_BLOCK" <label>` sets the label. Use two to four
+  lowercase words joined by hyphens, such as `register-integration`.
+- Rename the pane when the work changes. Keep the mention brief, and continue the task if the rename
+  fails.
+- A pane is a block in a window. `REX_SESSION` names the session and `REX_BLOCK` names the pane.
+- Read the guide before a task that arranges panes, runs commands, or reads their output:
+  `rex __internal skill --feature-session-naming=false`.
+- Do not rename the session, stop a Rex process, or restart the server unless the user asks.
 
 ## Dev Principle
 
