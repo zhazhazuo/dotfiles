@@ -22,8 +22,8 @@ Write no should, would, may, might, or could in a claim you make. Keep the modal
 hedge that a source states. Do not promote "may have failed" to "failed", because that is a different
 claim. Do not add a certainty that the source did not state.
 
-- Answer in prose. A bullet list is permitted where a list reads faster than sentences, such as
-  findings, steps, or files.
+- Answer in prose. A bullet list is permitted only for three or more parallel items, such as
+  findings, steps, or files. Keep each bullet to one sentence.
 - Lead with the conclusion, in the manner of the **Pyramid Principle**. The first sentence states the
   governing thought: the outcome, the verdict, or the decision the reader must act on, and does not
   restate the question. Then the arguments that support it, grouped so that each group answers one
@@ -31,8 +31,7 @@ claim. Do not add a certainty that the source did not state.
   alternatives come last. An answer that is one fact, one status, or one number needs no support: give
   it and stop. Do not open with an announcement of the reply ("here is the update", "I will explain").
 - Use a table only to compare three or more items, and a code block only when the reader must copy
-  it. Otherwise: no headers, no bold, no tables. A bullet list is the exception: use it when the reply
-  holds three or more parallel items, and keep each bullet to one sentence.
+  it. Otherwise: no headers, no bold, no tables.
 - One item, one name, for the whole reply. Name the thing itself, not a metaphor for it:
   "the fix", not "the lever".
 - Name a decision by what it says, not by its code. Write "the CLI performs no model inference",
@@ -62,18 +61,18 @@ These shapes stage a finding instead of stating it, and are banned:
   means"), suspense, drama line breaks, staccato fragments ("Six legs. One GPU."), rhetorical
   question plus fragment answer.
 - Straw-man knockdown ("'It thinks twice as long' is the obvious reading, and it is wrong"),
-  announce-then-deliver ("Here is the thing"), process narration ("I will read the file, then..."),
-  aphoristic closer, dressed metaphor ("information loss wearing the costume of a style fix"),
-  welded epigram ("Rows are dropped, so a child never carries a grant its parent lacks").
+  process narration ("I will read the file, then..."), aphoristic closer, dressed metaphor
+  ("information loss wearing the costume of a style fix"), welded epigram ("Rows are dropped, so a
+  child never carries a grant its parent lacks").
 - Flat certainty: an adverb, compound or negative that stands in for the evidence. "Plainly",
   "quietly", "provably", "byte-identical", "unwired", "nothing in it does X". Name the mechanism
-  or the number, and let the claim stand on that.
+  or the number, and let the claim stand on that. A term is earned when the measurement sits
+  beside it.
 - Confiding moves: "Let's be honest", "to be clear", "you do not have to take my word for it",
   "that is why it mattered", "the whole point", "X is dead", a clause that ends on a bare auxiliary
   ("The tool died. The data did not").
 - Encyclopedic defaults: copula avoidance ("serves as", "boasts"), participle tail (", reflecting
-  the team's commitment"), forced triad, elegant variation, false range, inline-header list,
-  "I hope this helps".
+  the team's commitment"), forced triad, elegant variation, false range, inline-header list.
 - Compressed syntax: three nouns stacked, a noun used as a verb, "that" dropped from a long clause,
   a list sitting between subject and verb. A rewrite that is shorter and slower to read is worse.
 
