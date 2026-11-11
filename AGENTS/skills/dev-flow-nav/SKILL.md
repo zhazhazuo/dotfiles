@@ -1,6 +1,6 @@
 ---
 name: dev-flow-nav
-description: Use when the task involves spawning or delegating to a child agent in pi, running subagent-driven or parallel-agent development, or authoring or gating a one-pager against the three build gates before building.
+description: Use when the task involves spawning or delegating to a child agent in pi, or running subagent-driven or parallel-agent development.
 ---
 
 # Dev flow skills router
@@ -11,9 +11,17 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 |---|---|---|
 | Any `agent_spawn`: pick the spawn path, prove the child's context, read the type's allow list, and inspect the result | subagent-delegation | `~/.agents/skills/subagent-delegation/SKILL.md` |
 | Delegate bounded implementation, diagnosis, research, testing, or review with role context, a coder handoff, or supervision without progress messages | subagent-driven-development | `~/.agents/skills/subagent-driven-development/SKILL.md` |
-| Author or gate a one-pager before building (three build gates) | one-pager-gate | `~/.agents/skills/one-pager-gate/SKILL.md` |
 
-## Removed on 2026-10-28
+## Removed on 2026-11-08
+
+`one-pager-gate` left this machine. The moment it covered — a one-pager gated against the three
+build gates before building — now has no installed skill and runs from the operator's instruction
+alone. The `conformance-kit` skills keep their own one-pager format and cite no path here.
+
+`pea-shooter` left this machine too, together with its `peashooter.sh` wrapper. A single bounded
+task now routes to `subagent-delegation`, which spawns a child through `agent_spawn`.
+
+## Removed on 2026-10-28: the superpowers package
 
 The `git:github.com/obra/superpowers` package left this machine. Seven rows pointed into it, and
 the package directory is gone:
