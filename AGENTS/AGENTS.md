@@ -93,7 +93,7 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 
 ## Working behaviour
 
-- The todo panel is the user's live view of the run.
+- The todo panel is pi's `todo` tool panel, and it is the user's live view of the run.
 
 ### Commentary and steering
 
