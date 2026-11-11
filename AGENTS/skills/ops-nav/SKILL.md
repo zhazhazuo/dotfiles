@@ -20,13 +20,14 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | Sharpen a plan, design, or decision through an interview that asks each round as selectable options | interview-me | `~/.agents/skills/interview-me/SKILL.md` |
 | Coordinate with other pi sessions: list, message, ask, reply | pi-intercom | `~/Research/pi-intercom/skills/pi-intercom/SKILL.md` |
 | Control Herdr terminal multiplexer panes, tabs, workspaces (needs HERDR_ENV=1) | herdr | `~/.agents/skills/herdr/SKILL.md` |
-| Delegate one task to a subagent | pea-shooter | `~/.agents/skills/pea-shooter/SKILL.md` |
 | Prepare or create a VCN release pull request; resolve a pre-flight code such as `NO_COMMITS_AHEAD`; complete the release payload from the intake JSON contract | vcn-release | `~/.agents/skills/vcn-release/SKILL.md` |
 | Drive browser sessions, page snapshots, click flows, screenshots, or web recording with the native `agent_browser` tool | pi-agent-browser-native | `~/.pi/agent/npm/node_modules/pi-agent-browser-native/README.md` |
 | Integrate a newly installed skill, tool, or extension; create or retire navigator groups; sync AGENTS.md | integrate-capability | `~/.agents/skills/integrate-capability/SKILL.md` |
 
 ## Notes
 
+- Delegating one task is not routed here. Use `dev-flow-nav`, which routes to `subagent-delegation`.
+  The `pea-shooter` skill and its `peashooter.sh` wrapper were retired on 2026-11-08.
 - Large output processing goes through `codemode`: one script calls the tools, prints a summary, and
   keeps the raw bytes out of the conversation. Use the `bash` tool inside the script when it needs
   the file system or the network.

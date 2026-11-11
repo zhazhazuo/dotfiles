@@ -6,7 +6,7 @@ description: >
   Implement, Debug, Trim. Covers code navigation and impact, deciding before building, deriving QA
   scenarios from a spec, naming code for search, restructuring React or Vue components, mocking a
   missing API, root-cause debugging, and pruning low-signal tests. The outer delivery flow
-  (delegation, one-pager gating) routes through dev-flow-nav.
+  (delegation) routes through dev-flow-nav.
 ---
 
 # Dev lifecycle card book
@@ -134,7 +134,7 @@ measures it.
 
 ## Handoffs
 
-- **Before 1 and after 6** (delegation, one-pager gate): `dev-flow-nav`.
+- **Before 1 and after 6** (delegation): `dev-flow-nav`.
 - **1** routes into the ripwire family. `ripwire-change-check` and `ripwire-quality-bar` are diff
   checks with no phase of their own: reach `ripwire-change-check` when a merge is near, and
   `ripwire-quality-bar` before you call a restructure done.
@@ -142,7 +142,7 @@ measures it.
   `design-nav`.
 - Delegation for **2**: do not route to `council-mode`. It is not installed on this machine (there
   is no `pi-subagents` package and no `council-mode` skill anywhere under `~/.pi`), so there is
-  nothing to route to. For one delegated task, use `pea-shooter` through `ops-nav`.
+  nothing to route to. For one delegated task, use `subagent-delegation` through `dev-flow-nav`.
 
 ## Notes
 

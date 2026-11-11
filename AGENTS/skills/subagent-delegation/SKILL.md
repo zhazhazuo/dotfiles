@@ -27,10 +27,17 @@ pinned in `~/.pi/agent/subagent-manager/settings.json`, so the allow list is the
 
 ## The brief
 
-The brief states the measured state, the closed work, the gate command and the definition of done.
-It does not restate the plan. A long invented brief makes the child answer the brief.
+For implementation, the brief states the measured state, the closed work, the gate command, and the
+definition of done. It does not restate the plan. A long invented brief makes the child answer the brief.
+For a coder, keep the spawn prompt short and point to the full execution handoff.
 
-## Verify the child yourself
+## Inspect the child yourself
 
-Run `git status` and `find` against the paths the task names. Require the gate command with its
-output. A success report with no changed file and no output is not evidence.
+After completion, collect the final answer with `agent_output`. Use `agent_status` for live state and
+recent output.
+
+For a file-changing task, run `git status` and `find` against the named paths. Run the acceptance
+commands and record their output. Record the collection and inspection results in the parent task record.
+
+Researchers and reviewers need no file artifact. Require the citations, paths, findings, and unresolved
+facts that the role brief names. A success report without the required role evidence is not evidence.

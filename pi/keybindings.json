@@ -4,7 +4,7 @@
   "tui.editor.cursorLeft": ["left", "alt+h"],
   "tui.editor.cursorRight": ["right", "alt+l"],
   "tui.editor.cursorWordLeft": ["alt+left", "ctrl+left", "alt+b"],
-  "tui.editor.cursorWordRight": ["alt+right", "ctrl+right", "alt+w"],
+  "tui.editor.cursorWordRight": ["alt+right", "ctrl+right"],
   "tui.editor.cursorLineStart": ["home", "ctrl+a"],
   "tui.editor.cursorLineEnd": ["end", "ctrl+e"],
   "tui.editor.pageUp": "ctrl+u",

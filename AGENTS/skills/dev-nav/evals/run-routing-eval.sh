@@ -115,7 +115,7 @@ ORIENT_SKILLS = {
 # phase under test: delegating the work after sizing it up is correct lifecycle behaviour, not a
 # routing error.
 DELIVERY_SKILLS = {
-    "dev-flow-nav", "subagent-delegation", "subagent-driven-development", "one-pager-gate", "pea-shooter",
+    "dev-flow-nav", "subagent-delegation", "subagent-driven-development",
 }
 
 PHASE_SKILLS = {

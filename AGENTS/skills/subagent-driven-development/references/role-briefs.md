@@ -19,10 +19,17 @@ Use a fresh root path for building, research, and review. Inherited conversation
 | `writer` | A document needs drafting from settled facts | Audience, voice, source facts, artifact path, and length limit | The document and a list of unresolved facts |
 | `refiner` | One skill needs feedback recorded | Verbatim feedback, skill path, and the triggering moment | The recorded feedback and its location |
 
+Researchers and reviewers need no file artifact. Judge their results from the citations, paths, findings,
+contradictions, and unknowns that the task requires. Do not require a diff from a read-only role.
+
 ## Bound each role
 
 State what the role must not do. A researcher does not edit. A debugger does not patch. A reviewer does not implement. A coder does not reopen locked decisions or run live acceptance unless the contract names that work.
 
 Set a search budget for research and a reproduction budget for diagnosis. Set a diff scope for review. Set the execution handoff for code. A role description alone does not bound the work.
 
-Keep the prompt short. Point to the versioned brief, name the immediate action, and state the stop rule. Do not paste the parent conversation into the prompt.
+Keep each spawn prompt short. Point to the versioned brief. Name the immediate action. State the stop rule.
+Do not paste the parent conversation into the prompt.
+
+Give a coder the full execution handoff through the referenced contract. Do not replace that handoff with the
+short spawn prompt. The prompt names the contract path, revision, first test, first edit, and inspection interval.

@@ -1,6 +1,6 @@
 ---
 name: design-nav
-description: Use when the task involves visual UI design or a design prototype, the design POC sandbox, shadcn/ui, components.json or presets, frontend aesthetics or typography, explaining an idea with diagrams, sketches, or HTML artifacts, making raw text faster to read, or distilling a PRD or spec into traceable plain scenarios.
+description: Use when the task involves visual UI design or a design prototype, the design POC sandbox, shadcn/ui, components.json or presets, frontend aesthetics or typography, explaining an idea with diagrams, sketches, or HTML artifacts, or distilling a PRD or spec into traceable plain scenarios.
 ---
 
 # Design skills router
@@ -14,7 +14,6 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | UI polish/craft: hover/press states, borders, shadows, radius, icons, motion, typography details when building or reviewing components | craft-design-engineering | `~/.agents/skills/craft-design-engineering/SKILL.md` |
 | shadcn/ui work: components.json, presets, `--preset` codes, adding, fixing, or composing components | shadcn | `~/.agents/skills/shadcn/SKILL.md` |
 | Explain the current topic with concise diagrams, code-shape sketches, or focused HTML artifacts | show-me | `~/.agents/skills/show-me/SKILL.md` |
-| Make raw text faster to read | text-diagram | `~/.agents/skills/text-diagram/SKILL.md` |
 | Distill a PRD, proposal, or spec into a plain scenarios document with stable S-identifiers | context-to-plain-scenarios | `~/.agents/skills/context-to-plain-scenarios/SKILL.md` |
 
 ## Notes

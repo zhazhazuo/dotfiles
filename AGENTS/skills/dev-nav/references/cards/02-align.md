@@ -34,8 +34,8 @@ code-level.
 ## Not this card
 
 - Not for a one-line factual question.
-- Not a substitute for the human authoring their own artifact. `one-pager-gate` (via
-  `dev-flow-nav`) judges a one-pager the human wrote; it never writes it.
+- Not a substitute for the human authoring their own artifact. This card asks the questions; the
+  human writes the artifact, and the answers stay theirs.
 
 ## Handoff
 
