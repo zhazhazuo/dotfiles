@@ -32,6 +32,14 @@ STE        Issue 9 constraints on the reply: sentence over 20 words, banned moda
            Approved vocabulary is not scored: the dictionary is copyrighted and not
            vendored, so an unapproved word is invisible to this measure.
 
+REGISTER   The `### Register` block in AGENTS.md bans shapes that stage a finding instead
+           of stating it. Three families are counted, because a regex reaches them:
+           staging, flat certainty, and the confiding moves. Compressed syntax is a
+           fourth family and is not counted: a noun stack, a verbed noun, a dropped
+           `that` and a distant verb need a parse. Quoted spans and inline code are
+           removed before matching, because the rule keeps a quoted error message in
+           its own words.
+
 LEAD       Not a count. `--lead` prints each reply's first sentence and the first
            sentence of its last paragraph, so a reader can judge whether the
            conclusion leads. Ordering is meaning, so no regex scores it. A reply
@@ -100,6 +108,50 @@ SLOP_EXTRA = re.compile(
     re.I,
 )
 
+# The `### Register` block in AGENTS.md bans shapes that carry no content. Only the
+# families a regex reaches are counted, each taken from the `declauding` register
+# (tag `declauding-v0.13.0`) and narrowed to the terms that cost a technical reply.
+# Compressed syntax (entries 53 to 56) is not counted: a noun stack, a verbed noun, a
+# dropped `that` and a distant verb need a parse, and the register says so.
+#
+# Quoted spans and inline code are removed before matching, because the rule keeps a
+# quoted error message and an error string in the author's own words.
+REGISTER_PATTERNS = {
+    "staged_reveal": [
+        r"\b(?:it|that|this|they)\s+(?:is|was|are|were)\s+not\b[^.!?\n]{0,80}[.!?]\s*(?:it|that|this|they)\s+(?:is|was|are|were)\b",
+        r"\bnot (?:an?|the) [a-z-]+ (?:answer|question|bug|problem|failure|measure), but\b",
+    ],
+    "significance": [
+        r"\bthe (?:leg|part|piece|thing|detail|one|row|line) that (?:answers|matters|counts|decides)\b",
+        r"\bthe real (?:question|issue|problem|story|work)\b",
+        r"\bwhat (?:actually|really) matters\b",
+        r"\bthe (?:whole|entire) (?:point|trick|business)\b",
+    ],
+    "abstraction_agency": [
+        r"\b(?:the|this|that) (?:table|list|median|data|metric|chart|graph|report|row|column|number|test)\s+(?:shows|hides|tells|refuses|admits|decides|knows|chooses|wants)\b",
+    ],
+    "flat_certainty": [
+        r"\b(?:plainly|quietly|provably|vacuously|demonstrably|empirically|structurally)\b",
+        r"\b(?:byte|bit)-(?:identical|exact|for-byte)\b",
+        r"\b(?:mutation|live|hand|root)-(?:checked|verified|tested|caused)\b",
+        r"\bre-(?:derived|verified|measured|confirmed)\b",
+        r"\b(?:unwired|ungated|unguarded|unmeasured|unverifiable|unparseable)\b",
+        r"\b(?:admits|verdict|carve-out|precedent)\b",
+    ],
+    "confiding": [
+        r"\b(?:let'?s be honest|to be clear|i won'?t pretend|frankly|honestly)\b",
+        r"\byou (?:do not|don'?t) have to take my word\b",
+        r"\bthat'?s why\b[^.!?\n]{0,40}\bmattered\b",
+        r"\b\w+ is dead\b",
+        # A sentence that lands on a bare auxiliary. The earned case names both halves in one
+        # clause ("PostgreSQL does and MySQL does not"), so a sentence-initial subject is required.
+        r"(?:^|[.!?]\s+)[A-Z][a-z]+ (?:[a-z]+ )?(?:did|does|was|were) not\.",
+    ],
+}
+REGISTER_KEYS = list(REGISTER_PATTERNS)
+REGISTER = {key: [re.compile(p, re.I) for p in pats] for key, pats in REGISTER_PATTERNS.items()}
+QUOTED = re.compile(r'"[^"\n]{0,300}"|\u201c[^\u201d\n]{0,300}\u201d|`[^`\n]+`')
+
 USAGE = "usage: score-replies.py [--json] [--lead] [--prompts FILE] REPLY.md [MORE.md ...]"
 
 # An em-dash is a reported diagnostic, not a hard violation: AGENTS.md released the ban
@@ -124,6 +176,12 @@ def strip_fenced(text):
     """Remove fenced code only. `ste_lint.strip_code` also rewrites table rows and
     blanks headings, which would hide the structure this measure scores."""
     return FENCED.sub("\n", text.replace("\r\n", "\n"))
+
+
+def register_counts(text):
+    """Count the reply-register tics. Quoted spans and inline code are out of scope."""
+    body = QUOTED.sub(" ", strip_fenced(text))
+    return {key: sum(len(p.findall(body)) for p in pats) for key, pats in REGISTER.items()}
 
 
 def edges(text):
@@ -154,6 +212,7 @@ def measure(text):
         "hrule": len(HRULE.findall(body)),
         "emoji": len(EMOJI.findall(body)),
         **{key: ste[key] for key in STE_KEYS},
+        **register_counts(text),
     }
 
 
@@ -242,6 +301,23 @@ def self_check():
         assert hits == 1, f"addendum term {term!r} scored {hits}, expected 1"
     clean = measure("Postgres listens on port 5432. Restart the worker.")
     assert clean["slop"] == 0 and clean["em_dash"] == 0 and clean["contraction"] == 0, clean
+    assert not any(clean[key] for key in REGISTER_KEYS), clean
+    # One positive control per family, and one quotation that must not count.
+    register_controls = {
+        "staged_reveal": "It is not a wrong answer. It is a non-answer.",
+        "significance": "The real question is whether the cache holds.",
+        "abstraction_agency": "The median hides it.",
+        "flat_certainty": "The retry is provably safe.",
+        "confiding": "Let's be honest: the run was late.",
+    }
+    for key, sample in register_controls.items():
+        hits = measure(sample)[key]
+        assert hits == 1, f"control for {key!r} scored {hits}, expected 1"
+    quoted = measure("The log says \"It is not a wrong answer. It is a non-answer.\" and stops.")
+    assert quoted["staged_reveal"] == 0, quoted
+    # The register's own earned case: both halves named in one clause.
+    earned = measure("PostgreSQL rolls back DDL and MySQL does not.")
+    assert earned["confiding"] == 0, earned
     assert measure("The disk was full \u2014 the deploy failed.")["em_dash"] == 1
     assert measure("It's safe.")["contraction"] == 1
     opener_case = measure("Certainly. The port defaults to 443.")
@@ -295,6 +371,7 @@ def main():
         hard = sum(counts[k] for k in HARD_KEYS)
         decorators = sum(counts[k] for k in DECORATOR_KEYS)
         ste = sum(counts[k] for k in STE_KEYS)
+        register = sum(counts[k] for k in REGISTER_KEYS)
         index = reply_index(path)
         verdict = shape_verdict(counts, shapes.get(index)) if shapes else "-"
         rows.append(
@@ -303,6 +380,7 @@ def main():
                 "hard": hard,
                 "slop": counts["slop"],
                 "ste": ste,
+                "register": register,
                 "decorators": decorators,
                 "shape": verdict,
                 **counts,
@@ -315,7 +393,7 @@ def main():
 
     width = max(len(r["file"]) for r in rows)
     show_shape = bool(shapes)
-    head = f"{'file':<{width}}  {'words':>6}  {'HARD':>4}  {'SLOP':>4}  {'STE':>4}  {'deco':>5}"
+    head = f"{'file':<{width}}  {'words':>6}  {'HARD':>4}  {'SLOP':>4}  {'STE':>4}  {'REG':>4}  {'deco':>5}"
     if show_shape:
         head += f"  {'shape':<8}"
     print(head + "  detail")
@@ -324,27 +402,30 @@ def main():
         dash_detail = ",".join(f"{k}={r[k]}" for k in DIAGNOSTIC_KEYS if r[k]) or "none"
         deco_detail = ",".join(f"{k}={r[k]}" for k in DECORATOR_KEYS if r[k]) or "none"
         ste_detail = ",".join(f"{k}={r[k]}" for k in STE_KEYS if r[k]) or "clean"
+        register_detail = ",".join(f"{k}={r[k]}" for k in REGISTER_KEYS if r[k]) or "clean"
         line = (
             f"{r['file']:<{width}}  {r['words']:>6}  {r['hard']:>4}  {r['slop']:>4}"
-            f"  {r['ste']:>4}  {r['decorators']:>5}"
+            f"  {r['ste']:>4}  {r['register']:>4}  {r['decorators']:>5}"
         )
         if show_shape:
             line += f"  {r['shape']:<8}"
         print(
             line
-            + f"  hard[{hard_detail}] ste[{ste_detail}] deco[{deco_detail}] dash[{dash_detail}]"
+            + f"  hard[{hard_detail}] ste[{ste_detail}] reg[{register_detail}]"
+            + f" deco[{deco_detail}] dash[{dash_detail}]"
         )
 
     words = sum(r["words"] for r in rows) or 1
     hard = sum(r["hard"] for r in rows)
     slop = sum(r["slop"] for r in rows)
     ste = sum(r["ste"] for r in rows)
+    register = sum(r["register"] for r in rows)
     decorators = sum(r["decorators"] for r in rows)
     print()
     print(
         f"TOTAL  files={len(rows)}  words={words}  HARD={hard}"
         f"  hard per 100 words={100 * hard / words:.2f}  SLOP={slop}  STE={ste}"
-        f"  decorators={decorators}"
+        f"  REGISTER={register}  decorators={decorators}"
     )
     if show_shape:
         missing = sum(1 for r in rows if r["shape"] == "MISSING")

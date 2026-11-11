@@ -17,6 +17,7 @@ duplicate regexes and its shorter word list were the reason for the swap.
 | `SLOP` | a word or phrase with no fact, from the vendored lexicon plus 14 reply-register terms | 0 |
 | `DECORATOR` | bold, header, bullet, table row, horizontal rule, emoji | reported, not failed |
 | `STE` | sentence over 20 words, banned modal, perfect tense, ing clause, semicolon, Latin abbreviation, trailing condition, synonym rotation | 0 |
+| `REGISTER` | staging, flat certainty, confiding moves, from the `### Register` block in `AGENTS.md` | 0 |
 | `SHAPE` | the reply's structure against the shape its prompt needs | 0 defects |
 
 `SHAPE` is the class this measure exists for. Each prompt declares what its answer
@@ -93,6 +94,40 @@ reply 8 opens "No", and reply 9 opens "the release does not go out tomorrow as s
 failures are the ones the table threshold already explains: reply 1 opens with two clauses joined
 by a semicolon and defers the choice to its last paragraph, and reply 8 states "No" then spends
 three paragraphs before naming the rule that makes the answer general.
+
+## Result under the register pass
+
+The `### Register` block added on 2026-11-11 bans the shapes the `declauding` register catalogues
+(tag `declauding-v0.13.0`). The `REGISTER` class counts the three families a regex reaches: staging,
+flat certainty, and the confiding moves. Compressed syntax is not counted, because a noun stack, a
+verbed noun, a dropped `that` and a distant verb need a parse.
+
+Two captures on 2026-11-11, `qoder/DeepSeek-Flash` at `high`, pi `1.5.1`. Run A is the current
+`AGENTS.md`. Run B removes the register block and captures the four structure prompts only, because
+the tics would sit in the long answers if they sit anywhere.
+
+| Measure | A, register block, 9 replies | B, block removed, 4 replies |
+| --- | --- | --- |
+| words | 1,797 | 1,308 |
+| `REGISTER` | 0 | 1 |
+| `STE` | 25 | 24 |
+| `STE` per 100 words | 1.39 | 1.84 |
+| `HARD` | 0 | 0 |
+| `SLOP` | 0 | 0 |
+| `SHAPE` | 2 `MISSING`, 1 `SPURIOUS`, 6 ok | not scored |
+
+On the four prompts both runs answer, A spends 1,165 words against B's 1,308, and A's `STE` is 16
+against B's 24. The block shortened those answers by 11 percent and cut the Issue 9 residual by a
+third, which the block does not ask for. One reply per prompt, so this is a direction and not a
+rate.
+
+The class fires once in the whole control, on `verdict` in reply 3, and never in run A. An answer to
+these prompts rarely stages a finding, so the class is a guard against a regression rather than a
+lever on this prompt set. Its steady evidence is `--self-check`, which asserts one positive control
+per family, rejects a quoted specimen, and asserts the register's own earned case: `PostgreSQL rolls
+back DDL and MySQL does not` scores zero.
+
+Captures: `/tmp/reply-register-2026-11-11` (A) and `/tmp/reply-register-control` (B), both temporary.
 
 ## Session-shaped comparison of the two ordering bullets
 
