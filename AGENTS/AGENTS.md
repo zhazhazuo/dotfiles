@@ -147,15 +147,6 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 - When one call answers the task, call it through `run_tool`. Do not open a script to reach one
   hidden tool.
 
-### Naming the Rex pane
-
-- Rex lets an agent name its session, and says nothing about the pane, which stays labelled `shell`.
-  When `REX_BLOCK` is set, name the pane after the task in the same form: two to four lowercase words
-  joined by hyphens, such as `rex-pane-naming`. Run
-  `rex block rename -s "$REX_SESSION" "$REX_BLOCK" <label>` once the first request identifies the
-  work, and rename it when the work changes.
-- Keep the mention brief. If the rename fails, continue with the task.
-
 ### Shell output
 
 - Do not chain shell commands with separators such as `echo "====";` or `printf '---'`. The output
