@@ -44,6 +44,11 @@ rex.bind("ctrl+s>p", "client.tab.previous")
 rex.bind("ctrl+s>n", "client.tab.next")
 rex.bind("ctrl+s>,", "client.tab.rename")
 
+-- The bracket keys beside P step through tabs without the prefix, as in every other
+-- macOS terminal. They are named by position, the way the app names its own bindings.
+rex.bind("cmd+[BracketLeft]", "client.tab.previous")
+rex.bind("cmd+[BracketRight]", "client.tab.next")
+
 -- ~/.config/herdr/config.toml panes
 rex.bind("ctrl+s>v", "pane.split", { direction = "right" })
 rex.bind("ctrl+s>-", "pane.split", { direction = "down" })
