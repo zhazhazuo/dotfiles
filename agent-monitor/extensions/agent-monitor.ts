@@ -3,7 +3,7 @@
  *
  * Architecture:
  *   Pi event → adapters/pi.sh → agent-monitor reconcile
- *     → state.json → sinks/tmux-status.sh → tmux topbar widget
+ *     → state.json → sinks/sketchybar.sh → SketchyBar items
  *
  * The adapter handles event mapping (Pi names → generic names) and
  * subagent filtering. The core handles state transitions and sink refresh.

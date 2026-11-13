@@ -115,18 +115,14 @@ upsert_agent() {
 	local id="$1"
 	shift
 
-	# Build the update JSON from key=value pairs
-	local update='{}'
-	for kv in "$@"; do
-		local key="${kv%%=*}"
-		local value="${kv#*=}"
-		update=$(printf '%s' "$update" | jq --arg k "$key" --arg v "$value" '. + {($k): $v}')
-	done
+	# One jq builds the update and one merges it. A process per field was the
+	# slowest step in a state change.
+	local update
+	update=$(jq -n --arg ts "$(date +%s)" --args '
+		$ARGS.positional
+		| map(split("=") | {(.[0]): (.[1:] | join("="))})
+		| add + {updated_at: ($ts | tonumber)}' "$@")
 
-	# Add updated_at
-	update=$(printf '%s' "$update" | jq --arg ts "$(date +%s)" '. + {updated_at: ($ts | tonumber)}')
-
-	# Merge into state
 	read_state | jq --arg id "$id" --argjson update "$update" \
 		'.agents[$id] = ((.agents[$id] // {}) * $update)' | write_state
 }
@@ -238,13 +234,7 @@ refresh_sinks() {
 	print_tsv >"$tsv_tmp"
 	mv "$tsv_tmp" "${STATE_DIR}/state.tsv"
 
-	if [[ -x "${sinks_dir}/tmux-status.sh" ]]; then
-		"${sinks_dir}/tmux-status.sh" --refresh 2>/dev/null || true
-	fi
-
 	if command -v sketchybar >/dev/null 2>&1; then
 		(sketchybar --trigger agent_monitor_update 2>/dev/null || true) &
 	fi
-
-	tmux refresh-client -S 2>/dev/null || true
 }

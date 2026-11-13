@@ -170,7 +170,7 @@ cat >"$REX_EVENTS" <<'JSONL'
 {"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_event","payload":{"block_id":"block:x","name":"program_status_changed","payload":{"record":{"state":"working","app":"pi"}}}}}}
 {"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_event","payload":{"block_id":"block:x","name":"program_status_changed","payload":{"record":{"state":"blocked","app":"pi","msg":"Pick one"}}}}}}
 {"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_event","payload":{"block_id":"block:y","name":"program_status_changed","payload":{"record":{"state":"done","app":"pi"}}}}}}
-{"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_event","payload":{"block_id":"block:y","name":"block_closed","payload":{}}}}}
+{"type":"session_event","payload":{"session_id":"session:1","event":{"type":"block_closed","payload":{"block_id":"block:y"}}}}
 JSONL
 
 "$ADAPTER" --watch
@@ -190,6 +190,16 @@ JSONL
 "$ADAPTER" --watch
 leftover=$("$BIN" state --json | jq -r '.agents | has("block_z") | tostring')
 assert_equal "false" "$leftover" "program_status_removed drops the entry" || true
+
+# Rex reports a close as a plain event type, with the id in the payload, and a
+# destroyed session removes every agent it held.
+cat >"$REX_EVENTS" <<'JSONL'
+{"type":"session_event","payload":{"session_id":"session:2","event":{"type":"block_event","payload":{"block_id":"block:k","name":"program_status_changed","payload":{"record":{"state":"done","app":"pi"}}}}}}
+{"type":"session_destroyed","payload":{"session_id":"session:2"}}
+JSONL
+"$ADAPTER" --watch
+destroyed=$("$BIN" state --json | jq -r '.agents | has("block_k") | tostring')
+assert_equal "false" "$destroyed" "a destroyed session removes its agents" || true
 
 # The subagent bridge rewrites the title while threads run; that is the signal.
 printf '%s\n' '{"records":[{"state":"done","app":"pi","id":"","msg":"Downloads"}]}' >"${REX_FIXTURES}/status-block:w.json"
@@ -262,6 +272,42 @@ JSONL
 "$ADAPTER" --watch
 cleared=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_q" {print $8 " " $3}')
 assert_equal "0 running" "$cleared" "a new run clears the seen mark" || true
+
+# ── Events served from the listing ─────────────────────────────────────────
+# A status or title event carries its own record, and the listing carries the
+# label and focus, so neither asks the server. The two CLI calls that stood
+# here cost 0.6 s of a 3 s path.
+cat >"$TMP_DIR/listing.json" <<'JSON'
+{"generated_at":1700000000,"sessions":[
+ {"session_id":"session:E","label":"EVENTS","windows":[
+   {"window_id":"window:e","label":"Tab","active":true,"blocks":[
+     {"block_id":"block:e1","focused":true,"state":"working","message":"build","updated_at":"2026-11-13T12:00:00+08:00"},
+     {"block_id":"block:e2","focused":false,"state":"done","message":"Downloads","updated_at":"2026-11-13T11:00:00+08:00"}]}]}]}
+JSON
+printf '%s\n' "session:E" >"$REX_SHOWN_FILE"
+date +%s >"$TMP_DIR/listing.json.alive"
+cat >"$REX_EVENTS" <<'JSONL'
+{"type":"session_event","payload":{"session_id":"session:E","event":{"type":"block_event","payload":{"block_id":"block:e2","name":"title_changed","payload":{"title":"⏳ 2 subagents (alpha, beta) · 0:05"}}}}}
+JSONL
+: >"$REX_CALL_LOG"
+"$ADAPTER" --watch
+
+titled=$("$BIN" state --json | jq -r '.agents["block_e2"].state // "-"')
+assert_equal "subagents-running" "$titled" "a title event reads the subagent count from the event" || true
+
+# The startup sync may look up a parked block's title, which the listing lacks.
+# It must not ask the server for sessions or status: the event carried both.
+server_calls=$(grep -cE 'session\.list|session\.view|program_status|^ls$' "$REX_CALL_LOG" || true)
+assert_equal "0" "$server_calls" "a status or title event asks the server for nothing" || true
+
+# The stream ticks several times a second. An ignored line must cost no process.
+: >"$REX_CALL_LOG"
+cat >"$REX_EVENTS" <<'JSONL'
+{"type":"session_event","payload":{"session_id":"session:E","event":{"type":"block_event","payload":{"block_id":"block:e1","creator_name":"com.superlogical.terminal","name":"progress_report","payload":{"state":"indeterminate"}}}}}
+JSONL
+"$ADAPTER" --watch
+ignored=$(grep -c "block_e1" <<<"$("$BIN" state --tsv)" || true)
+assert_equal "1" "$ignored" "a progress report leaves the state alone" || true
 
 if [[ "$failures" -gt 0 ]]; then
 	printf '\n%s failure(s)\n' "$failures" >&2

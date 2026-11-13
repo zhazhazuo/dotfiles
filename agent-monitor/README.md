@@ -14,9 +14,8 @@ adapters/cursor.sh─┘┘          │
                                ▼
                       ~/.cache/agent-monitor/state.json
                                │
-                    ┌───────────┼───────────┐
-                    ▼           ▼           ▼
-             sinks/tmux    sinks/sketchy   sinks/future
+                               ▼
+                       sinks/sketchybar
 ```
 
 ## Usage
@@ -106,6 +105,24 @@ derives seen from focus instead, and the two views can disagree.
 that report depends on a patched package, because pi raises `blocked` only for
 a UI component that declares one: see `pi/patches/`, and
 `tests/rex-blocked.test.sh`, which drives the state end to end.
+
+## Latency
+
+A program's report reaches the bar in about 1.1 s, measured from the escape
+sequence to the SketchyBar item: 0.8 s to the store and 0.3 s to the bar. The
+same measurement read 3.1-3.4 s before the changes below, and one state change
+cost 1.0 s of shell work.
+
+| Change | Saved |
+|---|---|
+| The tmux sink is gone; SketchyBar is the only sink | 0.35 s per change |
+| A status or title event answers from the listing, not two rex CLI calls | 0.55 s per event |
+| The store write is one jq pass instead of eight | 0.24 s per change |
+| An event is matched on the raw line, so an ignored tick costs no process | one process pair per ignored line |
+
+The listing read is 0.03 s against 0.29 s for one rex CLI call, which is why
+the event path prefers it. The remaining 1.1 s is the store write, the sink's
+sixteen `sketchybar` calls, and the delay before Rex delivers the event.
 
 ## Herdr Source
 
@@ -212,7 +229,6 @@ agent-monitor/
 │   ├── herdr-plugin.toml       # Plugin manifest
 │   └── on-event.sh             # Event dispatcher
 ├── sinks/
-│   ├── tmux-status.sh          # tmux topbar widget
 │   └── sketchybar.sh           # SketchyBar items
 ├── tests/
 │   ├── reconcile.test.sh

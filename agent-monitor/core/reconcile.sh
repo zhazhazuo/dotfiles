@@ -112,13 +112,29 @@ is_subagent_session() {
 
 # ── Identity Resolution ─────────────────────────────────────────────────
 
+# The event fields, read in one pass. One jq call replaces one per field, and
+# the unit separator keeps an empty field from shifting the ones after it.
+parse_event() {
+	printf '%s' "$1" | jq -r '
+		[ (.pane_id // ""), (.session_id // ""), (.cwd // ""),
+		  (.label // ""), ((.subagents // 0) | tostring) ]
+		| join("\u001f")' 2>/dev/null || true
+}
+
+# Bash pattern substitution, so an identity costs no process to sanitize.
+sanitize_id() {
+	local id="${1//[^[:alnum:]_]/_}"
+	while [[ "$id" == _* ]]; do id="${id#_}"; done
+	while [[ "$id" == *_ ]]; do id="${id%_}"; done
+	printf '%s' "$id"
+}
+
 resolve_id() {
-	local agent_name="$1" json="$2"
-	local id
+	local agent_name="$1" pane_id="$2" session_id="$3" cwd="$4"
 
 	# 1. Explicit override
 	if [[ -n "${AGENT_MONITOR_INSTANCE_ID:-}" ]]; then
-		printf '%s' "$AGENT_MONITOR_INSTANCE_ID" | tr -c '[:alnum:]_' '_'
+		sanitize_id "$AGENT_MONITOR_INSTANCE_ID"
 		return 0
 	fi
 
@@ -128,46 +144,39 @@ resolve_id() {
 		return 0
 	fi
 
-	# 2.5. Explicit pane_id in event JSON (herdr)
-	local pane_id
-	pane_id=$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)
+	# 2.5. Explicit pane_id in event JSON (herdr, rex)
 	if [[ -n "$pane_id" ]]; then
-		printf '%s' "$pane_id" | tr -c '[:alnum:]_' '_'
+		sanitize_id "$pane_id"
 		return 0
 	fi
 
 	# 3. session_id
-	local session_id
-	session_id=$(printf '%s' "$json" | jq -r '.session_id // empty' 2>/dev/null)
 	if [[ -n "$session_id" ]]; then
-		printf '%s' "$session_id" | tr -c '[:alnum:]_' '_' | sed 's/^_*//; s/_*$//'
+		sanitize_id "$session_id"
 		return 0
 	fi
 
 	# 4. cwd basename
-	local cwd
-	cwd=$(printf '%s' "$json" | jq -r '.cwd // empty' 2>/dev/null)
 	if [[ -n "$cwd" ]]; then
-		basename "$cwd" | tr -c '[:alnum:]_' '_'
+		sanitize_id "${cwd##*/}"
 		return 0
 	fi
 
 	# 5. agent name
-	printf '%s' "$agent_name" | tr -c '[:alnum:]_' '_'
+	sanitize_id "$agent_name"
 }
 
 resolve_label() {
-	local json="$1"
+	local event_label="$1" cwd="$2"
 	local label
 
-	# Explicit label in event JSON wins (herdr tab label)
-	label=$(printf '%s' "$json" | jq -r '.label // empty' 2>/dev/null)
-	if [[ -n "$label" ]]; then
-		printf '%s' "$label"
+	# Explicit label in event JSON wins (herdr tab label, rex session label)
+	if [[ -n "$event_label" ]]; then
+		printf '%s' "$event_label"
 		return 0
 	fi
 
-	# Try tmux window name first
+	# Try tmux window name
 	if [[ -n "${TMUX_PANE:-}" ]]; then
 		label=$(tmux display-message -p -t "$TMUX_PANE" '#{window_name}' 2>/dev/null || true)
 		if [[ -n "$label" && "$label" != "Window" ]]; then
@@ -177,10 +186,8 @@ resolve_label() {
 	fi
 
 	# Fall back to cwd basename
-	local cwd
-	cwd=$(printf '%s' "$json" | jq -r '.cwd // empty' 2>/dev/null)
 	if [[ -n "$cwd" ]]; then
-		basename "$cwd"
+		printf '%s' "${cwd##*/}"
 		return 0
 	fi
 
@@ -193,10 +200,14 @@ reconcile() {
 	local agent_name="$1"
 	local event_name="$2"
 	local json="${3:-{\}}"
+	local fields pane_id session_id cwd event_label subagents
+
+	# One parse for every field the reconcile reads.
+	fields=$(parse_event "$json")
+	IFS=$'\x1f' read -r pane_id session_id cwd event_label subagents <<<"$fields"
+	[[ "$subagents" =~ ^[0-9]+$ ]] || subagents=0
 
 	# Reject subagent sessions
-	local session_id
-	session_id=$(printf '%s' "$json" | jq -r '.session_id // empty' 2>/dev/null)
 	if is_subagent_session "$session_id"; then
 		return 0
 	fi
@@ -207,13 +218,8 @@ reconcile() {
 
 	# Resolve identity
 	local id label
-	id=$(resolve_id "$agent_name" "$json")
-	label=$(resolve_label "$json")
-
-	# Subagent count (herdr publishes it alongside its pane labels)
-	local subagents
-	subagents=$(printf '%s' "$json" | jq -r '.subagents // 0' 2>/dev/null)
-	[[ "$subagents" =~ ^[0-9]+$ ]] || subagents=0
+	id=$(resolve_id "$agent_name" "$pane_id" "$session_id" "$cwd")
+	label=$(resolve_label "$event_label" "$cwd")
 
 	# Get current state for transition detection
 	local prev_state
@@ -231,16 +237,13 @@ reconcile() {
 	fi
 
 	# Apply state transition
-	local fields=(
-		"name=$agent_name"
-		"state=$new_state"
-		"label=$label"
-		"pane=${TMUX_PANE:-$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)}"
-		"session_id=$session_id"
+	upsert_agent "$id" \
+		"name=$agent_name" \
+		"state=$new_state" \
+		"label=$label" \
+		"pane=${TMUX_PANE:-$pane_id}" \
+		"session_id=$session_id" \
 		"seen=0"
-	)
-
-	upsert_agent "$id" "${fields[@]}"
 
 	# Subagent bookkeeping is numeric, so it bypasses the string-only upsert.
 	if [[ "$new_state" == "subagents-running" ]]; then

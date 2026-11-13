@@ -45,7 +45,8 @@ export AGENT_MONITOR_NOTIFY="${AGENT_MONITOR_NOTIFY:-off}"
 command -v rex >/dev/null 2>&1 || exit 0
 
 sanitize_id() {
-	printf '%s' "$1" | tr -c '[:alnum:]_' '_'
+	local id="${1//[^[:alnum:]_]/_}"
+	printf '%s' "$id"
 }
 
 map_state() {
@@ -159,11 +160,11 @@ session_label() {
 			2>/dev/null || true
 }
 
-# reconcile_block <session_id> <label> <block_id> <state> <msg> <focused>
+# reconcile_block <session_id> <label> <block_id> <state> <msg> <focused> [title]
 reconcile_block() {
 	local session_id="$1" label="$2" block_id="$3" state="$4" msg="${5:-}"
-	local focused="${6:-false}"
-	local event subs=0 title shown
+	local focused="${6:-false}" title="${7:-}"
+	local event subs=0 shown
 
 	event=$(map_state "$state") || {
 		remove_block "$block_id"
@@ -194,6 +195,20 @@ reconcile_block() {
 			"$BIN" seen "$(sanitize_id "$block_id")" >/dev/null 2>&1 || true
 		fi
 	fi
+}
+
+# One listing read for a block: label, state, message and focus.
+# Prints them unit-separated, and returns 1 when the listing is stale or the
+# block is not in it, so the caller can fall back to the server.
+block_row() {
+	local block_id="$1"
+	listing_is_fresh || return 1
+	jq -r --arg b "$block_id" '
+		first(.sessions[]? as $s | $s.windows[]? as $w | $w.blocks[]?
+			| select(.block_id == $b)
+			| [ $s.label // "", .state // "", .message // "",
+			    (((.focused // false) and ($w.active // false)) | tostring) ]
+			| join("\u001f")) // empty' "$REX_LISTING" 2>/dev/null
 }
 
 # Read the strongest status record for one block.
@@ -288,57 +303,122 @@ sync_from_api() {
 }
 
 # Handle one line of `rex events --all --json`.
+#
+# The stream carries a status tick every half second from every running agent,
+# and those cost nothing here: the name is matched on the raw line, and jq runs
+# only for the events the monitor acts on.
 handle_event() {
-	local line="$1" session_id block_id name state msg label record focused=false
+	local line="$1"
 
-	name=$(printf '%s' "$line" | jq -r '
-		.payload.event.payload.name // .payload.event.type // empty' 2>/dev/null) || return 0
-	[[ -z "$name" ]] && return 0
-
-	session_id=$(printf '%s' "$line" | jq -r '.payload.session_id // empty' 2>/dev/null) || return 0
-
-	case "$name" in
-	session_view_changed | active_window_changed)
-		# Focus moved: the user switched a tab or picked a pane. The event
-		# carries a revision and nothing else, so the listing answers.
-		if listing_is_fresh; then
-			mark_seen_from_listing
-		else
-			sync_from_api
-		fi
-		return 0
+	case "$line" in
+	*'"type":"session_view_changed"'* | *'"type":"active_window_changed"'*)
+		handle_focus_event
 		;;
-	esac
-
-	block_id=$(printf '%s' "$line" | jq -r '
-		.payload.event.payload.block_id // empty' 2>/dev/null) || return 0
-	[[ -z "$block_id" ]] && return 0
-
-	case "$name" in
-	title_changed)
-		# The subagent bridge rewrites the title while threads run, clock tick
-		# included, so every change re-arms the monitor's heartbeat.
-		record=$(block_status "$session_id" "$block_id")
-		[[ -z "$record" ]] && return 0
-		state=$(printf '%s' "$record" | jq -r '.state // empty')
-		[[ -z "$state" ]] && return 0
-		msg=$(printf '%s' "$record" | jq -r '.msg // empty')
-		label=$(session_label "$session_id")
-		if block_is_focused "$block_id"; then focused=true; fi
-		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
+	*'"name":"program_status_changed"'*)
+		handle_status_event "$line"
 		;;
-	program_status_changed)
-		state=$(printf '%s' "$line" | jq -r '.payload.event.payload.payload.record.state // empty')
-		msg=$(printf '%s' "$line" | jq -r '.payload.event.payload.payload.record.msg // empty')
-		label=$(session_label "$session_id")
-		if block_is_focused "$block_id"; then focused=true; fi
-		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
+	*'"name":"title_changed"'*)
+		handle_title_event "$line"
 		;;
-	program_status_removed | block_closed)
-		remove_block "$block_id"
+	# A block event carries its name in `payload.event.payload.name`, but the
+	# close of a block is a plain event type with the id in the payload.
+	*'"name":"program_status_removed"'* | *'"type":"program_status_removed"'* | *'"name":"block_closed"'* | *'"type":"block_closed"'*)
+		handle_removed_event "$line"
+		;;
+	*'"type":"session_destroyed"'*)
+		handle_session_destroyed "$line"
 		;;
 	esac
 	return 0
+}
+
+# Focus moved: the user switched a tab or picked a pane. The event carries a
+# revision and nothing else, so the listing answers.
+handle_focus_event() {
+	if listing_is_fresh; then
+		mark_seen_from_listing
+	else
+		sync_from_api
+	fi
+}
+
+# A status report: the record rides in the event, and the listing supplies the
+# label and focus. Two CLI calls stood here before, at 0.3 s each.
+handle_status_event() {
+	local line="$1"
+	local fields session_id block_id state msg label focused=false row
+
+	fields=$(printf '%s' "$line" | jq -r '
+		[ .payload.session_id // "", .payload.event.payload.block_id // "",
+		  .payload.event.payload.payload.record.state // "",
+		  .payload.event.payload.payload.record.msg // "" ]
+		| join("\u001f")' 2>/dev/null) || return 0
+	IFS=$'\x1f' read -r session_id block_id state msg <<<"$fields"
+	[[ -z "$block_id" || -z "$state" ]] && return 0
+
+	row=$(block_row "$block_id") || row=""
+	if [[ -n "$row" ]]; then
+		IFS=$'\x1f' read -r label _ _ focused <<<"$row"
+	else
+		label=$(session_label "$session_id")
+	fi
+
+	reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
+}
+
+# The subagent bridge rewrites the title while threads run, clock tick included,
+# so every change re-arms the monitor's heartbeat. The new title rides in the
+# event, so the subagent count needs no title lookup.
+handle_title_event() {
+	local line="$1"
+	local fields session_id block_id title state msg label focused=false row
+
+	fields=$(printf '%s' "$line" | jq -r '
+		[ .payload.session_id // "", .payload.event.payload.block_id // "",
+		  .payload.event.payload.payload.title // "" ]
+		| join("\u001f")' 2>/dev/null) || return 0
+	IFS=$'\x1f' read -r session_id block_id title <<<"$fields"
+	[[ -z "$block_id" ]] && return 0
+
+	row=$(block_row "$block_id") || row=""
+	if [[ -n "$row" ]]; then
+		IFS=$'\x1f' read -r label state msg focused <<<"$row"
+	else
+		local record
+		record=$(block_status "$session_id" "$block_id")
+		[[ -z "$record" ]] && return 0
+		state=$(printf '%s' "$record" | jq -r '.state // empty')
+		msg=$(printf '%s' "$record" | jq -r '.msg // empty')
+		label=$(session_label "$session_id")
+	fi
+	[[ -z "$state" ]] && return 0
+
+	reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused" "$title"
+}
+
+# A destroyed session takes its blocks with it. Rex reports the close of each
+# block separately, and this covers the case where that report is missed.
+handle_session_destroyed() {
+	local line="$1" session_id ids
+	session_id=$(printf '%s' "$line" | jq -r '.payload.session_id // empty' 2>/dev/null) || return 0
+	[[ -z "$session_id" ]] && return 0
+
+	ids=$("$BIN" state --json 2>/dev/null |
+		jq -r --arg agent "$AGENT_NAME" --arg sid "$session_id" \
+			'.agents | to_entries[]
+			 | select(.value.name == $agent and .value.session_id == $sid)
+			 | .key' 2>/dev/null || true)
+	for id in $ids; do
+		"$BIN" remove "$id" >/dev/null 2>&1 || true
+	done
+}
+
+handle_removed_event() {
+	local line="$1" block_id
+	block_id=$(printf '%s' "$line" | jq -r '
+		.payload.event.payload.block_id // empty' 2>/dev/null) || return 0
+	[[ -z "$block_id" ]] && return 0
+	remove_block "$block_id"
 }
 
 do_watch() {
