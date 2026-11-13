@@ -73,12 +73,7 @@ ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
 rm -rf ~/.pi/agent/themes
 ln -sf ~/dotfiles/pi/themes ~/.pi/agent/themes
-mkdir -p ~/.pi/agent/extensions
-for item in ~/dotfiles/pi/extensions/*; do
-  [ -e "$item" ] || continue
-  ln -sf "$item" ~/.pi/agent/extensions/
-done
-# The rest of the extensions are implementation and live in ~/Research/rice-configuration/packages/pi-extensions,
+# The extensions are implementation and live in ~/Research/rice-configuration/packages/pi-extensions,
 # which links them here. This script must not replace those links.
 
 # Taskwarrior

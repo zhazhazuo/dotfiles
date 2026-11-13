@@ -15,13 +15,14 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `themes/` | `dotfiles/pi/themes/` |
 | `extensions/skill-guard.ts` | `rice-configuration/packages/pi-extensions/files/extensions/skill-guard.ts` |
 | `extensions/hide-tool-declarations.ts` | `rice-configuration/packages/pi-extensions/files/extensions/hide-tool-declarations.ts` |
+| `extensions/peer.ts` | `rice-configuration/packages/pi-extensions/files/extensions/peer.ts` |
 | `extensions/browser-instruction-broker.ts` | `rice-configuration/packages/pi-extensions/files/extensions/browser-instruction-broker.ts` |
 | `extensions/ask-user-attention.ts` | `rice-configuration/packages/pi-extensions/files/extensions/ask-user-attention.ts` |
 | `extensions/herdr-pi-step.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-pi-step.ts` |
 | `extensions/herdr-subagents-running.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-subagents-running.ts` |
 | `extensions/agent-monitor.ts` | `rice-configuration/packages/agent-monitor/files/extensions/agent-monitor.ts` |
 
-Seven of the rows above are code and live in the rice monorepo. The other two extensions load from
+Eight of the rows above are code and live in the rice monorepo. The other two extensions load from
 outside this repository. `extensions/tokenswitch-provider.ts` is a symlink to
 `~/Work/Tools/tokenswitch-provider/tokenswitch-provider.ts`. The `extensions` array in
 `settings.json` loads `~/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs`, which writes GenAI
@@ -41,6 +42,7 @@ serves both, so no copy can drift.
 |---|---|
 | `hide-tool-declarations.ts` | Hides 44 of the 64 declarations but keeps every hidden tool callable. Adds the `hidden_tools` prompt section and the `/tool-whitelist` command. |
 | `skill-guard.ts` | Silences third-party package skills except the four navigators named in `settings.json` under `skillGuard.keepVisible`. |
+| `peer.ts` | Adds `/peer <session> <task>`, which lists the live pi-intercom roster and passes a task to another pi session. |
 | `browser-instruction-broker.ts` | Stops `pi-agent-browser-native` from injecting its ~36 KB browser playbook into every prompt. The playbook moves to the `browser` subagent definition. |
 | `ask-user-attention.ts` | Reports "blocked on human" to Herdr while pi waits for a reply to a blocking prompt. Rex needs no bridge of its own: the terminal reads pi's OSC 7501 report, which the questionnaire supplies only once patched — see Patches. |
 | `herdr-pi-step.ts` | Shows what the focused pi session is doing in the Herdr tab bar. |
