@@ -72,5 +72,8 @@
   "extensionChangelogVersions": {
     "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.12",
     "{\"source\":\"npm:pi-agent-browser-native\",\"scope\":\"user\"}": "0.9.24"
+  },
+  "better": {
+    "type": "second-thought"
   }
 }
