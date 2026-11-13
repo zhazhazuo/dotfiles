@@ -88,6 +88,6 @@ assert_file_not_contains_substring "$THEME" 'after-kill-window' 'theme does not 
 assert_file_contains "$THEME" 'set -g display-panes-colour "#6c7086"' 'pane number colour uses literal theme value'
 assert_file_contains "$THEME" 'set -g display-panes-active-colour "#fab387"' 'active pane number colour uses literal theme value'
 assert_file_contains_substring "$STATUS" '#{E:@agent_monitor_status}' 'status format reads pre-rendered agent monitor option'
-assert_file_not_contains_substring "$STATUS" '#(~/dotfiles/tmux/scripts/agent-status.sh)' 'status format does not depend on delayed shell command output'
+assert_file_not_contains_substring "$STATUS" '#(~/.local/bin/tmux-agent-status.sh)' 'status format does not depend on delayed shell command output'
 assert_file_contains_substring "$PLUGINS" "set -g @plugin 'tmux-plugins/tmux-continuum'" 'continuum plugin is configured'
 assert_line_order "$PLUGINS" "set -g @plugin 'tmux-plugins/tpm'" "set -g @plugin 'tmux-plugins/tmux-continuum'" 'continuum is last in the TPM plugin list'
