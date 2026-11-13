@@ -544,7 +544,7 @@ rex.action({
           cwd     = cwd,
           command = {
             "/bin/sh", "-c",
-            'exec "$HOME/dotfiles/rex/scripts/plannotator-review.sh" "$@"',
+            'exec "$HOME/.local/bin/rex-plannotator-review.sh" "$@"',
             "plannotator-review", args.path or mode, session, target,
           },
           exit = { on_completion = true },
@@ -572,7 +572,7 @@ rex.bind("ctrl+s>a", "plannotator_review")
 local function golden_ratio(word)
   local result = rex.exec({
     "/bin/sh", "-c",
-    'exec "$HOME/dotfiles/rex/bin/golden-ratio" "$1"',
+    'exec "$HOME/.local/bin/golden-ratio" "$1"',
     "golden-ratio", word,
   })
   if result == nil or not result.ok then
