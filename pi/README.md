@@ -20,6 +20,7 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `extensions/ask-user-attention.ts` | `rice-configuration/packages/pi-extensions/files/extensions/ask-user-attention.ts` |
 | `extensions/herdr-pi-step.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-pi-step.ts` |
 | `extensions/herdr-subagents-running.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-subagents-running.ts` |
+| `extensions/todo-stale-reminder.ts` | `rice-configuration/packages/pi-extensions/files/extensions/todo-stale-reminder.ts` |
 | `extensions/agent-monitor.ts` | `rice-configuration/packages/agent-monitor/files/extensions/agent-monitor.ts` |
 
 Eight of the rows above are code and live in the rice monorepo. The other two extensions load from
@@ -48,6 +49,7 @@ serves both, so no copy can drift.
 | `herdr-pi-step.ts` | Shows what the focused pi session is doing in the Herdr tab bar. |
 | `herdr-subagents-running.ts` | Reports "subagents running" to Herdr while the root session waits on background threads. |
 | `agent-monitor.ts` | Feeds pi lifecycle events to `agent-monitor`, whose sinks are SketchyBar and tmux. The herdr extensions own the herdr tab bar, so each surface has one owner. |
+| `todo-stale-reminder.ts` | Reads the todo board from the session branch and appends one line to the request when it has gone stale: ten tool calls since the last board change, with a task still open. Cost is about 30 tokens on a request that has already missed the rule, and nothing when the board is current. Set `PI_TODO_STALE_REMINDER=off` to disable it. |
 
 Three of these cut the prompt. The prompt is the scarce resource: it is re-sent on every model
 call and it competes with the conversation for the context window.
@@ -129,7 +131,7 @@ patch, and drives a live Rex block through the state to prove the monitor half.
 |---|---|
 | `themes/xuanmo.json` | Dark theme selected by `settings.json`. |
 | `themes/xuanmo-dimmed.json` | The same palette with the contrast lowered. |
-| `scripts/todo-cadence.py` | Measures how often an agent updates its todo list, from the `rpiv-todo-state` entries in session files. |
+| `scripts/todo-cadence.py` | Measures how often an agent updates its todo list, from the `rpiv-todo-state` entries in session files. It is the check for `todo-stale-reminder.ts`: lower `maxgap` and fewer dirty endings mean the reminder works. |
 | `rpiv-todo/config.json` | Settings and prompt guidance for the rpiv-todo package. `~/.config/rpiv-todo` links here. |
 | `.loop-data/` | Run and bundle data from the loop tooling. |
 

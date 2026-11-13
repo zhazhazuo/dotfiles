@@ -73,6 +73,9 @@ ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
 rm -rf ~/.pi/agent/themes
 ln -sf ~/dotfiles/pi/themes ~/.pi/agent/themes
+# The rpiv-todo package reads its config from ~/.config/rpiv-todo/config.json.
+rm -rf ~/.config/rpiv-todo
+ln -sf ~/dotfiles/pi/rpiv-todo ~/.config/rpiv-todo
 # The extensions are implementation and live in ~/Research/rice-configuration/packages/pi-extensions,
 # which links them here. This script must not replace those links.
 
