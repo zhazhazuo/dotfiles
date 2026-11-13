@@ -13,15 +13,16 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `keybindings.json` | `dotfiles/pi/keybindings.json` |
 | `tool-whitelist.json` | `dotfiles/pi/tool-whitelist.json` |
 | `themes/` | `dotfiles/pi/themes/` |
-| `extensions/skill-guard.ts` | `dotfiles/pi/extensions/skill-guard.ts` |
-| `extensions/hide-tool-declarations.ts` | `dotfiles/pi/extensions/hide-tool-declarations.ts` |
-| `extensions/browser-instruction-broker.ts` | `dotfiles/pi/extensions/browser-instruction-broker.ts` |
-| `extensions/ask-user-attention.ts` | `dotfiles/pi/extensions/ask-user-attention.ts` |
-| `extensions/herdr-pi-step.ts` | `dotfiles/pi/extensions/herdr-pi-step.ts` |
-| `extensions/herdr-subagents-running.ts` | `dotfiles/pi/extensions/herdr-subagents-running.ts` |
+| `extensions/skill-guard.ts` | `rice-configuration/packages/pi-extensions/files/extensions/skill-guard.ts` |
+| `extensions/hide-tool-declarations.ts` | `rice-configuration/packages/pi-extensions/files/extensions/hide-tool-declarations.ts` |
+| `extensions/browser-instruction-broker.ts` | `rice-configuration/packages/pi-extensions/files/extensions/browser-instruction-broker.ts` |
+| `extensions/ask-user-attention.ts` | `rice-configuration/packages/pi-extensions/files/extensions/ask-user-attention.ts` |
+| `extensions/herdr-pi-step.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-pi-step.ts` |
+| `extensions/herdr-subagents-running.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-subagents-running.ts` |
 | `extensions/agent-monitor.ts` | `dotfiles/agent-monitor/extensions/agent-monitor.ts` |
 
-Two extensions load from outside this repo. `extensions/tokenswitch-provider.ts` is a symlink to
+The six rows above the agent-monitor row are code and live in the rice monorepo. The other two
+extensions load from outside this repository. `extensions/tokenswitch-provider.ts` is a symlink to
 `~/Work/Tools/tokenswitch-provider/tokenswitch-provider.ts`. The `extensions` array in
 `settings.json` loads `~/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs`, which writes GenAI
 JSONL telemetry records and is installed and updated by LoongSuite Pilot, not by this repo.

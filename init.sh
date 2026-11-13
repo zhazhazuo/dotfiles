@@ -74,9 +74,8 @@ ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
 rm -rf ~/.pi/agent/themes
 ln -sf ~/dotfiles/pi/themes ~/.pi/agent/themes
 mkdir -p ~/.pi/agent/extensions
-for item in ~/dotfiles/pi/extensions/*.ts; do
-  ln -sf "$item" ~/.pi/agent/extensions/
-done
+# The extensions are implementation and live in ~/Research/rice-configuration/packages/pi-extensions,
+# which links them here. This script must not replace those links.
 
 # Taskwarrior
 rm -f ~/.taskrc

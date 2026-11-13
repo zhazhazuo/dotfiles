@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.5.0",
+  "lastChangelogVersion": "1.5.2",
   "defaultProvider": "qoder",
   "defaultModel": "DeepSeek-Flash",
   "defaultThinkingLevel": "high",
@@ -30,8 +30,9 @@
     "/Users/walkerw/Research/pi-walker",
     "npm:pi-btw",
     "npm:@juicesharp/rpiv-todo",
-    "/Users/walkerw/Research/pi-subagent-manager",
-    "git:github.com/microsoft/TokenEconomizer"
+    "npm:pi-intercom",
+    "npm:pi-subagent-manager",
+    "npm:pi-context-usage"
   ],
   "skillGuard": {
     "keepVisible": [
@@ -59,7 +60,7 @@
   "enableSkillCommands": true,
   "editorPaddingX": 0,
   "markdown": {
-    "mermaid": "streaming"
+    "mermaid": "final"
   },
   "quietStartup": true,
   "fullscreenScrollbar": "auto",
@@ -68,7 +69,7 @@
   },
   "steeringMode": "all",
   "extensionChangelogVersions": {
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.8",
-    "{\"source\":\"npm:pi-agent-browser-native\",\"scope\":\"user\"}": "0.9.16"
+    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.12",
+    "{\"source\":\"npm:pi-agent-browser-native\",\"scope\":\"user\"}": "0.9.24"
   }
 }
