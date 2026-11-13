@@ -19,10 +19,10 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `extensions/ask-user-attention.ts` | `rice-configuration/packages/pi-extensions/files/extensions/ask-user-attention.ts` |
 | `extensions/herdr-pi-step.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-pi-step.ts` |
 | `extensions/herdr-subagents-running.ts` | `rice-configuration/packages/pi-extensions/files/extensions/herdr-subagents-running.ts` |
-| `extensions/agent-monitor.ts` | `dotfiles/agent-monitor/extensions/agent-monitor.ts` |
+| `extensions/agent-monitor.ts` | `rice-configuration/packages/agent-monitor/files/extensions/agent-monitor.ts` |
 
-The six rows above the agent-monitor row are code and live in the rice monorepo. The other two
-extensions load from outside this repository. `extensions/tokenswitch-provider.ts` is a symlink to
+Seven of the rows above are code and live in the rice monorepo. The other two extensions load from
+outside this repository. `extensions/tokenswitch-provider.ts` is a symlink to
 `~/Work/Tools/tokenswitch-provider/tokenswitch-provider.ts`. The `extensions` array in
 `settings.json` loads `~/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs`, which writes GenAI
 JSONL telemetry records and is installed and updated by LoongSuite Pilot, not by this repo.
@@ -31,9 +31,9 @@ Two more links in `~/.pi/agent` sit outside this folder and are not managed here
 `AGENTS.md` points at `dotfiles/AGENTS/AGENTS.md`, and every `skills/*` entry points into
 `~/.agents/skills`.
 
-`rpiv-todo/config.json` is a copy, not a link. The live file is `~/.config/rpiv-todo/config.json`,
-which the `@juicesharp/rpiv-todo` package reads. The two files are identical today and no
-mechanism keeps them so.
+`rpiv-todo/config.json` is the live configuration. `~/.config/rpiv-todo` is a symlink to this
+folder, which `init.sh` creates, and the `@juicesharp/rpiv-todo` package reads that path. One file
+serves both, so no copy can drift.
 
 ## Extensions
 
@@ -128,7 +128,7 @@ patch, and drives a live Rex block through the state to prove the monitor half.
 | `themes/xuanmo.json` | Dark theme selected by `settings.json`. |
 | `themes/xuanmo-dimmed.json` | The same palette with the contrast lowered. |
 | `scripts/todo-cadence.py` | Measures how often an agent updates its todo list, from the `rpiv-todo-state` entries in session files. |
-| `rpiv-todo/config.json` | Copy of the rpiv-todo package settings and prompt guidance. |
+| `rpiv-todo/config.json` | Settings and prompt guidance for the rpiv-todo package. `~/.config/rpiv-todo` links here. |
 | `.loop-data/` | Run and bundle data from the loop tooling. |
 
 ## Tests
