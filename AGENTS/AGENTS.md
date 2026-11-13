@@ -173,6 +173,14 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 - E2E tests are the default verification mechanism: use them to verify complex features work. End E2E testing with a verifiable, repeatable artifact.
 - Isolated (unit-style) tests are an exception, not the norm. When you must test a system in isolation, do it in TDD order: FIRST write all the ways it could fail, THEN write the code. NEVER write unit tests after you write code.
 
+## Peer sessions
+
+- Run `/peer <session> <task>` to hand a task to another local pi session, or call the `intercom`
+  tool directly. `/peer` completes the names of the connected sessions.
+- Read `~/.agents/skills/intercom-coordination/SKILL.md` before the first message to a peer in a
+  session.
+- Default to `send`. Use `ask` only when the answer blocks the next step.
+
 ## Skill routing
 
 - Concrete skills are silent; navigators route to them. Navigators:
