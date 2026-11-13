@@ -1,1 +1,0 @@
-/Users/walkerw/dotfiles/agent-monitor/sinks/sketchybar.sh

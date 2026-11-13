@@ -42,8 +42,8 @@ rm -rf ~/.config/aerospace
 ln -sf ~/dotfiles/aerospace ~/.config/aerospace
 
 # Sketchybar
-rm -rf ~/.config/sketchybar
-ln -sf ~/dotfiles/sketchybar ~/.config/sketchybar
+# The bar scripts are implementation and live in ~/Research/rice-configuration/packages/sketchybar-bar.
+# That package links them into ~/.config/sketchybar, so this script must not delete that directory.
 
 # OpenCode
 mkdir -p ~/.config/opencode
@@ -83,3 +83,10 @@ done
 # Taskwarrior
 rm -f ~/.taskrc
 ln -sf ~/dotfiles/task/.taskrc ~/.taskrc
+
+# Rice packages
+# Custom macOS rice work lives in its own monorepo. RICE_DIR overrides the clone location.
+RICE_DIR="${RICE_DIR:-$HOME/Research/rice-configuration}"
+if [ -x "$RICE_DIR/bin/rice" ]; then
+	"$RICE_DIR/bin/rice" apply
+fi
