@@ -117,5 +117,5 @@ printf 'one\trex\tneeds-attention\tSALES TOOL\tblock:1\tsession-1\t200\t1\n' >>"
 printf 'two\trex\tneeds-attention\tDOMAIN-WIKI\tblock:2\tsession-2\t190\t0\n' >>"$STATE_FILE"
 : >"$SET_LOG"
 "$SCRIPT"
-expected=$'--remove agent_monitor.w3_p47\n--set agent_monitor drawing=off\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff1f6feb\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<DOMAIN-WIKI> label.color=0xff1f6feb'
-assert_equal "$expected" "$(cat "$SET_LOG")" "a seen review keeps its colour and drops the name"
+expected=$'--remove agent_monitor.w3_p47\n--set agent_monitor drawing=off\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xffaaaaaa\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<DOMAIN-WIKI> label.color=0xff1f6feb'
+assert_equal "$expected" "$(cat "$SET_LOG")" "a seen review draws an idle-grey dot"

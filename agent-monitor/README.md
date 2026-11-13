@@ -74,7 +74,7 @@ state change sets it back to 0, so the next run asks again.
 
 Only `needs-help` and `needs-attention` show the agent name in the SketchyBar item, wrapped in angle brackets. Every other state draws a dot in the state color, so a row of concurrent agents stays short.
 
-A seen `needs-attention` agent also draws a dot, in the blue of its state. The
+A seen `needs-attention` agent also draws a dot, in the idle grey. The
 result was reviewed, so the item stops asking. `needs-help` is never seen this
 way: a blocked agent asks a question, and looking at the question does not
 answer it.

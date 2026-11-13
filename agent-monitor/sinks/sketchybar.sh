@@ -59,10 +59,13 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at seen; do
 
     # Only attention states carry the agent name, and only until the result is
     # seen. Every other case is a dot, so many concurrent agents fit in the bar.
+    # A seen review is old news, so it takes the idle grey.
     DISPLAY_LABEL="•"
     if [ "$state" = "needs-help" ] ||
         { [ "$state" = "needs-attention" ] && [ "$seen" != "1" ]; }; then
         DISPLAY_LABEL="<$label>"
+    elif [ "$state" = "needs-attention" ]; then
+        LABEL_COLOR="0xffaaaaaa"
     fi
 
     CLICK_SCRIPT=""
