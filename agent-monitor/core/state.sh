@@ -58,9 +58,13 @@ get_field() {
 }
 
 # Print state as TSV (for legacy consumers like SketchyBar)
+# Print state as TSV (for legacy consumers like SketchyBar). A field that is
+# empty prints as "-": the sink reads the row positionally, and empty fields
+# would collapse under tab splitting and shift every later column.
 print_tsv() {
-	printf 'id\tname\tstate\tlabel\tpane\tsession_id\tupdated_at\n'
+	printf 'id\tname\tstate\tlabel\tpane\tsession_id\tupdated_at\tseen\n'
 	read_state | jq -r '
+		def filled: if . == null or . == "" then "-" else . end;
 		.agents
 		| to_entries[]
 		| [
@@ -68,12 +72,39 @@ print_tsv() {
 			.value.name // "",
 			.value.state // "",
 			.value.label // "",
-			.value.pane // "",
-			.value.session_id // "",
-			(.value.updated_at // 0 | tostring)
+			(.value.pane | filled),
+			(.value.session_id | filled),
+			(.value.updated_at // 0 | tostring),
+			(.value.seen // 0 | tostring)
 		]
 		| @tsv
 	' 2>/dev/null || true
+}
+
+# Mark agents as seen: the user has looked at the finished result, so the
+# indicator stops asking for a review. Returns 1 when nothing changed.
+# Usage: mark_seen <id>...
+mark_seen() {
+	[[ "$#" -gt 0 ]] || return 1
+
+	local before after
+	before=$(read_state)
+	after=$(printf '%s' "$before" | jq --args '
+		(.agents | keys) as $known
+		| [$ARGS.positional[] | select(. as $id | $known | index($id))] as $targets
+		| reduce $targets[] as $id (.; .agents[$id].seen = 1)
+	' "$@")
+
+	[[ "$after" == "$before" ]] && return 1
+	printf '%s' "$after" | write_state
+	return 0
+}
+
+# Clear a seen mark, so the next result asks again.
+clear_seen() {
+	local id="$1"
+	read_state | jq --arg id "$id" \
+		'.agents[$id] = ((.agents[$id] // {}) * {seen: 0})' | write_state
 }
 
 # ── Mutation Operations ──────────────────────────────────────────────────
@@ -141,7 +172,7 @@ transition_agent() {
 	now=$(date +%s)
 	local update
 	update=$(jq -n --arg state "$new_state" --arg ts "$now" \
-		'{state: $state, updated_at: ($ts | tonumber)}')
+		'{state: $state, updated_at: ($ts | tonumber), seen: 0}')
 
 	# Add turn_completed_at for attention states
 	case "$new_state" in
@@ -179,7 +210,7 @@ demote_subagents() {
 	local id="$1"
 
 	read_state | jq --arg id "$id" \
-		'.agents[$id] = ((.agents[$id] // {}) * {state: "needs-attention", subagents_count: 0})' \
+		'.agents[$id] = ((.agents[$id] // {}) * {state: "needs-attention", subagents_count: 0, seen: 0})' \
 		| write_state
 }
 

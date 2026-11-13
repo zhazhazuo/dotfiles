@@ -18,7 +18,13 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 export AGENT_MONITOR_STATE_DIR="$TMP_DIR/state"
 export REX_FIXTURES="$TMP_DIR/fixtures"
 export REX_EVENTS="$TMP_DIR/events.jsonl"
+export REX_CALL_LOG="$TMP_DIR/rex-calls.log"
+# No listing daemon in the test: the adapter must fall back to the CLI.
+export REX_LISTING="$TMP_DIR/no-listing.json"
+export REX_SHOWN_FILE="$TMP_DIR/shown"
 mkdir -p "$REX_FIXTURES" "$AGENT_MONITOR_STATE_DIR"
+: >"$REX_SHOWN_FILE"
+: >"$REX_CALL_LOG"
 
 failures=0
 assert_equal() {
@@ -36,6 +42,7 @@ cat >"$TMP_DIR/bin/rex" <<'FAKE'
 #!/usr/bin/env bash
 # Minimal stand-in for the rex CLI.
 set -euo pipefail
+printf '%s\n' "$*" >>"${REX_CALL_LOG:?}"
 
 case "${1:-}" in
 ls)
@@ -194,6 +201,67 @@ JSONL
 "$ADAPTER" --watch
 titled=$("$BIN" state --json | jq -r '.agents["block_w"].state // "-"')
 assert_equal "subagents-running" "$titled" "a title change on a parked block reports subagents" || true
+
+# ── Listing Source ─────────────────────────────────────────────────────────
+# The daemon's listing answers state and focus in one read. No CLI process is
+# asked for session.list, session.view, or program_status while it is fresh. A
+# parked block still asks for its title, because the subagent count lives there.
+cat >"$TMP_DIR/listing.json" <<'JSON'
+{"generated_at":1700000000,"sessions":[
+ {"session_id":"session:L","label":"LISTED","windows":[
+   {"window_id":"window:1","label":"Tab","active":true,"blocks":[
+     {"block_id":"block:p","focused":true,"state":"done","message":"3 subagents (a, b, c)","updated_at":"2026-11-13T11:00:00+08:00"},
+     {"block_id":"block:q","focused":false,"state":"done","message":"review me","updated_at":"2026-11-13T11:00:00+08:00"}]},
+   {"window_id":"window:3","label":"Hidden tab","active":false,"blocks":[
+     {"block_id":"block:t","focused":true,"state":"done","message":"review me","updated_at":"2026-11-13T11:00:00+08:00"}]}]},
+ {"session_id":"session:M","label":"HIDDEN","windows":[
+   {"window_id":"window:2","label":"Tab","active":true,"blocks":[
+     {"block_id":"block:r","focused":true,"state":"done","message":"review me","updated_at":"2026-11-13T11:00:00+08:00"},
+     {"block_id":"block:s","focused":false,"state":"working","message":"build","updated_at":"2026-11-13T11:00:00+08:00"}]}]}]}
+JSON
+printf '%s\n' "session:L" >"$REX_SHOWN_FILE"
+date +%s >"$TMP_DIR/listing.json.alive"
+export REX_LISTING="$TMP_DIR/listing.json"
+: >"$REX_CALL_LOG"
+
+"$ADAPTER" --sync
+
+actual=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 {print $1, $3, $8}' | sort)
+expected=$'block_p subagents-running 0\nblock_q needs-attention 0\nblock_r needs-attention 0\nblock_s running 0\nblock_t needs-attention 0'
+assert_equal "$expected" "$actual" "the listing maps state and leaves every unseen run unseen" || true
+
+api_calls=$(grep -cE 'session\.list|session\.view|program_status' "$REX_CALL_LOG" || true)
+assert_equal "0" "$api_calls" "a fresh listing needs no session or status call" || true
+
+# The shown session's focused pane is what counts as looked at.
+printf '%s\n' "session:M" >"$REX_SHOWN_FILE"
+"$ADAPTER" --sync
+seen=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_r" {print $8}')
+assert_equal "1" "$seen" "a focused run in the shown session is seen" || true
+unseen=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_p" {print $8}')
+assert_equal "0" "$unseen" "a run with subagents still working is not seen" || true
+
+hidden_tab=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_t" {print $8}')
+assert_equal "0" "$hidden_tab" "a focused pane in a hidden tab is not seen" || true
+
+# Focus moving to a settled pane marks it seen, with no state change.
+printf '%s\n' "session:L" >"$REX_SHOWN_FILE"
+sed 's/"block:q","focused":false/"block:q","focused":true/' \
+	"$TMP_DIR/listing.json" >"$TMP_DIR/listing.next" && mv "$TMP_DIR/listing.next" "$TMP_DIR/listing.json"
+cat >"$REX_EVENTS" <<'JSONL'
+{"type":"session_event","payload":{"session_id":"session:L","event":{"type":"session_view_changed","payload":{"revision":12}}}}
+JSONL
+"$ADAPTER" --watch
+focused_seen=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_q" {print $8 " " $3}')
+assert_equal "1 needs-attention" "$focused_seen" "a focus event marks the settled pane seen without changing state" || true
+
+# A new run clears the mark, so the next finish asks again.
+cat >"$REX_EVENTS" <<'JSONL'
+{"type":"session_event","payload":{"session_id":"session:L","event":{"type":"block_event","payload":{"block_id":"block:q","name":"program_status_changed","payload":{"record":{"state":"working","app":"pi"}}}}}}
+JSONL
+"$ADAPTER" --watch
+cleared=$("$BIN" state --tsv | awk -F'\t' 'NR > 1 && $1 == "block_q" {print $8 " " $3}')
+assert_equal "0 running" "$cleared" "a new run clears the seen mark" || true
 
 if [[ "$failures" -gt 0 ]]; then
 	printf '\n%s failure(s)\n' "$failures" >&2

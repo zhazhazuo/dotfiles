@@ -111,3 +111,11 @@ STATE
 "$SCRIPT"
 expected=$'--remove agent_monitor.w2_p4\n--remove agent_monitor.one\n--set agent_monitor drawing=off\n--add item agent_monitor.w3_p47 center\n--set agent_monitor.w3_p47 drawing=on icon.drawing=off label=• label.color=0xffd29922 click_script=herdr agent focus w3:p47'
 assert_equal "$expected" "$(cat "$SET_LOG")" "renders subagents-running as an orange dot"
+
+printf 'id\tname\tstate\tlabel\tpane\tsession_id\tupdated_at\tseen\n' >"$STATE_FILE"
+printf 'one\trex\tneeds-attention\tSALES TOOL\tblock:1\tsession-1\t200\t1\n' >>"$STATE_FILE"
+printf 'two\trex\tneeds-attention\tDOMAIN-WIKI\tblock:2\tsession-2\t190\t0\n' >>"$STATE_FILE"
+: >"$SET_LOG"
+"$SCRIPT"
+expected=$'--remove agent_monitor.w3_p47\n--set agent_monitor drawing=off\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff1f6feb\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<DOMAIN-WIKI> label.color=0xff1f6feb'
+assert_equal "$expected" "$(cat "$SET_LOG")" "a seen review keeps its colour and drops the name"

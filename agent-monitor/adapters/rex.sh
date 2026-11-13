@@ -22,6 +22,14 @@
 #
 # Identity is the block id, sanitized (block:01a1… → block_01a1…), with the raw
 # id kept in the state's pane field so a click can focus it.
+#
+# State comes from the listing daemon's file when it is fresh: one read answers
+# every block, and it carries the focused pane. The API path stays for a stopped
+# daemon.
+#
+# A finished run counts as seen when its pane is focused in the active window of
+# the session the app shows. The agent keeps its state and stops asking for a
+# review in the bar.
 
 set -euo pipefail
 
@@ -49,6 +57,74 @@ map_state() {
 	error) printf 'TurnComplete' ;;
 	*) return 1 ;;
 	esac
+}
+
+# ── Sources ──────────────────────────────────────────────────────────────
+
+# The listing daemon (dotfiles/rex/scripts/listing.lua) rewrites this file after
+# every Rex change and touches .alive every half minute. A fresh beat means the
+# listing is current, and one read replaces a CLI process per block.
+REX_LISTING="${REX_LISTING:-${XDG_CACHE_HOME:-$HOME/.cache}/rex/listing.json}"
+LISTING_TTL="${REX_LISTING_TTL:-90}"
+
+# The app records the session it displays in its preferences, and rewrites it on
+# every switch. A one-line file of the same content stands in for tests.
+REX_APP_PLIST="${REX_APP_PLIST:-$HOME/Library/Preferences/com.superlogical.rex.plist}"
+
+listing_is_fresh() {
+	local beat
+	beat=$(cat "${REX_LISTING}.alive" 2>/dev/null || true)
+	[[ -f "$REX_LISTING" && "$beat" =~ ^[0-9]+$ ]] || return 1
+	[[ $(($(date +%s) - beat)) -le $LISTING_TTL ]]
+}
+
+shown_session() {
+	if [[ -n "${REX_SHOWN_FILE:-}" ]]; then
+		head -1 "$REX_SHOWN_FILE" 2>/dev/null | tr -d '[:space:]'
+		return 0
+	fi
+	/usr/libexec/PlistBuddy -c "Print :'Workspace.lastFocusedSession'" \
+		"$REX_APP_PLIST" 2>/dev/null |
+		jq -r '.sessionID // empty' 2>/dev/null || true
+}
+
+# Is this block the focused pane of its window, according to the listing?
+block_is_focused() {
+	local block_id="$1"
+	listing_is_fresh || return 1
+	jq -e --arg b "$block_id" '
+		[.sessions[]?.windows[]? | select(.active == true) | .blocks[]?
+		 | select(.block_id == $b) | .focused]
+		| any // false' "$REX_LISTING" >/dev/null 2>&1
+}
+
+# Mark what the user is looking at, without reconciling state. The focus events
+# carry a revision and nothing else, so the listing is read.
+mark_seen_from_listing() {
+	local shown ids pending id keep=""
+	shown=$(shown_session)
+	[[ -n "$shown" ]] || return 0
+
+	ids=$(jq -r --arg shown "$shown" '
+		.sessions[]? | select(.session_id == $shown) | .windows[]?
+		| select(.active == true) | .blocks[]?
+		| select(.focused == true)
+		| select(.state == "done" or .state == "error")
+		| .block_id' "$REX_LISTING" 2>/dev/null |
+		sed 's/[^[:alnum:]_]/_/g' | tr '\n' ' ')
+	[[ -n "${ids// /}" ]] || return 0
+
+	# Only agents the monitor holds as needs-attention. A done block whose
+	# subagents still run is subagents-running, and stays unseen.
+	pending=$("$BIN" state --json 2>/dev/null |
+		jq -r '.agents | to_entries[] | select(.value.state == "needs-attention") | .key')
+	for id in $ids; do
+		if grep -qxF "$id" <<<"$pending"; then keep+="$id "; fi
+	done
+	[[ -n "$keep" ]] || return 0
+
+	# shellcheck disable=SC2086  # sanitized ids hold no spaces
+	"$BIN" seen $keep >/dev/null 2>&1 || true
 }
 
 # A message such as "3 subagents (a, b, c)" means background work continues.
@@ -83,10 +159,11 @@ session_label() {
 			2>/dev/null || true
 }
 
-# reconcile_block <session_id> <label> <block_id> <state> <msg> [title]
+# reconcile_block <session_id> <label> <block_id> <state> <msg> <focused>
 reconcile_block() {
-	local session_id="$1" label="$2" block_id="$3" state="$4" msg="${5:-}" title="${6:-}"
-	local event subs=0
+	local session_id="$1" label="$2" block_id="$3" state="$4" msg="${5:-}"
+	local focused="${6:-false}"
+	local event subs=0 title shown
 
 	event=$(map_state "$state") || {
 		remove_block "$block_id"
@@ -108,6 +185,15 @@ reconcile_block() {
 		--arg pane_id "$block_id" --arg label "$label" --arg sid "$session_id" \
 		--arg msg "$msg" --argjson subs "$subs" \
 		'{pane_id: $pane_id, label: $label, session_id: $sid, message: $msg, subagents: $subs}')"
+
+	# A run that ended in a pane the user is looking at needs no review. A run
+	# whose subagents still work is SubagentsRunning, and stays unseen.
+	if [[ "$event" == "TurnComplete" && "$focused" == "true" ]]; then
+		shown=$(shown_session)
+		if [[ -n "$shown" && "$shown" == "$session_id" ]]; then
+			"$BIN" seen "$(sanitize_id "$block_id")" >/dev/null 2>&1 || true
+		fi
+	fi
 }
 
 # Read the strongest status record for one block.
@@ -120,19 +206,65 @@ block_status() {
 			2>/dev/null || true
 }
 
-do_sync() {
-	local sessions session_id label view block_id block_label window_label record
-	local state msg seen=""
+# Drop tracked rex agents that the source no longer reports.
+prune_untracked() {
+	local tracked="$1"
+	"$BIN" state --json 2>/dev/null |
+		jq -r --arg agent "$AGENT_NAME" \
+			'.agents | to_entries[] | select(.value.name == $agent) | "\(.key)\t\(.value.pane // "")"' |
+		while IFS=$'\t' read -r id raw_pane; do
+			[[ -z "$raw_pane" ]] && continue
+			grep -qxF "$raw_pane" <<<"$tracked" || "$BIN" remove "$id" >/dev/null 2>&1 || true
+		done
+}
 
-	sessions=$(rex api call session.list 2>/dev/null) || exit 0
-	[[ -z "$sessions" ]] && exit 0
+do_sync() {
+	if listing_is_fresh; then
+		sync_from_listing
+	else
+		sync_from_api
+	fi
+}
+
+# Reconcile every block the listing reports, and mark the ones the user is
+# looking at. No rex process starts for state: only a parked block without a
+# subagent count asks for its title.
+sync_from_listing() {
+	local session_id label block_id state msg focused tracked=""
+
+	while IFS=$'\t' read -r session_id label block_id state msg focused; do
+		[[ -z "$block_id" ]] && continue
+		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
+		tracked+="$block_id"$'\n'
+	done < <(jq -r '
+		.sessions[]? as $s | $s.windows[]? as $w | $w.blocks[]?
+		| select(.state != null)
+		| [ $s.session_id, ($s.label // ""), .block_id, .state,
+		    (.message // ""),
+		    ((.focused // false) and ($w.active // false) | tostring) ]
+		| @tsv' "$REX_LISTING" 2>/dev/null)
+
+	prune_untracked "$tracked"
+}
+
+# Read state from the server one block at a time. This is the path for a stopped
+# listing daemon, and it costs a rex process per session and per block.
+sync_from_api() {
+	local sessions session_id label view block_id window_label record
+	local state msg focused block_focused tracked=""
+
+	sessions=$(rex api call session.list 2>/dev/null) || return 0
+	[[ -z "$sessions" ]] && return 0
 
 	while IFS=$'\t' read -r session_id label; do
 		[[ -z "$session_id" ]] && continue
 		view=$(rex api call -s "$session_id" session.view 2>/dev/null) || continue
 		[[ -z "$view" ]] && continue
+		focused=$(printf '%s' "$view" | jq -r '
+			.active_window_id as $a | .windows[]? | select(.window_id == $a)
+			| .focused_block_id // empty' | tr '\n' ' ')
 
-		while IFS=$'\t' read -r block_id block_label window_label; do
+		while IFS=$'\t' read -r block_id _ window_label; do
 			[[ -z "$block_id" ]] && continue
 			record=$(block_status "$session_id" "$block_id")
 			if [[ -z "$record" ]]; then
@@ -141,32 +273,43 @@ do_sync() {
 			fi
 			state=$(printf '%s' "$record" | jq -r '.state // empty')
 			msg=$(printf '%s' "$record" | jq -r '.msg // empty')
-			reconcile_block "$session_id" "${label:-$window_label}" "$block_id" "$state" "$msg"
-			seen+="$block_id"$'\n'
+			block_focused=false
+			case " $focused " in
+			*" $block_id "*) block_focused=true ;;
+			esac
+			reconcile_block "$session_id" "${label:-$window_label}" "$block_id" "$state" "$msg" "$block_focused"
+			tracked+="$block_id"$'\n'
 		done < <(printf '%s' "$view" | jq -r '
 			.windows[]? as $w | $w.layers[]?.blocks[]? |
 			[.block_id, (.label // ""), ($w.label // "")] | @tsv')
 	done < <(printf '%s' "$sessions" | jq -r '.sessions[]? | [.session_id, (.label // "")] | @tsv')
 
-	# Drop tracked rex agents that no longer report status.
-	"$BIN" state --json 2>/dev/null |
-		jq -r --arg agent "$AGENT_NAME" \
-			'.agents | to_entries[] | select(.value.name == $agent) | "\(.key)\t\(.value.pane // "")"' |
-		while IFS=$'\t' read -r id raw_pane; do
-			[[ -z "$raw_pane" ]] && continue
-			grep -qxF "$raw_pane" <<<"$seen" || "$BIN" remove "$id" >/dev/null 2>&1 || true
-		done
+	prune_untracked "$tracked"
 }
 
 # Handle one line of `rex events --all --json`.
 handle_event() {
-	local line="$1" session_id block_id name state msg label record
+	local line="$1" session_id block_id name state msg label record focused=false
 
 	name=$(printf '%s' "$line" | jq -r '
 		.payload.event.payload.name // .payload.event.type // empty' 2>/dev/null) || return 0
 	[[ -z "$name" ]] && return 0
 
 	session_id=$(printf '%s' "$line" | jq -r '.payload.session_id // empty' 2>/dev/null) || return 0
+
+	case "$name" in
+	session_view_changed | active_window_changed)
+		# Focus moved: the user switched a tab or picked a pane. The event
+		# carries a revision and nothing else, so the listing answers.
+		if listing_is_fresh; then
+			mark_seen_from_listing
+		else
+			sync_from_api
+		fi
+		return 0
+		;;
+	esac
+
 	block_id=$(printf '%s' "$line" | jq -r '
 		.payload.event.payload.block_id // empty' 2>/dev/null) || return 0
 	[[ -z "$block_id" ]] && return 0
@@ -181,13 +324,15 @@ handle_event() {
 		[[ -z "$state" ]] && return 0
 		msg=$(printf '%s' "$record" | jq -r '.msg // empty')
 		label=$(session_label "$session_id")
-		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg"
+		if block_is_focused "$block_id"; then focused=true; fi
+		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
 		;;
 	program_status_changed)
 		state=$(printf '%s' "$line" | jq -r '.payload.event.payload.payload.record.state // empty')
 		msg=$(printf '%s' "$line" | jq -r '.payload.event.payload.payload.record.msg // empty')
 		label=$(session_label "$session_id")
-		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg"
+		if block_is_focused "$block_id"; then focused=true; fi
+		reconcile_block "$session_id" "$label" "$block_id" "$state" "$msg" "$focused"
 		;;
 	program_status_removed | block_closed)
 		remove_block "$block_id"

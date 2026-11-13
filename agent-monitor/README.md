@@ -52,11 +52,15 @@ agent-monitor clear
       "pane": "%4",
       "session_id": "...",
       "updated_at": 1784171938,
-      "turn_completed_at": null
+      "turn_completed_at": null,
+      "seen": 0
     }
   }
 }
 ```
+
+`seen` is 1 when the user has looked at a finished result, and 0 otherwise. A
+state change sets it back to 0, so the next run asks again.
 
 ## States
 
@@ -69,6 +73,34 @@ agent-monitor clear
 | `needs-help` | red | Blocked, needs input |
 
 Only `needs-help` and `needs-attention` show the agent name in the SketchyBar item, wrapped in angle brackets. Every other state draws a dot in the state color, so a row of concurrent agents stays short.
+
+A seen `needs-attention` agent also draws a dot, in the blue of its state. The
+result was reviewed, so the item stops asking. `needs-help` is never seen this
+way: a blocked agent asks a question, and looking at the question does not
+answer it.
+
+## Rex Source
+
+Rex publishes per-block program status over OSC 7501. Two sources carry it:
+
+- `~/.cache/rex/listing.json`, kept current by the listing daemon. It holds
+the state and the focused pane of every block, and `listing.json.alive` is
+touched every half minute. The adapter reads the file when the beat is under
+90 seconds old, so state costs one read instead of a rex process per block.
+- The server API (`session.list`, `session.view`, and
+`com.superlogical.terminal.program_status`) for a stopped daemon, plus
+`rex events --all --json` for changes as they happen.
+
+A finished run counts as seen when its pane is focused in the active window of
+the session the app displays. The app records that session under
+`Workspace.lastFocusedSession` in
+`~/Library/Preferences/com.superlogical.rex.plist`, and rewrites it on every
+switch. Focus changes arrive as `session_view_changed`, which carries a revision
+and nothing else, so the adapter re-reads the listing when one arrives.
+
+Rex has no acknowledged flag, and the Raycast Rex extension does not read one:
+it keeps its own record of which results it has shown. This adapter therefore
+derives seen from focus instead, and the two views can disagree.
 
 ## Herdr Source
 

@@ -237,6 +237,7 @@ reconcile() {
 		"label=$label"
 		"pane=${TMUX_PANE:-$(printf '%s' "$json" | jq -r '.pane_id // empty' 2>/dev/null)}"
 		"session_id=$session_id"
+		"seen=0"
 	)
 
 	upsert_agent "$id" "${fields[@]}"

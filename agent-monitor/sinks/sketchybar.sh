@@ -33,7 +33,7 @@ done
 sketchybar --set "$NAME" drawing=off
 
 # Process current items in order
-while IFS=$'\t' read -r id name state label pane session_id updated_at; do
+while IFS=$'\t' read -r id name state label pane session_id updated_at seen; do
     [ -z "$id" ] && continue
 
     case "$state" in
@@ -57,14 +57,13 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
             ;;
     esac
 
-    # Only the two attention states carry the agent name. Every other state is a
-    # dot, so many concurrent agents fit in the bar.
+    # Only attention states carry the agent name, and only until the result is
+    # seen. Every other case is a dot, so many concurrent agents fit in the bar.
     DISPLAY_LABEL="•"
-    case "$state" in
-        needs-help | needs-attention)
-            DISPLAY_LABEL="<$label>"
-            ;;
-    esac
+    if [ "$state" = "needs-help" ] ||
+        { [ "$state" = "needs-attention" ] && [ "$seen" != "1" ]; }; then
+        DISPLAY_LABEL="<$label>"
+    fi
 
     CLICK_SCRIPT=""
     case "$pane" in

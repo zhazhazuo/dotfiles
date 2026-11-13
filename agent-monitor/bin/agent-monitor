@@ -33,6 +33,7 @@ Commands:
   reconcile <agent> <event> [json]   Reconcile an agent event
   prune                               Remove dead agents
   state [--json|--tsv|--pretty]       Print current state (default: pretty)
+  seen <id>...                        Mark agents as seen (their result is reviewed)
   clear                               Clear all state
   remove <id>                         Remove a specific agent
 
@@ -86,6 +87,17 @@ cmd_state() {
 	esac
 }
 
+cmd_seen() {
+	[[ "$#" -gt 0 ]] || {
+		echo "agent-monitor seen <id>..." >&2
+		return 2
+	}
+
+	source "${CORE_DIR}/state.sh"
+	mark_seen "$@" || return 0
+	refresh_sinks
+}
+
 cmd_clear() {
 	source "${CORE_DIR}/state.sh"
 	clear_state
@@ -124,6 +136,9 @@ main() {
 		;;
 	clear)
 		cmd_clear "$@"
+		;;
+	seen)
+		cmd_seen "$@"
 		;;
 	remove|rm)
 		cmd_remove "$@"
