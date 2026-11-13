@@ -2,7 +2,7 @@
 
 Match the task to the current `agent_types` inventory. Role names and permissions can differ between configurations. Read the selected type description before you write the prompt.
 
-Use a fresh root path for building, research, and review. Inherited conversation adds settled history and competing instructions. Include the current task facts in the brief instead.
+Use a fresh root path for a new building, research, or review task. Inherited conversation adds settled history and competing instructions. Include the current task facts in the brief instead. For corrections and related follow-up, use `agent_steer` to resume the same focused child instead of starting another fresh root.
 
 ## Select the context
 

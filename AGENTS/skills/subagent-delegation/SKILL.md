@@ -9,6 +9,21 @@ disable-model-invocation: true
 These rules bind the thread that spawns. A child does not load this file. For role-specific briefs,
 execution handoffs, and supervision, read `~/.agents/skills/subagent-driven-development/SKILL.md`.
 
+## Apply the delegation cost gate
+
+A spawn starts a separate model conversation. The parent's conversation does not become the child's cached
+prefix. Shared static instructions can still produce cache reads in the child's first call.
+
+Keep small, sequential, or tightly coupled work in the main session. Delegate a substantial independent work
+package. Do not split one coherent change into tiny children only because their files differ.
+
+Resume the same child with `agent_steer` for corrections and related follow-up while its context remains
+focused. Use a fresh child for a new task or when the retained history is irrelevant. Do not retain a child for
+unrelated work only to avoid fresh input.
+
+Compare delegation with main-session work through parent and child input, cache-read, and cache-write tokens.
+Token totals are not monetary cost without the applicable model prices.
+
 ## The spawn path decides the context
 
 A path with a leading slash and no `/root` prefix, for example `/build-t-group`, starts a fresh

@@ -44,8 +44,10 @@ progress.
 
 After a stop, inspect the disk before you resume or replace the child. Edits remain on disk, and the session
 remains available.
-Resume the retained session when its context remains focused. Use a fresh child when the retained session contains
-a long irrelevant reading history. Give the fresh child the corrected contract, not the old transcript.
+Resume the retained session when its context remains focused. Use `agent_steer` for review corrections and
+related follow-up. This reuses the child's accumulated context and avoids a second orientation. Use a fresh child
+when the retained session contains a long irrelevant reading history. Give the fresh child the corrected contract,
+not the old transcript. Do not resume a child for unrelated work only to avoid fresh input.
 
 ## Recover from wrong work
 

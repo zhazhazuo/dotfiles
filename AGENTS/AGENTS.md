@@ -123,9 +123,17 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
 ### Subagents
 
 - SDD means subagent-driven development, not spec-driven development.
-- When tasks have no sequential dependence, run them in parallel with subagents. Spawn each
+- Keep small, sequential, or tightly coupled work in the main session. Delegate substantial
+  independent work packages, not tiny tasks created only to increase parallelism.
+- A child starts a separate model conversation. Do not assume that the parent's cached conversation is
+  available to it. Give the child exact paths, decisions, and acceptance criteria instead of copied history.
+- When substantial tasks have no sequential dependence, run them in parallel with subagents. Spawn each
   independent child with `wait: false`, all in one call. Do not call `agent_wait` or poll immediately.
   End the turn. Completion and report-only timeout events wake the session.
+- Resume the same child with `agent_steer` for corrections and related follow-up while its context remains
+  focused. Use a fresh child for a new task or a retained session with irrelevant history.
+- When comparing delegation cost, count parent and child input, cache-read, and cache-write tokens. Use the
+  applicable model prices before calling token usage a monetary cost.
 - Use `agent_status` for live state and recent output. Reserve `agent_output` for completed children.
 - The `codemode` sandbox has two workers for the whole pi process, and a long script holds one. If
   children run long scripts, set `PI_CODEMODE_MAX_WORKERS` or expect waits.

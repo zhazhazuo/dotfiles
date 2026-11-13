@@ -8,9 +8,21 @@ disable-model-invocation: true
 
 SDD means subagent-driven development. The main thread owns product decisions, task boundaries, handoffs, and acceptance. Child agents perform bounded work and return evidence.
 
+## Apply the delegation cost gate
+
+Each child starts a separate model conversation and needs its own instructions and task context. Do not assume
+that the parent's cached conversation is available to the child. Shared static instructions can still produce
+cache reads.
+
+Keep small, sequential, or tightly coupled work in the main session. Give a child a coherent work package and
+its related corrections. Do not create tiny children only to increase parallel execution.
+
+Assess token use across the parent and all children. Include input, cache-read, and cache-write tokens. Use the
+applicable model prices before describing the result as monetary cost.
+
 ## Run the delivery loop
 
-1. Do not delegate a small task that the main thread can complete with less coordination.
+1. Apply the cost gate. Do not delegate when the main session can complete the work with less coordination and fresh input.
 2. Run `agent_types` and select a role from the current inventory.
 3. Read `~/.agents/skills/subagent-delegation/SKILL.md` for spawn paths, permissions, and result inspection.
 4. Read `references/role-briefs.md` and prepare the context for the selected role.
@@ -20,6 +32,8 @@ SDD means subagent-driven development. The main thread owns product decisions, t
 8. End the turn without an immediate wait or poll. Completion and timeout events wake the parent.
 9. After completion, collect the final answer with `agent_output`. For file work, inspect the changed paths.
    Run the acceptance commands in the main thread. Record the collection and acceptance evidence.
+10. Resume the same child with `agent_steer` for corrections and related follow-up while its context remains
+    focused. Use a fresh child for a new task or irrelevant retained history.
 
 ## Keep the execution boundary
 
