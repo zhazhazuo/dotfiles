@@ -42,8 +42,8 @@ A configuration file never names a path inside this repository for something tha
 - A file that the application reads keeps the path the application already names:
   `herdr/config.toml:47` calls `~/.config/herdr/status-pi-step.sh`, and
   `packages/sketchybar-bar/files/left.sh` reads `$PLUGIN_DIR/agent_monitor.sh`.
-- Do not add `~/dotfiles/bin/` back. Put the executable in `~/.local/bin` and declare the link in a
-  rice package.
+- Do not recreate a shim directory here. Put the executable in `~/.local/bin` and declare the link
+  in a rice package.
 
 ## Commands
 
@@ -66,9 +66,8 @@ next `rice status` reports a missing or foreign link.
 
 ## Open items
 
-- `pi/extensions/peer.ts` and `pi/scripts/peer-completions-probe.ts` belong in
-  `packages/pi-extensions`. Until they move, two installers own `~/.pi/agent/extensions/`, and
-  `tests/migration-check.sh` fails one case on purpose.
+- `pi/scripts/todo-cadence.py` is code that still lives here. It belongs in a rice package when
+  something calls it.
 - `instructions/AGENT_MONITOR_INTEGRATION.md` is stale: it names tmux scripts that never shipped and
   predates the single-sink design.
 - `init.sh` links `~/dotfiles/opencode/agent` and `~/dotfiles/gemini/commands`, and neither directory
