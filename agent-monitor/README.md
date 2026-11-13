@@ -102,6 +102,11 @@ Rex has no acknowledged flag, and the Raycast Rex extension does not read one:
 it keeps its own record of which results it has shown. This adapter therefore
 derives seen from focus instead, and the two views can disagree.
 
+`blocked` becomes needs-help, which is the red item. For a pi questionnaire
+that report depends on a patched package, because pi raises `blocked` only for
+a UI component that declares one: see `pi/patches/`, and
+`tests/rex-blocked.test.sh`, which drives the state end to end.
+
 ## Herdr Source
 
 Herdr is the source of truth for agents running inside herdr. A herdr plugin

@@ -41,7 +41,7 @@ mechanism keeps them so.
 | `hide-tool-declarations.ts` | Hides 44 of the 64 declarations but keeps every hidden tool callable. Adds the `hidden_tools` prompt section and the `/tool-whitelist` command. |
 | `skill-guard.ts` | Silences third-party package skills except the four navigators named in `settings.json` under `skillGuard.keepVisible`. |
 | `browser-instruction-broker.ts` | Stops `pi-agent-browser-native` from injecting its ~36 KB browser playbook into every prompt. The playbook moves to the `browser` subagent definition. |
-| `ask-user-attention.ts` | Reports "blocked on human" to Herdr while pi waits for a reply to a blocking prompt. |
+| `ask-user-attention.ts` | Reports "blocked on human" to Herdr while pi waits for a reply to a blocking prompt. Rex needs no bridge of its own: the terminal reads pi's OSC 7501 report, which the questionnaire supplies only once patched — see Patches. |
 | `herdr-pi-step.ts` | Shows what the focused pi session is doing in the Herdr tab bar. |
 | `herdr-subagents-running.ts` | Reports "subagents running" to Herdr while the root session waits on background threads. |
 | `agent-monitor.ts` | Feeds pi lifecycle events to `agent-monitor`, whose sinks are SketchyBar and tmux. The herdr extensions own the herdr tab bar, so each surface has one owner. |
@@ -106,6 +106,19 @@ edit applies on `/reload` or in a new session.
 
 `run_tool` stays declared whatever the file says, because hiding it would leave every hidden
 tool unreachable. A missing or malformed file falls back to the default with one warning.
+
+## Patches
+
+`patches/` holds changes to installed packages that are not ours. They live outside this repo, so
+an update replaces them and `patches/apply.sh` applies them again. The script checks each patch
+before applying, so a second run changes nothing.
+
+| Patch | Why |
+|---|---|
+| `rpiv-ask-user-question-blocked.patch` | The questionnaire mounts with `ctx.ui.custom` but passes no `blocked` option, and pi reports `blocked` over OSC 7501 only for a component that declares one. A waiting `ask_user_question` therefore left pi `working`, so a terminal that renders program status — Rex — stayed green while a question waited. The patch adds `blocked: { kind: "question", message: <first question> }` to both mounts, and the Rex adapter turns that report into the red needs-help state. `@juicesharp/rpiv-ask-user-question` 2.15.0 does not carry the change; the fix belongs upstream. |
+
+`agent-monitor/tests/rex-blocked.test.sh` fails when the installed package no longer carries the
+patch, and drives a live Rex block through the state to prove the monitor half.
 
 ## Other contents
 

@@ -1,0 +1,39 @@
+--- a/ask-user-question.ts
++++ b/ask-user-question.ts
+@@ -280,6 +280,19 @@
+ 	invalidate: () => {},
+ 	handleInput: () => {},
+ };
++
++/**
++ * The blocked report the terminal shows while the questionnaire waits. Pi raises one only
++ * for a component that declares it, so without this a waiting question leaves pi
++ * `working`, and a terminal that renders program status shows the run as busy.
++ */
++function blockedOnQuestion(config: { typed: QuestionParams }): {
++	kind: "question";
++	message: string;
++} {
++	const first = config.typed.questions.find((question) => question.question.trim());
++	return { kind: "question", message: (first?.question ?? "Waiting for an answer").trim() };
++}
+ 
+ /**
+  * One `ctx.ui.custom` mount under `presentation`. The overlay additionally gets its handle
+@@ -313,6 +326,7 @@
+ 			makeSessionFactory({ ...config, canReopenWhileHidden, sessionRef }),
+ 			presentation.overlay
+ 				? {
++						blocked: blockedOnQuestion(config),
+ 						overlay: true,
+ 						overlayOptions: {
+ 							anchor: "bottom-center",
+@@ -325,7 +339,7 @@
+ 							sessionRef.current?.setOverlayHandle(handle);
+ 						},
+ 					}
+-				: { overlay: false },
++				: { overlay: false, blocked: blockedOnQuestion(config) },
+ 		);
+ 	} finally {
+ 		removeOverlayInputListener?.();
