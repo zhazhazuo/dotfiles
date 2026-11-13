@@ -57,9 +57,11 @@ while IFS=$'\t' read -r id name state label pane session_id updated_at; do
             ;;
     esac
 
-    DISPLAY_LABEL="$label"
+    # Only the two attention states carry the agent name. Every other state is a
+    # dot, so many concurrent agents fit in the bar.
+    DISPLAY_LABEL="•"
     case "$state" in
-        needs-help | needs-attention | subagents-running)
+        needs-help | needs-attention)
             DISPLAY_LABEL="<$label>"
             ;;
     esac

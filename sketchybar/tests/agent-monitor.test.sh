@@ -55,8 +55,8 @@ two	pi	needs-help	review	%2	session-2	120
 STATE
 
 "$SCRIPT"
-expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<review> label.color=0xffc0392b click_script=tmux select-window -t %2; tmux select-pane -t %2\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1\n--add item agent_monitor.three center\n--set agent_monitor.three drawing=on icon.drawing=off label=docs label.color=0xffaaaaaa click_script=tmux select-window -t %3; tmux select-pane -t %3'
-assert_equal "$expected" "$(cat "$SET_LOG")" "renders workspace-style items per agent state"
+expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<review> label.color=0xffc0392b click_script=tmux select-window -t %2; tmux select-pane -t %2\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1\n--add item agent_monitor.three center\n--set agent_monitor.three drawing=on icon.drawing=off label=• label.color=0xffaaaaaa click_script=tmux select-window -t %3; tmux select-pane -t %3'
+assert_equal "$expected" "$(cat "$SET_LOG")" "keeps the agent name only for needs-help"
 
 cat >"$STATE_FILE" <<'STATE'
 id	name	state	label	pane	session_id	updated_at
@@ -65,7 +65,7 @@ two	pi	needs-attention	ship	%2	session-2	120
 STATE
 : >"$SET_LOG"
 "$SCRIPT"
-expected=$'--remove agent_monitor.three\n--set agent_monitor drawing=off\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<ship> label.color=0xff1f6feb click_script=tmux select-window -t %2; tmux select-pane -t %2\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
+expected=$'--remove agent_monitor.three\n--set agent_monitor drawing=off\n--add item agent_monitor.two center\n--set agent_monitor.two drawing=on icon.drawing=off label=<ship> label.color=0xff1f6feb click_script=tmux select-window -t %2; tmux select-pane -t %2\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
 assert_equal "$expected" "$(cat "$SET_LOG")" "removes stale items and keeps per-agent colors"
 
 cat >"$STATE_FILE" <<'STATE'
@@ -74,8 +74,8 @@ one	codex	running	work	%1	session-1	100
 STATE
 : >"$SET_LOG"
 "$SCRIPT"
-expected=$'--remove agent_monitor.two\n--set agent_monitor drawing=off\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
-assert_equal "$expected" "$(cat "$SET_LOG")" "renders running state"
+expected=$'--remove agent_monitor.two\n--set agent_monitor drawing=off\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
+assert_equal "$expected" "$(cat "$SET_LOG")" "renders running state as a dot"
 
 cat >"$STATE_FILE" <<'STATE'
 id	name	state	label	pane	session_id	updated_at
@@ -85,7 +85,7 @@ STATE
 "$SCRIPT"
 assert_equal "--set agent_monitor drawing=off
 --add item agent_monitor.one center
---set agent_monitor.one drawing=on icon.drawing=off label=docs label.color=0xffaaaaaa click_script=tmux select-window -t %1; tmux select-pane -t %1" "$(cat "$SET_LOG")" "renders idle state in gray"
+--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xffaaaaaa click_script=tmux select-window -t %1; tmux select-pane -t %1" "$(cat "$SET_LOG")" "renders idle state as a gray dot"
 
 printf 'id\tname\tstate\tlabel\tpane\tsession_id\tupdated_at\n' >"$STATE_FILE"
 : >"$SET_LOG"
@@ -100,7 +100,7 @@ one	codex	running	work	%1	session-1	90
 STATE
 : >"$SET_LOG"
 "$SCRIPT"
-expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.w2_p4 center\n--set agent_monitor.w2_p4 drawing=on icon.drawing=off label=SF label.color=0xff238636 click_script=herdr agent focus w2:p4\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=work label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
+expected=$'--set agent_monitor drawing=off\n--add item agent_monitor.w2_p4 center\n--set agent_monitor.w2_p4 drawing=on icon.drawing=off label=• label.color=0xff238636 click_script=herdr agent focus w2:p4\n--add item agent_monitor.one center\n--set agent_monitor.one drawing=on icon.drawing=off label=• label.color=0xff238636 click_script=tmux select-window -t %1; tmux select-pane -t %1'
 assert_equal "$expected" "$(cat "$SET_LOG")" "herdr rows get herdr focus click, tmux rows unchanged"
 
 cat >"$STATE_FILE" <<'STATE'
@@ -109,5 +109,5 @@ w3_p47	herdr	subagents-running	AI-Report	w3:p47		130
 STATE
 : >"$SET_LOG"
 "$SCRIPT"
-expected=$'--remove agent_monitor.w2_p4\n--remove agent_monitor.one\n--set agent_monitor drawing=off\n--add item agent_monitor.w3_p47 center\n--set agent_monitor.w3_p47 drawing=on icon.drawing=off label=<AI-Report> label.color=0xffd29922 click_script=herdr agent focus w3:p47'
-assert_equal "$expected" "$(cat "$SET_LOG")" "renders subagents-running in orange with attention brackets"
+expected=$'--remove agent_monitor.w2_p4\n--remove agent_monitor.one\n--set agent_monitor drawing=off\n--add item agent_monitor.w3_p47 center\n--set agent_monitor.w3_p47 drawing=on icon.drawing=off label=• label.color=0xffd29922 click_script=herdr agent focus w3:p47'
+assert_equal "$expected" "$(cat "$SET_LOG")" "renders subagents-running as an orange dot"

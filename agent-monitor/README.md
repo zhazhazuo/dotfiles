@@ -68,6 +68,8 @@ agent-monitor clear
 | `needs-attention` | blue | Finished, needs review |
 | `needs-help` | red | Blocked, needs input |
 
+Only `needs-help` and `needs-attention` show the agent name in the SketchyBar item, wrapped in angle brackets. Every other state draws a dot in the state color, so a row of concurrent agents stays short.
+
 ## Herdr Source
 
 Herdr is the source of truth for agents running inside herdr. A herdr plugin
