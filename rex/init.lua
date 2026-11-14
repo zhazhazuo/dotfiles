@@ -604,3 +604,10 @@ rex.action({
   keywords    = "resize pane split ratio golden 61.8 daemon launchd state check",
   run         = function() return golden_ratio("status") end,
 })
+
+-- >>> leaf >>>
+-- Managed by `leaf rex install`; `leaf rex uninstall` removes it.
+-- plugin: 04365960a540f318
+dofile("/Users/walkerw/.config/rex/plugins/leaf/init.lua").setup({ bin = { "/opt/homebrew/bin/leaf" } })
+-- open: idle classic
+-- <<< leaf <<<
