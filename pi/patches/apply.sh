@@ -17,7 +17,7 @@
 set -euo pipefail
 
 here=$(cd -- "$(dirname -- "$0")" && pwd)
-packages="$HOME/.pi/agent/npm/node_modules"
+packages="${PI_NODE_MODULES_DIR:-$HOME/.pi/agent/npm/node_modules}"
 
 apply() {
 	local package="$1" patch_file="$2" dir="$packages/$1"
@@ -27,12 +27,38 @@ apply() {
 		return 0
 	fi
 
-	if (cd "$dir" && patch -p1 --dry-run --reverse --silent <"$patch_file" >/dev/null 2>&1); then
+	# Apple's /usr/bin/patch answers its own "Unreversed (or previously
+	# applied) patch detected!" prompt with yes, so a reverse dry-run exits 0
+	# on a file the patch never touched, and a plain forward apply reverts a
+	# patched file. The check that does not lie: forward-apply with -N, which
+	# skips a patch that looks already applied, to a copy, and judge by
+	# content.
+	local probe probe_dir
+	probe=$(mktemp -d "$dir/.apply-probe.XXXXXX")
+	probe_dir="$dir/$(basename "$probe")"
+	local target patched
+	target=$(sed -n 's/^+++ b\///p' "$patch_file" | head -1)
+	if [[ -z "$target" ]]; then
+		rm -rf "$probe_dir"
+		printf 'fail %s: patch declares no target\n' "$(basename "$patch_file")"
+		return 1
+	fi
+	mkdir -p "$probe_dir/$(dirname "$target")"
+	cp "$dir/$target" "$probe_dir/$target"
+	if (cd "$probe_dir" && patch -p1 -N -s <"$patch_file" >/dev/null 2>&1) \
+		&& ! cmp -s "$dir/$target" "$probe_dir/$target"; then
+		patched=0
+	else
+		patched=1
+	fi
+	rm -rf "$probe_dir"
+
+	if [[ "$patched" == "1" ]]; then
 		printf 'ok   %s: already applied\n' "$(basename "$patch_file")"
 		return 0
 	fi
 
-	(cd "$dir" && patch -p1 --silent <"$patch_file")
+	(cd "$dir" && patch -p1 -N --silent <"$patch_file")
 	printf 'ok   %s: applied to %s\n' "$(basename "$patch_file")" "$package"
 }
 
