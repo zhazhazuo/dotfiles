@@ -1,6 +1,6 @@
-# ── Mac: machine values ───────────────────────────────────────────────
+# ── M5: machine values ────────────────────────────────────────────────
 # Loaded by fish conf.d after the shared fragments; the zz- prefix sorts last.
-# init.sh links this file from hosts/Mac into fish/conf.d.
+# init.sh links this file from hosts/M5 into fish/conf.d.
 
 # PROXY (Clash Verge listens on 7890; 7897 has no listener)
 export HTTP_PROXY=http://127.0.0.1:7890

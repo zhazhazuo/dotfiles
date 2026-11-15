@@ -1,7 +1,7 @@
 # Hosts
 
 One directory per machine, named after the machine's `hostname -s` output
-(`Mac`, `VCN`). The shared configuration holds values every machine
+(`M5`, `VCN`). The shared configuration holds values every machine
 shares. A value two machines must not share lives here.
 
 The installer reads `hostname -s`, then links and merges this directory's
@@ -22,5 +22,5 @@ the shared configuration alone, which is the safe default.
 ## Adding a machine
 
 1. Run `hostname -s` on the machine.
-2. Copy `hosts/Mac/` to `hosts/<that-name>/` and edit the values.
+2. Copy `hosts/M5/` to `hosts/<that-name>/` and edit the values.
 3. Commit. Both machines now share one branch without conflicts.
