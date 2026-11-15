@@ -15,6 +15,19 @@ ln -sf ~/dotfiles/nvim ~/.config/nvim
 rm -rf ~/.config/fish
 ln -sf ~/dotfiles/fish ~/.config/fish
 
+# Hosts
+# hosts/<hostname -s>/ holds the values a machine must not share. Fish
+# fragments link into conf.d after the shared files; the zz- prefix sorts them
+# last, so a host value wins. A machine with no directory loads the shared
+# configuration alone.
+HOST_NAME=$(hostname -s)
+HOST_DIR=~/dotfiles/hosts/"$HOST_NAME"
+if [ -d "$HOST_DIR/fish/conf.d" ]; then
+  for fragment in "$HOST_DIR"/fish/conf.d/*.fish; do
+    ln -sf "$fragment" ~/.config/fish/conf.d/
+  done
+fi
+
 # Tmux
 rm -rf ~/.tmux.conf
 ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
@@ -63,14 +76,35 @@ ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.agents/AGENTS.md
 mkdir -p ~/.agents/skills
 for item in ~/dotfiles/AGENTS/skills/*; do
-  ln -sf "$item" ~/.agents/skills/
+  # A skill directory that already exists in place cannot take a symlink; skip it.
+  ln -sf "$item" ~/.agents/skills/ 2>/dev/null || true
 done
 
 # Pi
 rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
-ln -sf ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
+# settings.json is a single file with no include mechanism, so the host
+# overlay merges over the shared file into a generated copy at ~/.pi/agent.
+# A stale symlink from an older layout must go first, or the merge writes
+# through it into the repository.
+rm -f ~/.pi/agent/settings.json
+cp ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
+if [ -f "$HOST_DIR/pi-settings.json" ]; then
+  python3 - "$HOME/.pi/agent/settings.json" "$HOST_DIR/pi-settings.json" <<'PY'
+import json, sys
+
+live_path, overlay_path = sys.argv[1], sys.argv[2]
+with open(live_path) as f:
+    live = json.load(f)
+with open(overlay_path) as f:
+    overlay = json.load(f)
+live.update(overlay)
+with open(live_path, "w") as f:
+    json.dump(live, f, indent=2)
+    f.write("\n")
+PY
+fi
 rm -rf ~/.pi/agent/themes
 ln -sf ~/dotfiles/pi/themes ~/.pi/agent/themes
 # The rpiv-todo package reads its config from ~/.config/rpiv-todo/config.json.

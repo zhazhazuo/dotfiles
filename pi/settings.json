@@ -1,7 +1,5 @@
 {
   "lastChangelogVersion": "1.5.2",
-  "defaultProvider": "qoder",
-  "defaultModel": "DeepSeek-Flash",
   "defaultThinkingLevel": "high",
   "defaultTools": [
     "+codemode",
@@ -12,6 +10,10 @@
   },
   "packages": [
     {
+      "source": "npm:pi-subagents",
+      "skills": []
+    },
+    {
       "source": "npm:pi-lens",
       "skills": []
     },
@@ -19,21 +21,15 @@
       "source": "npm:@plannotator/pi-extension",
       "skills": []
     },
-    "/Users/walkerw/Research/pi-provider-qoder",
     "npm:@ff-labs/pi-fff",
     "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@juicesharp/rpiv-todo",
     {
       "source": "npm:confluence-cli",
       "skills": []
     },
-    "npm:pi-agent-browser-native",
-    "/Users/walkerw/Research/pi-walker",
-    "npm:pi-btw",
-    "npm:@juicesharp/rpiv-todo",
-    "npm:pi-intercom",
-    "npm:pi-subagent-manager",
-    "npm:pi-context-usage",
-    "/Users/walkerw/Research/pi-better"
+    "../../Research/pi-qoder-provider",
+    "../../Research/pi-walker"
   ],
   "skillGuard": {
     "keepVisible": [
@@ -55,25 +51,14 @@
   "autocompleteMaxVisible": 3,
   "transport": "auto",
   "tuiMode": "fullscreen",
-  "extensions": [
-    "/Users/walkerw/.loongsuite-pilot/plugins/pi-coding-agent/index.mjs"
-  ],
   "enableSkillCommands": true,
   "editorPaddingX": 0,
   "markdown": {
     "mermaid": "final"
   },
-  "quietStartup": true,
-  "fullscreenScrollbar": "auto",
-  "compaction": {
-    "enabled": true
-  },
-  "steeringMode": "all",
   "extensionChangelogVersions": {
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.12",
-    "{\"source\":\"npm:pi-agent-browser-native\",\"scope\":\"user\"}": "0.9.24"
+    "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.88.1",
+    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.12"
   },
-  "better": {
-    "type": "second-thought"
-  }
+  "quietStartup": true
 }

@@ -1,6 +1,9 @@
 # Secrets
 .env
 
+# Host fragments that init.sh links from hosts/<hostname>/fish/conf.d/
+fish/conf.d/zz-*.fish
+
 # Local agent scratch data
 .ai-artifacts/
 **/.ai-artifacts/
