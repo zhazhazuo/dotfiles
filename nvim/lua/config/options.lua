@@ -32,8 +32,22 @@ opt.updatetime = 300
 -- remove the '~' in the empty content.
 opt.fillchars = { eob = " " }
 
--- Sync with system clipborad
-opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus"
+-- Sync with system clipboard.
+-- Inside a Rex block or on a remote host, pbcopy writes the clipboard of the
+-- machine that runs Neovim. Neovim sends OSC 52 instead, and the terminal app
+-- carries the text to the clipboard of the machine that shows the block.
+-- Rex does not answer OSC 52 read queries, so paste stays on pbpaste there.
+if vim.env.TERM_PROGRAM == "rex" then
+	local osc52 = require("vim.ui.clipboard.osc52")
+	vim.g.clipboard = {
+		name = "rex-osc52-copy",
+		copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+		paste = { ["+"] = { "pbpaste" }, ["*"] = { "pbpaste" } },
+	}
+elseif vim.env.SSH_TTY then
+	vim.g.clipboard = "osc52"
+end
+opt.clipboard = "unnamedplus"
 
 -- Confirm to save changes before exiting modified buffer
 opt.confirm = true
