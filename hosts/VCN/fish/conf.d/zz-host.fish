@@ -1,6 +1,6 @@
-# ── PERSONAL: machine values ──────────────────────────────────────────
+# ── VCN: machine values ───────────────────────────────────────────────
 # Loaded by fish conf.d after the shared fragments; the zz- prefix sorts last.
-# init.sh links this file from hosts/PERSONAL into fish/conf.d.
+# init.sh links this file from hosts/VCN into fish/conf.d.
 
 # PROXY (the proxy listens on 7897 on this machine)
 export HTTP_PROXY=http://127.0.0.1:7897

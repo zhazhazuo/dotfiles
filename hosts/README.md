@@ -1,7 +1,7 @@
 # Hosts
 
 One directory per machine, named after the machine's `hostname -s` output
-(`Mac`, `PERSONAL`). The shared configuration holds values every machine
+(`Mac`, `VCN`). The shared configuration holds values every machine
 shares. A value two machines must not share lives here.
 
 The installer reads `hostname -s`, then links and merges this directory's
