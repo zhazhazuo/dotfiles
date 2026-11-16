@@ -141,8 +141,8 @@ measures it.
 - **4** here is component *code structure*. Visual design, prototypes, and shadcn route to
   `design-nav`.
 - Delegation for **2**: do not route to `council-mode`. It is not installed on this machine (there
-  is no `pi-subagents` package and no `council-mode` skill anywhere under `~/.pi`), so there is
-  nothing to route to. For one delegated task, use `subagent-delegation` through `dev-flow-nav`.
+  is no `council-mode` skill anywhere under `~/.pi`), so there is nothing to route to. For one
+  delegated task, use `subagent-delegation` through `dev-flow-nav`.
 
 ## Notes
 

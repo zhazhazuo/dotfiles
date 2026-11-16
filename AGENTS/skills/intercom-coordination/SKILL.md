@@ -76,10 +76,3 @@ stays open until its timeout.
   and sends the summary plus the next task. The receiver is told to check the claims against the
   repository.
 - Handover rejects `attachments`, `replyTo`, `supersedes`, and `retryOf`.
-
-## Child sessions
-
-- A pi-subagents child that received bridge metadata gets `contact_supervisor` instead of free
-  choice. `need_decision` and `interview_request` block. `progress_update` does not.
-- The supervisor answers with `intercom({ action: "reply" })`. For an interview, the answer is JSON
-  in the shape `{ "responses": [{ "id": "...", "value": ... }] }`.
