@@ -28,7 +28,7 @@
       "source": "npm:confluence-cli",
       "skills": []
     },
-    "../../Research/pi-qoder-provider",
+    "../../.local/share/rice/pi-qoder-provider",
     "../../Research/pi-walker"
   ],
   "skillGuard": {
@@ -58,7 +58,8 @@
   },
   "extensionChangelogVersions": {
     "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.88.1",
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.4.12"
+    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.0",
+    "{\"source\":\"/Users/walkerw/Research/pi-better\",\"scope\":\"user\"}": "0.4.0"
   },
   "quietStartup": true
 }
