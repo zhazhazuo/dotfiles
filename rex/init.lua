@@ -607,7 +607,7 @@ rex.action({
 
 -- >>> leaf >>>
 -- Managed by `leaf rex install`; `leaf rex uninstall` removes it.
--- plugin: 04365960a540f318
+-- plugin: dbd96079ad70c4c6
 dofile("/Users/walkerw/.config/rex/plugins/leaf/init.lua").setup({ bin = { "/opt/homebrew/bin/leaf" } })
 -- open: idle classic
 -- <<< leaf <<<
