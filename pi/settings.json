@@ -37,7 +37,7 @@
     "npm:pi-agent-browser-native",
     "../../.local/share/rice/pi-qoder-provider",
     "../../Research/pi-walker",
-    "../../Research/pi-better"
+    "../../.local/share/rice/pi-better"
   ],
   "skillGuard": {
     "keepVisible": [
