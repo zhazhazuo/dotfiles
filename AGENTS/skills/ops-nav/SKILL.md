@@ -16,6 +16,7 @@ Expand `~` to the home directory. Pick one row. Read that file with the read too
 | Install, configure, update, or migrate vendored anti-slop Oxlint plugins | install-anti-slop | `~/.agents/skills/install-anti-slop/SKILL.md` |
 | Transform a working document (SPEC, plan, design) into a clean state snapshot for handoff | distill-context | `~/.agents/skills/distill-context/SKILL.md` |
 | Write or rewrite documentation, READMEs, runbooks, error messages, or release notes in plain technical English, or check text against ASD-STE100 | simple-english | `~/.agents/skills/simple-english/SKILL.md` |
+| De-claude prose: rewrite staged reveals, verdict headers, forced triads, and flat-certainty adverbs in a PR description, commit message, README, doc, release note, or postmortem | declauding | `~/.agents/skills/declauding/SKILL.md` |
 | Grill a plan, decision, or idea with relentless questions written in prose | grilling | `~/.agents/skills/grilling/SKILL.md` |
 | Sharpen a plan, design, or decision through an interview that asks each round as selectable options | interview-me | `~/.agents/skills/interview-me/SKILL.md` |
 | Coordinate with other pi sessions: list, message, ask, reply | pi-intercom | `~/Research/pi-intercom/skills/pi-intercom/SKILL.md` |
