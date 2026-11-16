@@ -5,8 +5,9 @@ One directory per machine, named after the machine's `hostname -s` output
 shares. A value two machines must not share lives here.
 
 The installer reads `hostname -s`, then links and merges this directory's
-files over the shared configuration. A machine with no directory here loads
-the shared configuration alone, which is the safe default.
+files over the shared configuration. A machine with no directory here cannot
+finish the install: the shared files hold no proxy, no Confluence flags and no
+default model, so the installer stops and names the path it looked for.
 
 ## What belongs in a host directory
 

@@ -3,6 +3,20 @@
 
 set -e
 
+# Hosts
+# hosts/<hostname -s>/ holds the values a machine must not share. The shared
+# files carry no proxy, no Confluence flags and no default pi model, so a
+# machine with no directory here would start on an incomplete configuration.
+# Test before the script changes anything.
+HOST_NAME=$(hostname -s)
+HOST_DIR=~/dotfiles/hosts/"$HOST_NAME"
+if [ ! -d "$HOST_DIR" ]; then
+  printf 'init.sh: no host configuration for %s\n' "$HOST_NAME" >&2
+  printf 'init.sh: it looked for %s/\n' "$HOST_DIR" >&2
+  printf 'init.sh: copy hosts/VCN/ there and edit the values\n' >&2
+  exit 1
+fi
+
 # git
 rm -rf ~/.gitconfig
 ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
@@ -15,13 +29,8 @@ ln -sf ~/dotfiles/nvim ~/.config/nvim
 rm -rf ~/.config/fish
 ln -sf ~/dotfiles/fish ~/.config/fish
 
-# Hosts
-# hosts/<hostname -s>/ holds the values a machine must not share. Fish
-# fragments link into conf.d after the shared files; the zz- prefix sorts them
-# last, so a host value wins. A machine with no directory loads the shared
-# configuration alone.
-HOST_NAME=$(hostname -s)
-HOST_DIR=~/dotfiles/hosts/"$HOST_NAME"
+# Hosts: link the fish fragments into conf.d after the shared files. The
+# zz- prefix sorts them last, so a host value wins.
 if [ -d "$HOST_DIR/fish/conf.d" ]; then
   for fragment in "$HOST_DIR"/fish/conf.d/*.fish; do
     ln -sf "$fragment" ~/.config/fish/conf.d/
