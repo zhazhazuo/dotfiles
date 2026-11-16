@@ -32,8 +32,12 @@
       "source": "npm:confluence-cli",
       "skills": []
     },
+    "npm:pi-btw",
+    "npm:pi-context-usage",
+    "npm:pi-agent-browser-native",
     "../../.local/share/rice/pi-qoder-provider",
-    "../../Research/pi-walker"
+    "../../Research/pi-walker",
+    "../../Research/pi-better"
   ],
   "skillGuard": {
     "keepVisible": [
@@ -61,8 +65,7 @@
     "mermaid": "final"
   },
   "extensionChangelogVersions": {
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.0",
-    "{\"source\":\"/Users/walkerw/Research/pi-better\",\"scope\":\"user\"}": "0.4.0"
+    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.0"
   },
   "quietStartup": true
 }
