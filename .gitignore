@@ -14,3 +14,7 @@ fish/conf.d/zz-*.fish
 # macOS metadata
 .DS_Store
 **/.DS_Store
+
+# Fish rewrites its universal variables here at every set -U, so the file is
+# machine state, not configuration. It stays on disk and out of the tree.
+fish/fish_variables
