@@ -17,6 +17,33 @@ if [ ! -d "$HOST_DIR" ]; then
   exit 1
 fi
 
+# Every source this script links. Each pair deletes its target before making the
+# link, so a missing source leaves the account without that configuration. Test
+# them all before the first change.
+for source in \
+  ~/dotfiles/git/.gitconfig \
+  ~/dotfiles/nvim \
+  ~/dotfiles/fish \
+  ~/dotfiles/tmux/.tmux.conf \
+  ~/dotfiles/herdr/config.toml \
+  ~/dotfiles/rex \
+  ~/dotfiles/ghostty \
+  ~/dotfiles/aerospace \
+  ~/dotfiles/AGENTS/AGENTS.md \
+  ~/dotfiles/AGENTS/skills \
+  ~/dotfiles/pi/keybindings.json \
+  ~/dotfiles/pi/settings.json \
+  ~/dotfiles/pi/themes \
+  ~/dotfiles/pi/tool-whitelist.json \
+  ~/dotfiles/pi/rpiv-todo \
+  ~/dotfiles/task/.taskrc; do
+  if [ ! -e "$source" ]; then
+    printf 'init.sh: missing source %s\n' "$source" >&2
+    printf 'init.sh: nothing was changed\n' >&2
+    exit 1
+  fi
+done
+
 # git
 rm -rf ~/.gitconfig
 ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
@@ -65,17 +92,6 @@ ln -sf ~/dotfiles/aerospace ~/.config/aerospace
 # The bar scripts are implementation and live in ~/Research/rice-configuration/packages/sketchybar-bar.
 # That package links them into ~/.config/sketchybar, so this script must not delete that directory.
 
-# OpenCode
-mkdir -p ~/.config/opencode
-rm -f ~/.config/opencode/agent ~/.config/opencode/opencode.json
-ln -sf ~/dotfiles/opencode/agent ~/.config/opencode/agent
-ln -sf ~/dotfiles/opencode/opencode.json ~/.config/opencode/opencode.json
-
-# Gemini
-mkdir -p ~/.gemini
-rm -f ~/.gemini/commands
-ln -sf ~/dotfiles/gemini/commands ~/.gemini/commands
-
 # AGENT
 mkdir -p ~/.config/opencode ~/.gemini ~/.claude ~/.pi/agent
 rm -f ~/.config/opencode/AGENTS.md ~/.gemini/GEMINI.md ~/.claude/CLAUDE.md ~/.agents/AGENTS.md
@@ -93,6 +109,7 @@ done
 rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
+ln -sf ~/dotfiles/pi/tool-whitelist.json ~/.pi/agent/tool-whitelist.json
 # settings.json is a single file with no include mechanism, so the host
 # overlay merges over the shared file into a generated copy at ~/.pi/agent.
 # A stale symlink from an older layout must go first, or the merge writes

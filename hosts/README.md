@@ -17,8 +17,9 @@ default model, so the installer stops and names the path it looked for.
 - `pi-settings.json` — only the pi settings keys that differ per machine,
   today `defaultProvider` and `defaultModel`. The installer merges this over
   the shared `pi/settings.json`; a key here replaces the same key there.
-- Credentials never go in either file. `fish/conf.d/env.fish` loads the
-  gitignored `~/.config/fish/.env`, which holds the tokens.
+- Credentials never go in either file. `fish/conf.d/env.fish` loads
+  `~/.config/secrets/.env`, which holds the tokens and sits outside every
+  repository, so no checkout and no `git add -f` can reach it.
 
 ## Adding a machine
 
