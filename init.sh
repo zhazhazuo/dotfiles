@@ -134,11 +134,15 @@ rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/tool-whitelist.json ~/.pi/agent/tool-whitelist.json
-# The subagent manager reads its settings and its agent definitions from here.
-# Each is linked by name, so the manager's own `.import-offered` marker stays
-# local to the machine rather than entering the tree.
-ln -sfn ~/dotfiles/pi/subagent-manager/settings.json ~/.pi/agent/subagent-manager/settings.json
-ln -sfn ~/dotfiles/pi/subagent-manager/agents ~/.pi/agent/subagent-manager/agents
+# The subagent manager refuses a symlinked path. It lstats settings.json and
+# agents/, warns "Unsafe symlink path", and drops that layer: the settings fall
+# back to its defaults and every agent type disappears. So both are copied, as
+# ~/.pi/agent/settings.json is. A save in `/agents settings` writes the copy, and
+# a run of this script restores the file from the tree.
+mkdir -p ~/.pi/agent/subagent-manager/agents
+rm -f ~/.pi/agent/subagent-manager/settings.json
+cp ~/dotfiles/pi/subagent-manager/settings.json ~/.pi/agent/subagent-manager/settings.json
+cp -R ~/dotfiles/pi/subagent-manager/agents/. ~/.pi/agent/subagent-manager/agents/
 # settings.json is a single file with no include mechanism, so the host
 # overlay merges over the shared file into a generated copy at ~/.pi/agent.
 # A stale symlink from an older layout must go first, or the merge writes

@@ -12,8 +12,6 @@ Nothing in this folder is read directly by pi. pi reads `~/.pi/agent/...`, which
 | `settings.json` | `dotfiles/pi/settings.json` |
 | `keybindings.json` | `dotfiles/pi/keybindings.json` |
 | `tool-whitelist.json` | `dotfiles/pi/tool-whitelist.json` |
-| `subagent-manager/settings.json` | `dotfiles/pi/subagent-manager/settings.json` |
-| `subagent-manager/agents/` | `dotfiles/pi/subagent-manager/agents/` |
 | `themes/` | `dotfiles/pi/themes/` |
 | `extensions/skill-guard.ts` | `rice-configuration/packages/pi-extensions/files/extensions/skill-guard.ts` |
 | `extensions/hide-tool-declarations.ts` | `rice-configuration/packages/pi-extensions/files/extensions/hide-tool-declarations.ts` |
@@ -40,9 +38,11 @@ folder, which `init.sh` creates, and the `@juicesharp/rpiv-todo` package reads t
 serves both, so no copy can drift.
 
 `subagent-manager/settings.json` holds the manager's own settings, and `subagent-manager/agents/`
-holds one file per agent type: front matter for the model and the tools, then the brief. The manager
-reads both from `~/.pi/agent/subagent-manager`, which `init.sh` links by name, so the manager's
-`.import-offered` marker stays on the machine and out of the tree.
+holds one file per agent type: front matter for the model and the tools, then the brief. `init.sh`
+copies both into `~/.pi/agent/subagent-manager` rather than linking them, because the manager lstats
+each path, warns "Unsafe symlink path", and drops that layer; its own `.import-offered` marker stays
+on the machine and out of the tree. A save in `/agents settings` writes the copy, so the tree holds
+the version a run of `init.sh` restores.
 
 ## Extensions
 
