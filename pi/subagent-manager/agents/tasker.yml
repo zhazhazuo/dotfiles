@@ -1,7 +1,6 @@
 name: tasker
 models:
   - qoder/MiniMax-M3.1-Flash
-thinkingLevel: max
 tools:
   block:
     - agent_update

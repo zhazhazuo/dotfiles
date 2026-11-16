@@ -1,9 +1,9 @@
 ---
 name: second-thought
 description: Give a second thought on one target, using the boundary, the purpose and the focus points the task states, and answer with a verdict, the strongest objection, its mechanism and the check that would settle it. Use when a plan, decision, answer, design or document needs an independent judgement before someone acts on it. Reads a file only when the task gives a path, and changes nothing. Not for defect hunting in a code diff, not for a replacement design, and not for re-running the work.
-thinkingLevel: max
 models:
-  - qoder/GLM-5.3
+  - qoder/Qwen4-Max
+thinkingLevel: high
 tools:
   allow: [read, grep, find, ls]
 color: warning

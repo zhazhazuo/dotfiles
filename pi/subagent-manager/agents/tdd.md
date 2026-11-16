@@ -12,7 +12,7 @@ description: >-
 thinkingLevel: xhigh
 color: warning
 models:
-  - qoder/Qwen3.8-Max
+  - qoder/Qwen4-Max
 tools:
   allow:
     - read

@@ -65,7 +65,11 @@
     "mermaid": "final"
   },
   "extensionChangelogVersions": {
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.0"
+    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.0",
+    "{\"source\":\"npm:pi-agent-browser-native\",\"scope\":\"user\"}": "0.9.32",
+    "{\"source\":\"../../.local/share/rice/pi-better\",\"scope\":\"user\"}": "0.4.0"
   },
-  "quietStartup": true
+  "quietStartup": true,
+  "defaultProvider": "qoder",
+  "defaultModel": "DeepSeek-Flash"
 }

@@ -8,7 +8,7 @@ description: Draft or revise original long-form prose for a stated audience and 
 thinkingLevel: medium
 color: thinkingXhigh
 models:
-  - qoder/Qwen3.8-Max
+  - qoder/Qwen4-Max
 tools:
   allow:
     - read

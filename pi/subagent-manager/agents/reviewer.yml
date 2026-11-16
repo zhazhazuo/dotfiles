@@ -1,6 +1,7 @@
 name: reviewer
 models:
-  - qoder/GLM-5.3
+  - qoder/Qwen4-Max
+thinkingLevel: high
 tools:
   block:
     - agent_update
