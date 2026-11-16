@@ -68,7 +68,6 @@ next `rice status` reports a missing or foreign link.
 
 - `pi/scripts/todo-cadence.py` is code that still lives here. It belongs in a rice package when
   something calls it.
-- `instructions/AGENT_MONITOR_INTEGRATION.md` is stale: it names tmux scripts that never shipped and
-  predates the single-sink design.
-- `init.sh` links `~/dotfiles/opencode/agent` and `~/dotfiles/gemini/commands`, and neither directory
-  exists. Both installed links dangle. Delete the two blocks or restore the directories.
+- `~/.config/secrets/.env` holds the tokens and sits outside every repository. A new machine has to
+  be given that file by hand, because no checkout can restore it; `fish/conf.d/env.fish` stops at an
+  absent file without an error, so the failure is a missing variable, not a message.
