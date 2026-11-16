@@ -34,6 +34,9 @@ call is not covered here. That file matches the installed version.
 ## Write the message
 
 - State the task, the files to read, the current state, and what a reply must contain.
+- Name the tool when the task needs an answer: "Reply with the `intercom` tool, action `reply`, and
+  put these three fields in `message`". Without that line, a peer can write the answer into its own
+  turn.
 - Put one task in one message. Send a second message for a second task.
 - Name the outcome: "Confirm the field name in src/api/types.ts", not "thoughts?".
 - Add `attachments` with `type: "snippet"` or `type: "file"` when the peer would otherwise guess.
@@ -41,8 +44,16 @@ call is not covered here. That file matches the installed version.
 
 ## Answer a peer
 
+The answer reaches the sender only when it goes through the `intercom` tool. Text that you write in
+an assistant turn goes to the local user of this session. The peer never receives it, and the ask
+stays open until its timeout.
+
 - An inbound message renders with a reply hint. In the triggered turn, call
   `intercom({ action: "reply", message })`. It targets that sender and message automatically.
+- When the inbound text says what the reply must contain, that text describes the `message`
+  argument. Call the tool with that content. Do not write the content in the turn and stop.
+- A turn that answers a peer ends with the tool result, not with the answer as turn text. If the
+  tool call fails, read the error and retry the call. Do not fall back to turn text.
 - A later reply falls back to the single unresolved inbound ask. With several, run
   `intercom({ action: "pending" })` and pass `to`.
 - A `send` made while exactly one inbound ask is pending is treated as that ask's answer.
