@@ -1,0 +1,21 @@
+name: architect
+models:
+  - qoder/GLM-5.3
+thinkingLevel: max
+tools:
+  allow:
+    - read
+    - bash
+    - grep
+    - find
+    - ls
+    - codemode
+    - agent_types
+    - agent_spawn
+    - agent_wait
+    - agent_status
+    - agent_output
+    - agent_steer
+    - agent_stop
+    - agent_update
+    - agent_pause

@@ -57,6 +57,8 @@ for source in \
   ~/dotfiles/pi/settings.json \
   ~/dotfiles/pi/themes \
   ~/dotfiles/pi/tool-whitelist.json \
+  ~/dotfiles/pi/subagent-manager/settings.json \
+  ~/dotfiles/pi/subagent-manager/agents \
   ~/dotfiles/pi/rpiv-todo \
   ~/dotfiles/task/.taskrc; do
   if [ ! -e "$source" ]; then
@@ -132,6 +134,11 @@ rm -f ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/AGENTS/AGENTS.md ~/.pi/agent/AGENTS.md
 ln -sf ~/dotfiles/pi/keybindings.json ~/.pi/agent/keybindings.json
 ln -sf ~/dotfiles/pi/tool-whitelist.json ~/.pi/agent/tool-whitelist.json
+# The subagent manager reads its settings and its agent definitions from here.
+# Each is linked by name, so the manager's own `.import-offered` marker stays
+# local to the machine rather than entering the tree.
+ln -sfn ~/dotfiles/pi/subagent-manager/settings.json ~/.pi/agent/subagent-manager/settings.json
+ln -sfn ~/dotfiles/pi/subagent-manager/agents ~/.pi/agent/subagent-manager/agents
 # settings.json is a single file with no include mechanism, so the host
 # overlay merges over the shared file into a generated copy at ~/.pi/agent.
 # A stale symlink from an older layout must go first, or the merge writes

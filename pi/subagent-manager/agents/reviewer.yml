@@ -1,0 +1,6 @@
+name: reviewer
+models:
+  - qoder/GLM-5.3
+tools:
+  block:
+    - agent_update

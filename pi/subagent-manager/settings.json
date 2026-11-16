@@ -1,0 +1,7 @@
+{
+  "maxLevels": 6,
+  "modelSelection": "pick-first-available",
+  "widgetMode": "minimal",
+  "finalRecap": true,
+  "costDisplay": "pi-footer-event"
+}
