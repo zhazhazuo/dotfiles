@@ -9,6 +9,10 @@
 # red needs-help state. agent-monitor/adapters/rex.sh already maps `blocked` to
 # needs-help; only the report is missing.
 #
+# The second patch removes the subagent cost from the footer: the manager
+# hardcodes a 💵, 🪙 or 👛 glyph into every value it publishes, and `costIcon`
+# takes only those three icons, so no setting leaves the footer clean.
+#
 # A package update replaces the patched file, so run this again after
 # `pi update`. Each patch is checked before it is applied, so a second run
 # changes nothing, and a version that already carries the change is left alone.
@@ -64,3 +68,8 @@ apply() {
 
 apply "@juicesharp/rpiv-ask-user-question" \
 	"$here/rpiv-ask-user-question-blocked.patch"
+
+# The manager puts its icon into every cost value, and `costIcon` accepts no
+# "none", so the only way to keep the footer free of it is to publish nothing.
+apply "pi-subagent-manager" \
+	"$here/pi-subagent-manager-hide-cost.patch"

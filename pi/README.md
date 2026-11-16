@@ -129,6 +129,8 @@ before applying, so a second run changes nothing.
 |---|---|
 | `rpiv-ask-user-question-blocked.patch` | The questionnaire mounts with `ctx.ui.custom` but passes no `blocked` option, and pi reports `blocked` over OSC 7501 only for a component that declares one. A waiting `ask_user_question` therefore left pi `working`, so a terminal that renders program status — Rex — stayed green while a question waited. The patch adds `blocked: { kind: "question", message: <first question> }` to both mounts, and the Rex adapter turns that report into the red needs-help state. `@juicesharp/rpiv-ask-user-question` 2.15.0 does not carry the change; the fix belongs upstream. |
 
+| `pi-subagent-manager-hide-cost.patch` | The manager hardcodes a 💵, 🪙 or 👛 glyph into every cost value it publishes (`src/ui/cost-footer.ts:72`), and `costIcon` takes only those three icons, so no setting leaves the footer clean. The patch makes `refresh()` publish nothing, which removes the footer item, the status key and the widget value together. `costDisplay` stays in the managed settings and becomes inert. |
+
 `agent-monitor/tests/rex-blocked.test.sh` fails when the installed package no longer carries the
 patch, and drives a live Rex block through the state to prove the monitor half.
 

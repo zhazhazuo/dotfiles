@@ -1,0 +1,12 @@
+--- a/src/ui/cost-footer.ts
++++ b/src/ui/cost-footer.ts
+@@ -73,6 +73,9 @@
+   }
+ 
+   refresh(ctx: ExtensionContext): void {
++    // Local patch: the cost is not shown anywhere, so nothing is published and
++    // no footer item, status key or widget value is left behind.
++    return;
+     const mode = this.displayMode();
+     const value = this.formatCost(
+       this.costValue() === "total" ? footerUsage(ctx.sessionManager.getEntries()).cost : 0,
