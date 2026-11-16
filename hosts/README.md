@@ -1,13 +1,20 @@
 # Hosts
 
-One directory per machine, named after the machine's `hostname -s` output
-(`M5`, `VCN`). The shared configuration holds values every machine
-shares. A value two machines must not share lives here.
+One directory per machine. The directory name is the machine's profile, and a
+profile is a label, not always the hostname: this Mac answers `hostname -s` with
+`U-JJR9RWLP-0158` and uses the `VCN` profile. The shared configuration holds
+values every machine shares. A value two machines must not share lives here.
 
-The installer reads `hostname -s`, then links and merges this directory's
-files over the shared configuration. A machine with no directory here cannot
-finish the install: the shared files hold no proxy, no Confluence flags and no
-default model, so the installer stops and names the path it looked for.
+The installer resolves the profile in three steps. It takes a profile named as
+its first argument, so `sh init.sh VCN` works on a fresh machine. Failing that,
+it reads the target of the existing `~/.config/fish/conf.d/zz-host.fish` link,
+which is how a configured machine records its own profile and keeps it across a
+hostname change. Failing that, it uses `hostname -s`.
+
+It then links and merges that directory's files over the shared configuration. A
+machine with no directory for its profile cannot finish the install: the shared
+files hold no proxy, no Confluence flags and no default model, so the installer
+stops and names the path it looked for.
 
 ## What belongs in a host directory
 
@@ -23,6 +30,7 @@ default model, so the installer stops and names the path it looked for.
 
 ## Adding a machine
 
-1. Run `hostname -s` on the machine.
-2. Copy `hosts/M5/` to `hosts/<that-name>/` and edit the values.
-3. Commit. Both machines now share one branch without conflicts.
+1. Copy `hosts/M5/` to `hosts/<profile>/` and edit the values.
+2. Commit. Both machines now share one branch without conflicts.
+3. Run `sh init.sh <profile>`. The run links the profile, so the machine records
+   it from then on.

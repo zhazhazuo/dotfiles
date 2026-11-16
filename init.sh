@@ -4,16 +4,38 @@
 set -e
 
 # Hosts
-# hosts/<hostname -s>/ holds the values a machine must not share. The shared
-# files carry no proxy, no Confluence flags and no default pi model, so a
-# machine with no directory here would start on an incomplete configuration.
-# Test before the script changes anything.
-HOST_NAME=$(hostname -s)
-HOST_DIR=~/dotfiles/hosts/"$HOST_NAME"
+# hosts/<profile>/ holds the values a machine must not share. The shared files
+# carry no proxy, no Confluence flags and no default pi model, so a machine with
+# no directory for its profile would start on an incomplete configuration. Test
+# before the script changes anything.
+#
+# The profile is a label, not always the hostname: a Mac that answers
+# `hostname -s` with a serial uses a readable profile such as `VCN`. A machine
+# names its profile as the first argument, or records it in the zz-host.fish
+# link that an earlier run made, or else takes its hostname.
+link=~/.config/fish/conf.d/zz-host.fish
+target=
+if [ -L "$link" ]; then
+  target=$(readlink "$link")
+fi
+profile=${1:-}
+if [ -z "$profile" ]; then
+  case $target in
+  */hosts/*/fish/conf.d/zz-host.fish)
+    profile=${target#*/hosts/}
+    profile=${profile%%/*}
+    ;;
+  esac
+fi
+if [ -z "$profile" ]; then
+  profile=$(hostname -s)
+fi
+HOST_DIR=~/dotfiles/hosts/"$profile"
 if [ ! -d "$HOST_DIR" ]; then
-  printf 'init.sh: no host configuration for %s\n' "$HOST_NAME" >&2
+  printf 'init.sh: no host configuration for %s\n' "$profile" >&2
   printf 'init.sh: it looked for %s/\n' "$HOST_DIR" >&2
-  printf 'init.sh: copy hosts/VCN/ there and edit the values\n' >&2
+  printf 'init.sh: copy hosts/VCN/ to hosts/%s/ and edit the values,\n' "$profile" >&2
+  printf 'init.sh: then run sh init.sh %s\n' "$profile" >&2
   exit 1
 fi
 
