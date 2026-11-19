@@ -266,10 +266,48 @@ rex.bind("ctrl+s>space", "flip_split")
 -- window must keep a visible pane and only a floating layer can be minimised.
 -- Floating takes the pane out of the layout, and the server cannot say later
 -- where it sat, so the restore point is recorded here first. The list is
--- last-in-first-out, so two hidden panes come back in the reverse order. The
--- record lives in the config's Lua state: reloading the config, or restarting
--- Rex, forgets a hidden pane's place, and restore_pane then says so.
+-- last-in-first-out, so two hidden panes come back in the reverse order.
+--
+-- The records outlive the Lua state in a file, because reloading this config empties
+-- the state while the panes stay minimised. If a place is lost anyway, the session
+-- view still names a minimised layer, and restore_pane shows that pane again.
 local hidden_panes = {}
+
+local hidden_panes_path =
+  (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state"))
+  .. "/rex/minimised-panes.json"
+
+-- Reads the recorded places. A state file that does not parse is dropped, because a
+-- wrong place is worse than a pane shown again as a floating panel.
+local function load_hidden_panes()
+  local ok, text = pcall(function()
+    local file = io.open(hidden_panes_path, "r")
+    if file == nil then return nil end
+    local content = file:read("*a")
+    file:close()
+    return content
+  end)
+  if not ok or text == nil then return {} end
+  local decoded, records = pcall(rex.json.decode, text)
+  if not decoded or type(records) ~= "table" then return {} end
+  return records
+end
+
+-- Writes the recorded places, so a reload of this config keeps each hidden pane's place.
+-- Rex refuses os.execute, and a failed write only costs the old split, so a failure
+-- here must never stop the action that hid the pane.
+local function save_hidden_panes()
+  local written = pcall(function()
+    local directory = hidden_panes_path:match("^(.*)/[^/]+$")
+    if directory ~= nil then rex.exec{ "mkdir", "-p", directory } end
+    local file = assert(io.open(hidden_panes_path, "w"))
+    file:write(assert(rex.json.encode(hidden_panes)))
+    file:close()
+  end)
+  if not written then pcall(rex.log, "rex: cannot write " .. hidden_panes_path) end
+end
+
+hidden_panes = load_hidden_panes()
 
 -- The split that holds block_id directly, with the block to restore beside.
 -- The block next to the pane is the one to split: the last block of the other
@@ -294,6 +332,32 @@ local function layer_of(view, block_id)
     end
   end
   return nil
+end
+
+-- The minimised layer a session still holds, for a pane whose recorded place is gone.
+-- The topmost waiting layer in the last window wins, so the same pane comes back twice.
+local function topmost_minimised_layer(view)
+  local found
+  for _, window in ipairs(view.windows or {}) do
+    for _, layer in ipairs(window.layers or {}) do
+      if layer.kind == "floating" and layer.state == "minimized" then
+        found = { layer = layer, window = window }
+      end
+    end
+  end
+  return found
+end
+
+-- Whether the pane a record names still waits in the layer the record names.
+local function record_is_waiting(view, record)
+  for _, window in ipairs(view.windows or {}) do
+    if window.window_id == record.window_id then
+      for _, layer in ipairs(window.layers or {}) do
+        if layer.layer_id == record.layer_id then return layer.state == "minimized" end
+      end
+    end
+  end
+  return false
 end
 
 rex.action{
@@ -328,6 +392,7 @@ rex.action{
         window_id  = window.window_id,
         floating   = true,
       })
+      save_hidden_panes()
       return { block_id = target, layer_id = layer.layer_id, floating = true, revision = hidden.revision }
     end
 
@@ -373,6 +438,7 @@ rex.action{
       side       = point.side,
       ratio      = point.ratio,
     })
+    save_hidden_panes()
     return {
       block_id = target,
       layer_id = floated.layer_id,
@@ -393,6 +459,20 @@ rex.action{
     local session = args.session or ctx.session_id
     if session == nil then error("no session to restore a pane in", 0) end
 
+    local view, verr = rex.session.view{ session_id = session }
+    if view == nil then error(verr, 0) end
+
+    -- A record whose pane no longer waits, because it was restored before the record
+    -- was written, would stand in front of the live one. Drop those first.
+    local dropped = false
+    for i = #hidden_panes, 1, -1 do
+      if hidden_panes[i].session_id == session and not record_is_waiting(view, hidden_panes[i]) then
+        table.remove(hidden_panes, i)
+        dropped = true
+      end
+    end
+    if dropped then save_hidden_panes() end
+
     local record
     for i = #hidden_panes, 1, -1 do
       local entry = hidden_panes[i]
@@ -403,8 +483,29 @@ rex.action{
         break
       end
     end
+    if record ~= nil then save_hidden_panes() end
+
     if record == nil then
-      error("no pane was minimised in this session since the config loaded", 0)
+      -- The place is gone but a pane still waits. The view names its layer, so it
+      -- comes back on screen as a floating panel. Only the old split is lost.
+      local waiting = topmost_minimised_layer(view)
+      if waiting == nil then
+        error("no pane was minimised in this session", 0)
+      end
+      local shown, serr = rex.session.set_layer_state{
+        session_id = session,
+        layer_id   = waiting.layer.layer_id,
+        state      = "normal",
+        focus      = true,
+      }
+      if shown == nil then error(serr, 0) end
+      return {
+        block_id  = layout_leaves(waiting.layer.layout)[1],
+        layer_id  = waiting.layer.layer_id,
+        floating  = true,
+        recovered = true,
+        revision  = shown.revision,
+      }
     end
 
     if record.floating then
@@ -417,9 +518,6 @@ rex.action{
       if shown == nil then error(serr, 0) end
       return { block_id = record.block_id, floating = true, revision = shown.revision }
     end
-
-    local view, verr = rex.session.view{ session_id = session }
-    if view == nil then error(verr, 0) end
 
     -- The pane's old neighbour may have closed while the pane was hidden. Then
     -- the first pane left in the window takes its place as the anchor.
@@ -441,7 +539,7 @@ rex.action{
     local used
     for _, anchor in ipairs(anchors) do
       if anchor ~= record.block_id then
-        local moved, merr = rex.session.move_block{
+        local moved = rex.session.move_block{
           session_id      = session,
           block_id        = record.block_id,
           anchor_block_id = anchor,
@@ -459,7 +557,7 @@ rex.action{
     if used == nil then
       -- Nothing in the window can hold the pane. Show it as a floating panel
       -- rather than keep it hidden with no place to return to.
-      local shown, serr = rex.session.set_layer_state{
+      local shown = rex.session.set_layer_state{
         session_id = session,
         layer_id   = record.layer_id,
         state      = "normal",
