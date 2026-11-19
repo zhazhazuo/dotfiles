@@ -1,0 +1,22 @@
+# Routing fixture for design-nav. Frozen before its first round; see evals/freeze.json.
+#
+# Columns are tab-separated:
+#   id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
+#
+# expected_skill is the folder name of the skill the deck must route to. "-" is a negative
+# control: the moment belongs to another navigator, so no skill of this deck may be read.
+# expected_phase is "-" for this deck: it is a flat table, so the rule set has no phases.
+# split: iterate (the editor's target) / holdout (the stopping signal) / sealed (one run at the end).
+# artifact is scored by lib/score_artifact.py: map, restate, scenario, testfirst, rootcause,
+# prune, mock, split, handoff, or "-" for none.
+
+d01	build a throwaway Vite screen so we can argue about the invoice layout	-	visual-design-poc	yes	prototype before implementation	iterate	handoff
+d02	the settings page looks generic, choose the type scale and the spacing	-	frontend-design	yes	aesthetic direction	iterate	handoff
+d03	the toolbar buttons have no hover, focus or press states	-	craft-design-engineering	yes	UI craft, states	iterate	handoff
+d04	add the shadcn dialog to the billing page	-	shadcn	yes	components.json and presets	iterate	handoff
+d05	explain the retry policy with a diagram	-	show-me	yes	explain with a diagram	iterate	handoff
+d06	turn docs/design-brief.md into plain scenarios with stable ids	-	context-to-plain-scenarios	yes	the brief ships	holdout	scenario
+d07	the invoice component has state, handlers and fetch logic in the markup	-	-	yes	NEGATIVE CONTROL: component code structure is dev-nav	holdout	-
+d08	the empty state looks wrong at 320px wide	-	craft-design-engineering	yes	responsive polish	holdout	handoff
+d09	build a login prototype in the design sandbox with shadcn	-	visual-design-poc	yes	sealed: never measured during the loop	sealed	handoff
+d10	draw the checkout flow as a diagram for the plan	-	show-me	yes	sealed: never measured during the loop	sealed	handoff

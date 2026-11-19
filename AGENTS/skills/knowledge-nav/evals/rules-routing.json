@@ -1,0 +1,19 @@
+{
+  "skill": "knowledge-nav",
+  "deck_skill_name": "knowledge-nav",
+  "own_skills": [
+    "explore-repository",
+    "initialize-knowledge-base",
+    "archive-knowledge-base",
+    "refine-knowledge-base",
+    "verify-knowledge-base",
+    "knowledge-base-writer"
+  ],
+  "external_skills": [],
+  "orient_skills": [],
+  "delivery_skills": [],
+  "phases": {},
+  "exempt_skill_names": [
+    "knowledge-nav"
+  ]
+}

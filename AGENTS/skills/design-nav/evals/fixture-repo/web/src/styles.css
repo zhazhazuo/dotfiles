@@ -1,0 +1,4 @@
+body { font-family: system-ui; color: #222; }
+.card { border: 1px solid #ddd; padding: 12px; }
+.card h2 { font-size: 16px; }
+.button { background: #eee; padding: 6px 10px; }

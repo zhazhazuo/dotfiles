@@ -30,6 +30,8 @@ MODE="natural"
 ONLY=""
 REUSE=""
 DECK_PATH="${HOME}/.agents/skills/dev-nav/SKILL.md"
+SCORER="${ROOT}/../_harness/lib/score_routing.py"
+RULES="${ROOT}/evals/rules-routing.json"
 MODEL_ARG=()
 
 while [ $# -gt 0 ]; do
@@ -94,87 +96,8 @@ TASK: ${moment}"
         "$prompt" ) > "$transcript" 2>&1 < /dev/null
   fi
 
-  scored="$(python3 - "$transcript" "$skill" "$phase" <<'PY'
-import json, sys
-
-DEV_SKILLS = {
-    "ripwire-router", "alignment-quiz", "context-to-qa-scenarios",
-    "write-discoverable-code", "structuring-ui-components", "api-mock", "ripwire-find-bug",
-    "prune-low-signal-tests",
-}
-# Orienting before the phase is legal lifecycle behaviour, so these never fail a run.
-ORIENT_SKILLS = {
-    "ripwire-router", "ripwire-orient", "ripwire-navigate", "ripwire-before-you-build",
-    "ripwire-change-check", "ripwire-fresh-eyes", "ripwire-graph-query",
-    "ripwire-handoff", "ripwire-layers", "ripwire-opt-remarks", "ripwire-perf-target",
-    "ripwire-quality-bar", "ripwire-reuse-first", "ripwire-security-scan",
-    "ripwire-write-tests",
-}
-
-# Skills from the delivery flow (dev-flow-nav and the skills it routes to) are legal after the
-# phase under test: delegating the work after sizing it up is correct lifecycle behaviour, not a
-# routing error.
-DELIVERY_SKILLS = {
-    "dev-flow-nav", "subagent-delegation", "subagent-driven-development",
-}
-
-PHASE_SKILLS = {
-    "1": {"ripwire-router"},
-    "2": {"alignment-quiz"},
-    "3": {"context-to-qa-scenarios"},
-    "4": {"write-discoverable-code", "structuring-ui-components", "api-mock"},
-    "5": {"ripwire-find-bug"},
-    "6": {"prune-low-signal-tests"},
-}
-
-path, expected, phase = sys.argv[1], sys.argv[2], sys.argv[3]
-seen = []
-for line in open(path, encoding="utf-8", errors="replace"):
-    line = line.strip()
-    if not line.startswith("{"):
-        continue
-    try:
-        o = json.loads(line)
-    except Exception:
-        continue
-    if o.get("type") != "tool_execution_start":
-        continue
-    blob = json.dumps(o.get("args") or {})
-    for token in blob.replace("\\/", "/").split('"'):
-        token = token.strip()
-        if not token.endswith("SKILL.md"):
-            continue
-        parts = [p for p in token.split("/") if p]
-        if len(parts) < 2:
-            continue
-        name = parts[-2]
-        if name == "dev-nav":
-            continue
-        if name not in seen:
-            seen.append(name)
-
-route = ",".join(seen) or "NONE"
-def phase_num(name):
-    for p, names in PHASE_SKILLS.items():
-        if name in names:
-            return int(p)
-    return None
-
-if expected == "-":
-    ok = not any(s in DEV_SKILLS for s in seen)
-else:
-    exp_phase = int(phase) if phase.isdigit() else None
-    # Orienting before the phase is always legal. The card that must match is the first one the
-    # agent ENTERS. Everything after that is the lifecycle working: it may move forward, or
-    # backwards into a repair phase such as Debug or Trim, and neither is a routing error.
-    entry = next(
-        (s for s in seen if phase_num(s) is not None and not (s in ORIENT_SKILLS and s != expected)),
-        None,
-    )
-    ok = expected in seen and (entry is None or phase_num(entry) == exp_phase)
-print(f"{route}\t{'PASS' if ok else 'FAIL'}")
-PY
-)"
+  scored="$(python3 "${SCORER}" --rules "${RULES}" --transcript "$transcript" \
+    --expected-skill "$skill" --phase "$phase")"
 
   route="${scored%%$'\t'*}"
   verdict="${scored##*$'\t'}"

@@ -1,0 +1,19 @@
+{
+  "skill": "design-nav",
+  "deck_skill_name": "design-nav",
+  "own_skills": [
+    "visual-design-poc",
+    "frontend-design",
+    "craft-design-engineering",
+    "shadcn",
+    "show-me",
+    "context-to-plain-scenarios"
+  ],
+  "external_skills": [],
+  "orient_skills": [],
+  "delivery_skills": [],
+  "phases": {},
+  "exempt_skill_names": [
+    "design-nav"
+  ]
+}

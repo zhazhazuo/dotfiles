@@ -1,0 +1,19 @@
+{
+  "repeats": 3,
+  "jobs": 3,
+  "mode": "natural",
+  "ceiling_usd": 0,
+  "ceiling_tokens": 3000000,
+  "cap_rounds": 6,
+  "holdout_patience": 2,
+  "calibration": {
+    "label": "cal",
+    "split": "iterate",
+    "cells": 15,
+    "wall_seconds": 519,
+    "cost_usd": 0.0,
+    "tokens_billable": 386908,
+    "tokens_reported": 4603100,
+    "note": "usage.cost.total is 0 on qoder/DeepSeek-Flash because the provider reports no price. The ceiling is set on tokens_in + tokens_out + tokens_cacheWrite, the same quantity a price would multiply. 3000000 tokens is about four full rounds at the measured rate of 773816 tokens per round."
+  }
+}

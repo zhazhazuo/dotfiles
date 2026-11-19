@@ -1,0 +1,14 @@
+{
+  "created": "2026-11-19T04:45:57Z",
+  "deck_at_freeze": "30cf2cf1544dc917e2da3c01cbeb35641f291edf45c924e2a132c37ac930f114",
+  "fixture": "61b57a05698f173dd337efd5f8e795f1e13639bf1755bfff8cb6f2800868e16b",
+  "fixture_tree": "8d9d412256a25210c120c99311673dcc481b6cdcea958699a64201ae4549686f",
+  "instrument": {
+    "decide.py": "07fe808199f5c305fc434dfe4cdb78356266939cd05a1c3b2df7dc0eb6f3f607",
+    "score_artifact.py": "2b7e74fe51d44ae016cfde372ee3ab1afe433a9dc2b1b8839a4deaee1852121e",
+    "score_routing.py": "9d7d76b0b075f01f2835b7636652732e1aa364c456f77a60d62bf666320465aa",
+    "skill-loop.sh": "a3633f71587e779558b97e2403d7be890816c3b2b09d9a917eddfab1e1bc399d"
+  },
+  "rules": "7baa5e3961e1ea41963fead427165837b3a84685cbd248302ca093a0354dc6dc",
+  "skill": "ops-nav"
+}

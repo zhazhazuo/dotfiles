@@ -1,0 +1,19 @@
+# Routing fixture for dev-flow-nav. Frozen before its first round; see evals/freeze.json.
+#
+# Columns are tab-separated:
+#   id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
+#
+# expected_skill is the folder name of the skill the deck must route to. "-" is a negative
+# control: the moment belongs to another navigator, so no skill of this deck may be read.
+# expected_phase is "-" for this deck: it is a flat table, so the rule set has no phases.
+# split: iterate (the editor's target) / holdout (the stopping signal) / sealed (one run at the end).
+# artifact is scored by lib/score_artifact.py: map, restate, scenario, testfirst, rootcause,
+# prune, mock, split, handoff, or "-" for none.
+
+f01	delegate the parser tests to one child agent	-	subagent-driven-development	yes	a bounded implementation task	iterate	handoff
+f02	spawn a child to review this diff independently	-	subagent-delegation	yes	one spawn with role context	iterate	handoff
+f03	run these three independent refactors at the same time	-	subagent-delegation	yes	parallel dispatch	iterate	handoff
+f04	the child I spawned went off track, correct it	-	subagent-delegation	yes	steering a running child	holdout	handoff
+f05	write the failing test before the parser change	-	-	yes	NEGATIVE CONTROL: test-first is a standing rule, not a skill	holdout	-
+f06	which agent type should run a security review	-	subagent-delegation	yes	sealed: never measured during the loop	sealed	handoff
+f07	resume a paused child with new instructions	-	subagent-delegation	yes	sealed: never measured during the loop	sealed	handoff

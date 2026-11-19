@@ -1,0 +1,34 @@
+{
+  "skill": "ops-nav",
+  "deck_skill_name": "ops-nav",
+  "own_skills": [
+    "confluence",
+    "plannotator",
+    "plannotator-tui",
+    "pi-loop",
+    "install-anti-slop",
+    "distill-context",
+    "simple-english",
+    "declauding",
+    "grilling",
+    "interview-me",
+    "pi-intercom",
+    "herdr",
+    "vcn-release",
+    "pi-agent-browser-native",
+    "integrate-capability"
+  ],
+  "external_skills": [
+    "confluence",
+    "plannotator",
+    "pi-loop",
+    "pi-intercom",
+    "pi-agent-browser-native"
+  ],
+  "orient_skills": [],
+  "delivery_skills": [],
+  "phases": {},
+  "exempt_skill_names": [
+    "ops-nav"
+  ]
+}

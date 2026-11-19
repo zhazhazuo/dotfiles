@@ -1,0 +1,6 @@
+{
+  "service": "payments",
+  "version": "2.4.0",
+  "branch": "release/2.4.0",
+  "tickets": ["PAY-118", "PAY-121"]
+}

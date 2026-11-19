@@ -1,0 +1,22 @@
+# Routing fixture for ops-nav. Frozen before its first round; see evals/freeze.json.
+#
+# Columns are tab-separated:
+#   id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
+#
+# expected_skill is the folder name of the skill the deck must route to. "-" is a negative
+# control: the moment belongs to another navigator, so no skill of this deck may be read.
+# expected_phase is "-" for this deck: it is a flat table, so the rule set has no phases.
+# split: iterate (the editor's target) / holdout (the stopping signal) / sealed (one run at the end).
+# artifact is scored by lib/score_artifact.py: map, restate, scenario, testfirst, rootcause,
+# prune, mock, split, handoff, or "-" for none.
+
+o01	read the release runbook in Confluence and say what blocks a release	-	confluence	yes	a page read	iterate	handoff
+o02	hand this plan to me for review in a pane	-	plannotator-tui	yes	the human annotates in Herdr	iterate	handoff
+o03	open a guided code review of the diff in the browser	-	plannotator	yes	browser review	iterate	handoff
+o04	rewrite docs/release-runbook.md in plain technical English	-	simple-english	yes	documentation prose	iterate	handoff
+o05	de-claude the PR description in docs/pr-description.md	-	declauding	yes	prose register	iterate	handoff
+o06	grill this decision until it is settled	-	grilling	yes	adversarial questions	holdout	handoff
+o07	interview me to choose between the three rollout options	-	interview-me	yes	options as buttons	holdout	handoff
+o08	distill docs/working-doc.md into a state snapshot for handoff	-	distill-context	yes	the working doc ships	holdout	handoff
+o09	prepare the release PR; the pre-flight says NO_COMMITS_AHEAD	-	vcn-release	yes	sealed: never measured during the loop	sealed	handoff
+o10	integrate the skill I just installed into the agent setup	-	integrate-capability	yes	sealed: never measured during the loop	sealed	handoff

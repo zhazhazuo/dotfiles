@@ -1,0 +1,45 @@
+{
+  "skill": "dev-nav",
+  "deck_skill_name": "dev-nav",
+  "own_skills": [
+    "ripwire-router",
+    "alignment-quiz",
+    "context-to-qa-scenarios",
+    "write-discoverable-code",
+    "structuring-ui-components",
+    "api-mock",
+    "ripwire-find-bug",
+    "prune-low-signal-tests"
+  ],
+  "orient_skills": [
+    "ripwire-router",
+    "ripwire-orient",
+    "ripwire-navigate",
+    "ripwire-before-you-build",
+    "ripwire-change-check",
+    "ripwire-fresh-eyes",
+    "ripwire-graph-query",
+    "ripwire-handoff",
+    "ripwire-layers",
+    "ripwire-opt-remarks",
+    "ripwire-perf-target",
+    "ripwire-quality-bar",
+    "ripwire-reuse-first",
+    "ripwire-security-scan",
+    "ripwire-write-tests"
+  ],
+  "delivery_skills": [
+    "dev-flow-nav",
+    "subagent-delegation",
+    "subagent-driven-development"
+  ],
+  "phases": {
+    "1": ["ripwire-router"],
+    "2": ["alignment-quiz"],
+    "3": ["context-to-qa-scenarios"],
+    "4": ["write-discoverable-code", "structuring-ui-components", "api-mock"],
+    "5": ["ripwire-find-bug"],
+    "6": ["prune-low-signal-tests"]
+  },
+  "exempt_skill_names": ["dev-nav"]
+}

@@ -1,30 +1,53 @@
-# Routing fixture for dev-nav.
-# One dev moment per line. Columns are tab-separated:
+# Routing fixture for dev-nav. Frozen before round one; see evals/freeze.json.
 #
-#   id <TAB> moment <TAB> expected_phase <TAB> expected_skill <TAB> natural_ok <TAB> note
+# Columns are tab-separated and append-only (columns 7 and 8 were added by the loop):
+#
+#   id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
 #
 # expected_skill is the folder name of the skill the deck must route to.
-# expected_phase is the phase number from SKILL.md, or "-" for a negative control: the moment
-# is not a dev phase, so the deck must NOT land on a dev skill. Landing on another navigator
+# expected_phase is the phase number from SKILL.md, or "-" for a negative control: the moment is
+# not a dev phase, so the deck must NOT land on a dev skill. Landing on another navigator
 # (ops-nav, design-nav, dev-flow-nav) or on no skill at all both count as a pass.
-# natural_ok = no means the moment is scored in --mode route only. Use it when the fixture
-# tree is too small, or missing the right surface, for the moment to be realistic, so a
-# natural-mode miss would measure the fixture and not the deck.
+# natural_ok = no means the moment is scored in --mode route only.
 #
-# A run passes a moment when the first skill file the agent reads is expected_skill,
-# or when it reads dev-nav itself and then expected_skill.
-# A run fails a moment when it reads a non-matching skill first, or reads no skill.
+# split names what the moment is for:
+#   iterate  5 moments. The editor may target these. The accept decision uses them.
+#   holdout  5 moments. The stopping signal. Never shown to the editor.
+#   sealed   3 moments. Run exactly once, on the final deck, after the loop stops.
+#
+# artifact is the exit artifact the phase demands, scored by lib/score_artifact.py:
+#   map       a symbol map with a reuse candidate        (phase 1)
+#   restate   the decisions restated for ratification    (phase 2)
+#   scenario  S-identifiers traced to a source           (phase 3)
+#   testfirst a test written before the source, and run  (phase 4)
+#   mock      a local profile, with its deletion stated  (phase 4, api-mock)
+#   split     logic moved out of the markup              (phase 4, structuring-ui-components)
+#   rootcause the root cause stated, with the fix        (phase 5)
+#   prune     the tests deleted and the E2E gap named    (phase 6)
+#   -         no artifact expected (negative control)
+#
+# A run passes a moment when the first phase skill it enters is expected_skill's phase, and it
+# reads expected_skill. It fails when it reads no skill, or enters another phase's card first.
+# The rule sets are in rules-routing.json. Do not edit either file during a loop.
 #
 # Rows m04, m07, m08, m09, m13 and m14 were removed on 2026-10-28 with the phases they measured
 # (Red, Verify, Review, Codify). The ids are not reused, so the gap dates the removal.
+#
+# The tree was enlarged on 2026-11-19 so every row is scorable in natural mode: 9 source files, a
+# PRD, a decisions document, a React screen, and 400 mock-only tests.
 
-m01	rename the function processOrder to handleOrder across the service	4	write-discoverable-code	yes	naming a symbol
-m02	the payment webhook tests fail intermittently and I do not know why	5	ripwire-find-bug	yes	unexplained failure
-m03	how does the auth middleware wire the session store?	1	ripwire-router	no	natural_ok=no: a 4-file tree does not need orienting, so a natural miss measures the fixture
-m05	we settled the caching decisions in this session, check we agree before I write the spec	2	alignment-quiz	no	natural_ok=no: alignment-quiz presupposes a session that made decisions, which a fresh eval run has not had
-m06	derive QA scenarios from this PRD against the current implementation	3	context-to-qa-scenarios	no	natural_ok=no: the fixture ships no PRD, so blocking on it is correct behavior, not a routing miss
-m10	this repo has 400 unit tests that only assert mocks, prune them	6	prune-low-signal-tests	yes	low-signal suite
-m11	the /v2/invoices endpoint is not built yet and I need the invoice screen to render	4	api-mock	no	natural_ok=no: the fixture ships no frontend, so the screen cannot be the reason to route
-m12	this component has state, handlers and fetch logic in the same file as the markup	4	structuring-ui-components	no	natural_ok=no: the fixture ships no frontend component to restructure
-m15	add a test for the parser	1	ripwire-router	yes	AMBIGUOUS with 6: the parser already exists, so the correct route is ripwire-write-tests via phase 1. The scorer expects ripwire-router, so a run that reads only ripwire-write-tests FAILS even though the deck routed correctly. Expectation corrected after run 1.
-m16	deploy the service to staging	-	-	yes	NEGATIVE CONTROL: no dev phase; a non-dev navigator such as ops-nav passes
+m01	rename the function processOrder to handleOrder across the service	4	write-discoverable-code	yes	naming a symbol	iterate	testfirst
+m02	the payment webhook tests fail intermittently and I do not know why	5	ripwire-find-bug	yes	unexplained failure	iterate	rootcause
+m10	this repo has 400 unit tests that only assert mocks, prune them	6	prune-low-signal-tests	yes	low-signal suite	iterate	prune
+m15	add a test for the parser	1	ripwire-router	yes	AMBIGUOUS with phase 4: the parser exists and is untested, so phase 1 routes to ripwire-write-tests. The card that must fire is still ripwire-router.	iterate	map
+m16	deploy the service to staging	-	-	yes	NEGATIVE CONTROL: no dev phase; a non-dev navigator such as ops-nav passes	iterate	-
+
+m03	how does the auth middleware wire the session store?	1	ripwire-router	yes	orient a real question across three files	holdout	map
+m05	we settled the caching decisions in docs/decisions/caching.md, check we agree before I write the spec	2	alignment-quiz	yes	the decisions document ships in the fixture, so a fresh run can align	holdout	restate
+m06	derive QA scenarios from the PRD in docs/prd/invoices.md against the current implementation	3	context-to-qa-scenarios	yes	the PRD ships in the fixture	holdout	scenario
+m11	the /v2/invoices endpoint is not built yet and I need the invoice screen to render	4	api-mock	yes	the screen ships and calls the missing endpoint	holdout	mock
+m12	this component has state, handlers and fetch logic in the same file as the markup	4	structuring-ui-components	yes	web/InvoiceScreen.tsx is that component	holdout	split
+
+m17	where is the retry limit enforced, and what else calls it?	1	ripwire-router	yes	sealed: never measured during the loop	sealed	map
+m18	add a refund function to the order service	4	write-discoverable-code	yes	sealed: never measured during the loop	sealed	testfirst
+m19	the invoice total is one cent off when tax rounds twice	5	ripwire-find-bug	yes	sealed: never measured during the loop	sealed	rootcause

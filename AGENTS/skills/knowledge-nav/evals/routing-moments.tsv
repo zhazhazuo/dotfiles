@@ -1,0 +1,22 @@
+# Routing fixture for knowledge-nav. Frozen before its first round; see evals/freeze.json.
+#
+# Columns are tab-separated:
+#   id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
+#
+# expected_skill is the folder name of the skill the deck must route to. "-" is a negative
+# control: the moment belongs to another navigator, so no skill of this deck may be read.
+# expected_phase is "-" for this deck: it is a flat table, so the rule set has no phases.
+# split: iterate (the editor's target) / holdout (the stopping signal) / sealed (one run at the end).
+# artifact is scored by lib/score_artifact.py: map, restate, scenario, testfirst, rootcause,
+# prune, mock, split, handoff, or "-" for none.
+
+k01	where is the retry limit enforced?	-	explore-repository	yes	repository evidence	iterate	map
+k02	the repoWiki has drifted from the code; decide whether to rebuild it	-	initialize-knowledge-base	yes	the wiki ships and is stale	iterate	handoff
+k03	document the invoice feature in the wiki	-	archive-knowledge-base	yes	a finished feature	iterate	handoff
+k04	the wiki section on caching is out of date	-	refine-knowledge-base	yes	one weak section	iterate	handoff
+k05	check the wiki claim about tax against the source	-	verify-knowledge-base	yes	a claim to audit	iterate	handoff
+k06	write the feature page under repoWiki	-	knowledge-base-writer	yes	house rules for wiki prose	holdout	handoff
+k07	what does this checkout do?	-	explore-repository	yes	an orientation question	holdout	map
+k08	rename processOrder to handleOrder	-	-	yes	NEGATIVE CONTROL: a code change is dev-nav	holdout	-
+k09	audit the wiki's retrieval evidence	-	verify-knowledge-base	yes	sealed: never measured during the loop	sealed	handoff
+k10	archive the refund feature into the wiki	-	archive-knowledge-base	yes	sealed: never measured during the loop	sealed	handoff

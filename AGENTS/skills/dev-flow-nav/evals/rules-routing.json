@@ -1,0 +1,15 @@
+{
+  "skill": "dev-flow-nav",
+  "deck_skill_name": "dev-flow-nav",
+  "own_skills": [
+    "subagent-delegation",
+    "subagent-driven-development"
+  ],
+  "external_skills": [],
+  "orient_skills": [],
+  "delivery_skills": [],
+  "phases": {},
+  "exempt_skill_names": [
+    "dev-flow-nav"
+  ]
+}
