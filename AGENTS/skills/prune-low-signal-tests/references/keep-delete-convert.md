@@ -28,9 +28,16 @@ and delete, because the criterion is literally "would catch a real bug".
 - **Mirror test** — asserts a constant, config, or limit equals the same literal it was declared as ("protocol
   limits are the single source of truth"). It fails only when the value changes on purpose, so it cannot catch a
   defect: whoever changes the constant changes the test. Real bug class: none.
+- **Derived expectation** — the expected value is computed by the same logic as the code under test
+  (`expect(applyDiscount(100, 0.2)).toBe(100 - 100 * 0.2)`). A wrong result still passes, so the test
+  cannot fail on a defect. Write the literal instead. Distinct from mirror test: the expectation is
+  computed, not copied from a constant.
 - **Implementation detail** — asserts private structure, internal call counts/order, log strings, that a
   private helper was invoked, or which branch was taken internally.
 - **Duplicate** — the same behavior asserted elsewhere, or a strict subset of a neighboring test.
+- **Guards removed code** — asserts that deleted code is absent: a removed feature is gone, a moved
+  module is missing from its old path, a legacy file no longer exists. Removed code does not change, so
+  the test cannot fail on a regression. Delete without conversion, because no E2E scenario can replace it.
 - **Snapshot bloat** — large unreviewed snapshots that fail on any unrelated change.
 - **DI/config description** — "the container wires X to Y". One smoke E2E covers the whole graph.
 - **Trivial data** — construct a record and assert its own fields back.
