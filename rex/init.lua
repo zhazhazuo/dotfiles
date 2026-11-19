@@ -65,11 +65,22 @@ rex.bind("ctrl+s>w", "client.tab.previous")
 
 -- The app's client, which performs the switch: the server's session calls change a
 -- session's layout, and only the app changes what it shows.
+--
+-- client.list returns the apps in the order they connected, and a Mac on the tailnet
+-- runs its own Rex app. A local app that restarts connects behind the remote one, and
+-- the key would then move the other Mac's screen. The local app is the one over unix,
+-- so prefer it and keep a remote one only for the case where no local app is attached.
 local function app_client()
+  local remote_app
   for _, client in ipairs((rex.call("client.list") or {}).clients or {}) do
-    if client.info ~= nil and client.info.kind == "app" then return client end
+    local info = client.info
+    if info ~= nil and info.kind == "app" then
+      local transport = client.principal ~= nil and client.principal.transport
+      if transport == "unix" then return client end
+      remote_app = remote_app or client
+    end
   end
-  return nil
+  return remote_app
 end
 
 -- ~/.config/herdr/config.toml:111 prefix+tab last workspace toggle.
