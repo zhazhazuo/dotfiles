@@ -1,13 +1,14 @@
 {
-  "created": "2026-11-19T05:08:40Z",
+  "created": "2026-11-19T05:41:58Z",
   "deck_at_freeze": "a6d5ce2beb17da67740ad4a0e32e0a4d6e73ce7403bf3f8c3c091a01110a9e01",
   "fixture": "6c8ad0bf6ef100ae4b11cd105ee5c15a71bb49ae7b584b188c9a1517cca23412",
   "fixture_tree": "31b695f4032e8f08e7566509ea9add5bf0101da6a7820aa7cc46277a419859fc",
   "instrument": {
+    "PROCEDURE.md": "7d94a3cacd149a9df9bdf967642740c044a152ca77923ccfa324c806044f5241",
     "decide.py": "07fe808199f5c305fc434dfe4cdb78356266939cd05a1c3b2df7dc0eb6f3f607",
     "score_artifact.py": "2b7e74fe51d44ae016cfde372ee3ab1afe433a9dc2b1b8839a4deaee1852121e",
     "score_routing.py": "0fe0c5760f912f3cbd93e12b2848f1c68ef3cb266203159d297918dd22f1d48c",
-    "skill-loop.sh": "cda4b10c8e2507158a7221c39dc8550c61959eb556d39e0972ff3d4ae40172a9"
+    "skill-loop.sh": "17d2cb19a1bbbadd65bacfe05c3ce0dbf30d7f21a69e94f550176dfc1f920303"
   },
   "rules": "d24997081a3328268874d5f1b15a4f9f2ff5055598309649ca478381afb474ae",
   "skill": "design-nav"

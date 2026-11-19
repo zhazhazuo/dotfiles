@@ -186,6 +186,7 @@ instrument = {}
 for name in ("score_routing.py", "score_artifact.py", "decide.py"):
     instrument[name] = sha(os.path.join(harness, "lib", name))
 instrument["skill-loop.sh"] = sha(os.path.join(harness, "bin", "skill-loop.sh"))
+instrument["PROCEDURE.md"] = sha(os.path.join(harness, "PROCEDURE.md"))
 
 record = {
     "created": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -240,6 +241,7 @@ now = {
 for name in ("score_routing.py", "score_artifact.py", "decide.py"):
     now[f"instrument.{name}"] = sha(os.path.join(harness, "lib", name))
 now["instrument.skill-loop.sh"] = sha(os.path.join(harness, "bin", "skill-loop.sh"))
+now["instrument.PROCEDURE.md"] = sha(os.path.join(harness, "PROCEDURE.md"))
 
 changed = []
 for key, value in now.items():

@@ -22,7 +22,7 @@ new one cannot disagree.
 ## The frozen set
 
 `freeze.json` (written 2026-11-19) holds sha256 of `routing-moments.tsv`, `rules-routing.json`, the
-fixture tree, and the four instrument files. The four rule sets left the scorer and now live in
+fixture tree, and the five instrument files: the three scorers, the engine, and `PROCEDURE.md`. The four rule sets left the scorer and now live in
 `rules-routing.json`: `own_skills`, `orient_skills`, `delivery_skills`, `phases`. This is the
 overfit the previous record admitted to, excluded by construction: a scorer or fixture edit now
 exits 3 and names the file.
@@ -40,6 +40,10 @@ every time for a stated defect:
 
 Renewals 5 to 7 happened after round one closed. They change no verdict except one baseline cell,
 shown below.
+
+An eighth renewal added `PROCEDURE.md` to the instrument on 2026-11-19, when `agent-nav` was created
+to route the loop. The procedure defines the split and the stop rules, so it belongs to the
+measurement. The round had already closed, no verdict moved, and no transcript was re-run.
 
 ## The split
 

@@ -197,6 +197,7 @@ github.com/oaustegard/claude-skills, tag `declauding-v0.13.0`.
   - `design-nav`: UI design, prototypes, shadcn, diagrams, PRD scenarios
   - `ops-nav`: tools, Confluence, coordination, plan grilling and interviews, document and plain-English writing
   - `knowledge-nav`: repository evidence before reading, and the repoWiki knowledge base
+  - `agent-nav`: the agent's own setup — skills, navigator routing, subagent types, extensions, session state
 - If the task matches a navigator, read `~/.agents/skills/<navigator>/SKILL.md`, then the routed skill file, expanding `~` to the home directory.
 - Precedence: navigators are the entry point. A concrete skill listed in `<available_skills>` is loaded directly only when its description explicitly matches the task; otherwise route through its navigator.
 - When installing a new skill, tool, or extension: read and follow `~/.agents/skills/integrate-capability/SKILL.md`.

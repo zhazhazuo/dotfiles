@@ -1,13 +1,14 @@
 {
-  "created": "2026-11-19T05:08:41Z",
+  "created": "2026-11-19T05:41:58Z",
   "deck_at_freeze": "a312364c31f817f312d2dbda702325e5439196b2d3e3fbf2dcf6d0209882c720",
   "fixture": "4f362cacb4ce7a6316a99475eaf0ccc538950b4ba2752c5f99d48f32d7e3794c",
   "fixture_tree": "eb3ce04c019196ebe739937d9a5b6127f811b5bb3a63d5939463b8812ce23a19",
   "instrument": {
+    "PROCEDURE.md": "7d94a3cacd149a9df9bdf967642740c044a152ca77923ccfa324c806044f5241",
     "decide.py": "07fe808199f5c305fc434dfe4cdb78356266939cd05a1c3b2df7dc0eb6f3f607",
     "score_artifact.py": "2b7e74fe51d44ae016cfde372ee3ab1afe433a9dc2b1b8839a4deaee1852121e",
     "score_routing.py": "0fe0c5760f912f3cbd93e12b2848f1c68ef3cb266203159d297918dd22f1d48c",
-    "skill-loop.sh": "cda4b10c8e2507158a7221c39dc8550c61959eb556d39e0972ff3d4ae40172a9"
+    "skill-loop.sh": "17d2cb19a1bbbadd65bacfe05c3ce0dbf30d7f21a69e94f550176dfc1f920303"
   },
   "rules": "0294e17aaa9432b74a53eba36c3db7aeef686f1b729ef7c2b5f00c7c7e2b0e96",
   "skill": "knowledge-nav"

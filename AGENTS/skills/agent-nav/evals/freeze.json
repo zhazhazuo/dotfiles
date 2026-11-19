@@ -1,0 +1,15 @@
+{
+  "created": "2026-11-19T05:41:50Z",
+  "deck_at_freeze": "4008564332261644286dcada592876ba09f17e78911cc99a0e18b12171697524",
+  "fixture": "dfed6f9423f2158ba1cfb89aa86b19d9606d8d677df55c9f4bba044ac303887e",
+  "fixture_tree": "3d48174c0a62437166453bb530e6b6f799c89bfc5347c693946f53db58a6c2e0",
+  "instrument": {
+    "PROCEDURE.md": "7d94a3cacd149a9df9bdf967642740c044a152ca77923ccfa324c806044f5241",
+    "decide.py": "07fe808199f5c305fc434dfe4cdb78356266939cd05a1c3b2df7dc0eb6f3f607",
+    "score_artifact.py": "2b7e74fe51d44ae016cfde372ee3ab1afe433a9dc2b1b8839a4deaee1852121e",
+    "score_routing.py": "0fe0c5760f912f3cbd93e12b2848f1c68ef3cb266203159d297918dd22f1d48c",
+    "skill-loop.sh": "17d2cb19a1bbbadd65bacfe05c3ce0dbf30d7f21a69e94f550176dfc1f920303"
+  },
+  "rules": "bcb3efb961818c017245c47c10d428f398ab5fc38faa1d2a967f3190547136fd",
+  "skill": "agent-nav"
+}

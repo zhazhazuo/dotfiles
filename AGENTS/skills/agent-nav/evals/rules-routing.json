@@ -1,0 +1,17 @@
+{
+  "skill": "agent-nav",
+  "deck_skill_name": "agent-nav",
+  "own_skills": [
+    "integrate-capability",
+    "iterate-skill",
+    "author-high-quality-skills",
+    "progress-tracking"
+  ],
+  "external_skills": [],
+  "orient_skills": [],
+  "delivery_skills": [],
+  "phases": {},
+  "exempt_skill_names": [
+    "agent-nav"
+  ]
+}

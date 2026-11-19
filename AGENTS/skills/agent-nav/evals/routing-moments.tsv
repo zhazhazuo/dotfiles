@@ -1,0 +1,19 @@
+# Routing fixture for agent-nav. Frozen before its first round; see evals/freeze.json.
+#
+# Columns: id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact
+#
+# expected_skill is the folder name of the skill the deck must route to. "-" is a negative
+# control: the moment belongs to another navigator, so no skill of this deck may be read.
+# expected_phase is "-" for this deck: it is a flat table, so the rule set has no phases.
+# split: iterate (the editor's target) / holdout (the stopping signal) / sealed (one run at the end).
+# artifact is scored by lib/score_artifact.py: handoff, map, scenario, or "-" for none.
+
+a01	I installed a new skill for CSV export and it is already firing on the wrong tasks	-	integrate-capability	yes	a new capability needs routing and silencing	iterate	handoff
+a02	this skill keeps firing on the wrong task, change it on evidence	-	iterate-skill	yes	an edit needs a before-and-after number	iterate	handoff
+a03	write a new skill that teaches the release checklist	-	author-high-quality-skills	yes	a new SKILL.md	iterate	handoff
+a04	record what this session got done before we stop	-	progress-tracking	yes	the work unit under .ai-artifacts	iterate	handoff
+a05	the ops table has grown past 15 rows, what now	-	integrate-capability	yes	the split rule	holdout	handoff
+a06	archive the finished work unit and drop it from the index	-	progress-tracking	yes	the archive path	holdout	handoff
+a07	rename processOrder to handleOrder	-	-	yes	NEGATIVE CONTROL: a code change is dev-nav	holdout	-
+a08	spawn a child to run the test suite	-	-	yes	NEGATIVE CONTROL: delegation is dev-flow-nav	sealed	-
+a09	add the shadcn dialog to the billing page	-	-	yes	NEGATIVE CONTROL: UI work is design-nav	sealed	-
