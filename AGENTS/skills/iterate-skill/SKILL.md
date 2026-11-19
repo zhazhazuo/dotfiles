@@ -1,6 +1,11 @@
 ---
 name: iterate-skill
-description: Use when a skill must be improved on evidence rather than on judgement, or when a skill change needs a before-and-after number. Runs one iteration round against a frozen fixture: a blind tester measures, one edit lands, a re-run decides against the repeat spread. Covers the split into iterate, holdout and sealed moments, the cost and round ceilings, and the ledger entry that records the hypothesis, the measurement and the verdict.
+description: >
+  Use when a skill must be improved on evidence rather than on judgement, or when a skill change
+  needs a before-and-after number. Runs one iteration round against a frozen fixture: a blind
+  tester measures, one edit lands, a re-run decides against the repeat spread. Covers the split
+  into iterate, holdout and sealed moments, the cost and round ceilings, and the ledger entry that
+  records the hypothesis, the measurement and the verdict.
 disable-model-invocation: true
 ---
 
