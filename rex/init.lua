@@ -588,91 +588,119 @@ rex.bind("ctrl+s>shift+m", "restore_pane")
 -- to read, so this reviews a named document, or the focused pane's whole text.
 -- Herdr's --deliver-to pane hand-off becomes the wrapper's job: it pastes the
 -- new annotations into the target block's prompt as one paste event.
+local function review_in_floating_pane(ctx, args)
+  args = args or {}
+  local terminal = "com.superlogical.terminal"
+  local session = args.session or ctx.session_id
+  local target = args.target or ctx.block_id
+
+  if session == nil then error("no session to review in", 0) end
+  if target == nil then error("no block to review", 0) end
+
+  -- A call that names another session is answered only for a stream attached to
+  -- it, so a review of a pane outside the caller's session attaches first.
+  rex.call("session.attach", { session_id = session })
+
+  -- The review pane starts where the target's program is, so a review of the
+  -- focused pane finds its relative paths, and so the message lookup reads the
+  -- transcript of the session started there.
+  local cwd
+  local pwd = rex.call(terminal .. ".pwd", {
+    session_id = session,
+    block_id   = target,
+    args       = {},
+  })
+  if pwd ~= nil and type(pwd.pwd) == "string" then
+    -- A file URL: file://host/path, or file:///path.
+    cwd = pwd.pwd:gsub("^file://[^/]*", "")
+  end
+
+  -- An agent pane is reviewed from its transcript, which holds the message
+  -- without the prompt box, the status line or the terminal's line breaks.
+  -- Plannotator's own picker lists that transcript's replies, which is the flow
+  -- the Herdr plugin uses: the reply worth reviewing is rarely the last one.
+  -- Any other pane is reviewed as a folder with Plannotator's file tree, which
+  -- is what the Herdr plugin's folder key does. source=pane keeps the screen.
+  local mode = "folder"
+  local source = args.source or "auto"
+  if source == "folder" then
+    mode = "folder"
+  elseif source == "message" or source == "pick" or source == "pane" then
+    mode = source == "pane" and "-" or source
+  elseif source == "auto" and args.path == nil then
+    local process = rex.call(terminal .. ".process", {
+      session_id = session,
+      block_id   = target,
+      args       = {},
+    })
+    local foreground = process and process.foreground
+    local program = foreground and (foreground.argv0 or foreground.name) or nil
+    if program ~= nil then program = program:gsub("^-", "") end
+    if program == "pi" then mode = "pick" end
+  end
+
+  local layer, err = rex.session.new_layer({
+    bounds = { 0.05, 0.05, 0.9, 0.85 },
+    focus  = true,
+    layout = rex.layout.block({
+      flavor  = "com.superlogical.terminal.shell",
+      label   = "review",
+      options = {
+        shell   = "none",
+        cwd     = cwd,
+        command = {
+          "/bin/sh", "-c",
+          'exec "$HOME/.local/bin/rex-plannotator-review.sh" "$@"',
+          "plannotator-review", args.path or mode, session, target,
+        },
+        exit = { on_completion = true },
+      },
+    }),
+  })
+  if layer == nil then error(err, 0) end
+
+  return {
+    block_id = layer.block_ids[1],
+    document = args.path
+      or (mode == "pick" and "a chosen agent message")
+      or (mode == "message" and "last agent message")
+      or (mode == "-" and "pane text")
+      or "this folder",
+  }
+end
+
 rex.action({
   name        = "plannotator_review",
   title       = "Review with Plannotator",
   description = "Review a document, the last message an agent wrote, or a plain pane's text, in a floating Plannotator pane, and paste the annotations into that pane's prompt.",
   keywords    = "annotate review plan plannotator message",
   args        = { path = "string?", source = "string?", target = "string?", session = "string?" },
-  run         = function(ctx, args)
-    local terminal = "com.superlogical.terminal"
-    local session = args.session or ctx.session_id
-    local target = args.target or ctx.block_id
-
-    if session == nil then error("no session to review in", 0) end
-    if target == nil then error("no block to review", 0) end
-
-    -- A call that names another session is answered only for a stream attached to
-    -- it, so a review of a pane outside the caller's session attaches first.
-    rex.call("session.attach", { session_id = session })
-
-    -- The review pane starts where the target's program is, so a review of the
-    -- focused pane finds its relative paths, and so the message lookup reads the
-    -- transcript of the session started there.
-    local cwd
-    local pwd = rex.call(terminal .. ".pwd", {
-      session_id = session,
-      block_id   = target,
-      args       = {},
-    })
-    if pwd ~= nil and type(pwd.pwd) == "string" then
-      -- A file URL: file://host/path, or file:///path.
-      cwd = pwd.pwd:gsub("^file://[^/]*", "")
-    end
-
-    -- An agent pane is reviewed from its transcript, which holds the message
-    -- without the prompt box, the status line or the terminal's line breaks.
-    -- Plannotator's own picker lists that transcript's replies, which is the flow
-    -- the Herdr plugin uses: the reply worth reviewing is rarely the last one.
-    -- Any other pane is reviewed as a folder with Plannotator's file tree, which
-    -- is what the Herdr plugin's folder key does. source=pane keeps the screen.
-    local mode = "folder"
-    local source = args.source or "auto"
-    if source == "message" or source == "pick" or source == "pane" then
-      mode = source == "pane" and "-" or source
-    elseif source == "auto" and args.path == nil then
-      local process = rex.call(terminal .. ".process", {
-        session_id = session,
-        block_id   = target,
-        args       = {},
-      })
-      local foreground = process and process.foreground
-      local program = foreground and (foreground.argv0 or foreground.name) or nil
-      if program ~= nil then program = program:gsub("^-", "") end
-      if program == "pi" then mode = "pick" end
-    end
-
-    local layer, err = rex.session.new_layer({
-      bounds = { 0.05, 0.05, 0.9, 0.85 },
-      focus  = true,
-      layout = rex.layout.block({
-        flavor  = "com.superlogical.terminal.shell",
-        label   = "review",
-        options = {
-          shell   = "none",
-          cwd     = cwd,
-          command = {
-            "/bin/sh", "-c",
-            'exec "$HOME/.local/bin/rex-plannotator-review.sh" "$@"',
-            "plannotator-review", args.path or mode, session, target,
-          },
-          exit = { on_completion = true },
-        },
-      }),
-    })
-    if layer == nil then error(err, 0) end
-
-    return {
-      block_id = layer.block_ids[1],
-      document = args.path
-        or (mode == "pick" and "a chosen agent message")
-        or (mode == "message" and "last agent message")
-        or (mode == "-" and "pane text")
-        or "this folder",
-    }
-  end,
+  run         = review_in_floating_pane,
 })
 rex.bind("ctrl+s>a", "plannotator_review")
+
+-- The palette passes no arguments, so each of the two reviews worth naming is its
+-- own entry, as the golden ratio switches are. Both are the bound review with the
+-- choice made: the replies the agent in this pane wrote, or this pane's folder.
+rex.action({
+  name        = "plannotator_annotate_messages",
+  title       = "Annotate pi Messages",
+  description = "Choose one of the replies the pi agent in this pane wrote, annotate it in a floating Plannotator pane, and paste the annotations into the pane's prompt.",
+  keywords    = "annotate review plan plannotator message agent reply choose pick",
+  run         = function(ctx)
+    return review_in_floating_pane(ctx, { source = "pick" })
+  end,
+})
+
+rex.action({
+  name        = "plannotator_annotate_directory",
+  title       = "Annotate Current Directory",
+  description = "Open this pane's directory in Plannotator's file tree, annotate its files, and paste the annotations into the pane's prompt.",
+  keywords    = "annotate review plan plannotator folder directory files tree",
+  run         = function(ctx)
+    return review_in_floating_pane(ctx, { source = "folder" })
+  end,
+})
 
 -- The golden ratio resize runs as a launchd job, and the command that switches it
 -- takes a word: on, off, or status. The palette cannot pass an argument, so each
