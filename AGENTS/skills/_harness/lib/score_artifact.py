@@ -21,7 +21,7 @@ import sys
 import tempfile
 
 ARTIFACTS = ("map", "restate", "scenario", "testfirst", "rootcause", "prune", "handoff",
-              "mock", "split")
+              "mock", "split", "progress")
 
 CODE_PATH = re.compile(r"\b[\w./-]+\.(ts|tsx|js|jsx|py|go|rs|java|lua|sql|json|md|toml|sh)\b")
 IDENT = re.compile(r"`([A-Za-z_][\w.$-]{2,})`")
@@ -71,12 +71,16 @@ def harvest(evs):
             cmds.append(blob)
             for hit in re.findall(r"\brm\s+(-\S+\s+)*([^\s;&|]+)", blob):
                 deletes.append(hit[1])
-        for key in ("path", "file_path", "filePath"):
-            target = args.get(key)
-            if isinstance(target, str) and FILEISH.search(target):
-                writes.append(target)
+        if tool in ("write", "edit"):
+            for key in ("path", "file_path", "filePath"):
+                target = args.get(key)
+                if isinstance(target, str) and FILEISH.search(target):
+                    writes.append(target)
         if isinstance(args.get("content"), str) or isinstance(args.get("newText"), str):
             text_parts.append(args.get("content") or args.get("newText") or "")
+        for change in args.get("edits") or []:
+            if isinstance(change, dict) and isinstance(change.get("newText"), str):
+                text_parts.append(change["newText"])
     return "\n".join(text_parts), cmds, writes, deletes
 
 
@@ -166,6 +170,42 @@ def check_split(text, writes):
     return False, f"split needs a screen edit + a module or a hook; got {len(screens)}/{len(modules)}/{bool(hook)}"
 
 
+PROGRESS_HEADINGS = ["Status", "Objective", "State", "Open Questions", "Next",
+                     "Decisions", "Constraints", "Assumptions", "Context"]
+
+
+def check_progress_file(text, writes):
+    """Check the progress index, canonical section order, status and Tier 1 character budget."""
+    paths = [path.replace(chr(92), "/") for path in writes]
+    has_index = any(path.endswith(".ai-artifacts/progress/INDEX.md") for path in paths)
+    has_unit = any(re.search(r"\.ai-artifacts/progress/(?!INDEX\.md$)[^/]+\.md$", path)
+                   for path in paths)
+    if not has_index or not has_unit:
+        return False, f"progress needs INDEX.md and one work-unit write; got {has_index}/{has_unit}"
+    last_reason = "progress has no complete work-unit document"
+    documents = re.finditer(r"(?ms)^# ([^\n]+)\n(.*?)(?=^# |\Z)", text)
+    for document in documents:
+        body = document.group(2)
+        headings = re.findall(r"^## ([^\n]+)$", body, re.M)
+        if headings != PROGRESS_HEADINGS:
+            if headings:
+                last_reason = "progress headings differ: " + ", ".join(headings)
+            continue
+        if not re.search(r"^## Status\n(active|completed|archived)\s*$", body, re.M):
+            last_reason = "progress status must be active, completed or archived"
+            continue
+        tier_one = re.search(r"^## Status\n(.*?)^## Decisions$", body, re.M | re.S)
+        if not tier_one:
+            last_reason = "progress cannot isolate Tier 1"
+            continue
+        tier_one_chars = len(tier_one.group(1))
+        if tier_one_chars > 1600:
+            last_reason = f"progress Tier 1 has {tier_one_chars} chars, over 1600"
+            continue
+        return True, f"progress: canonical sections, Tier 1 {tier_one_chars} chars"
+    return False, last_reason
+
+
 def score(artifact, text, cmds, writes, deletes):
     if artifact in ("-", "", "na"):
         return "na", "no artifact expected"
@@ -187,12 +227,48 @@ def score(artifact, text, cmds, writes, deletes):
         ok, why = check_mock(text, writes)
     elif artifact == "split":
         ok, why = check_split(text, writes)
+    elif artifact == "progress":
+        ok, why = check_progress_file(text, writes)
     else:
         return "fail", f"unknown artifact {artifact}"
     return ("pass" if ok else "fail"), why
 
 
 def self_test():
+    progress_unit = """# cache-invalidation
+
+## Status
+active
+
+## Objective
+Keep cached tenant data separate.
+
+## State
+- Cache keys include the tenant.
+
+## Open Questions
+- None.
+
+## Next
+- Measure the hit rate.
+
+## Decisions
+- Key the cache by tenant.
+
+## Constraints
+- Preserve the existing API.
+
+## Assumptions
+- Every request has a tenant.
+
+## Context
+Prefix matching was rejected.
+"""
+    progress_index = """# Progress Index
+active | cache-invalidation | main | Cache keys include tenant
+"""
+    progress_writes = [".ai-artifacts/progress/INDEX.md",
+                       ".ai-artifacts/progress/cache-invalidation.md"]
     cases = {
         "map": (
             "The map: `src/orders.ts` holds `processOrder` and `orderWithTaxCents`. "
@@ -223,6 +299,7 @@ def self_test():
         ),
         "mock": (None, "I will mock the endpoint later."),
         "split": (None, "The component is too big."),
+        "progress": (None, "The session is recorded."),
     }
     text_ev = {"type": "message_end", "message": {"role": "assistant", "content": [{"type": "text", "text": ""}]}}
     tool_ev = {"type": "tool_execution_start", "toolName": "bash", "args": {"command": ""}}
@@ -260,6 +337,12 @@ def self_test():
                  dict(write_ev, args={"path": "web/useInvoices.ts", "newText": "export function useInvoices() {}"})],
                 [dict(text_ev, message={"role": "assistant", "content": [{"type": "text", "text": bad}]})],
             )
+        if kind == "progress":
+            return (
+                [dict(write_ev, args={"path": progress_writes[0], "content": progress_index}),
+                 dict(write_ev, args={"path": progress_writes[1], "content": progress_unit})],
+                [dict(text_ev, message={"role": "assistant", "content": [{"type": "text", "text": bad}]})],
+            )
         return (
             [dict(text_ev, message={"role": "assistant", "content": [{"type": "text", "text": good}]})],
             [dict(text_ev, message={"role": "assistant", "content": [{"type": "text", "text": bad}]})],
@@ -285,6 +368,34 @@ def self_test():
         assert got_ok == "pass", f"{artifact} pass fixture scored {got_ok}: {why_pass}"
         assert got_bad == "fail", f"{artifact} fail fixture scored {got_bad}: {why_fail}"
     assert score("-", "", [], [], [])[0] == "na"
+    progress_failures = {
+        "wrong order": (progress_unit.replace("## Open Questions\n- None.\n\n## Next\n- Measure the hit rate.\n\n", "")
+                        .replace("## Context", "## Open Questions\n- None.\n\n## Next\n- Measure the hit rate.\n\n## Context"),
+                        progress_writes),
+        "missing index": (progress_index + progress_unit, progress_writes[1:]),
+        "extra heading": (progress_unit.replace("## Context", "## Notes\nExtra.\n\n## Context"),
+                          progress_writes),
+        "invalid status": (progress_unit.replace("active", "unknown", 1), progress_writes),
+        "Tier 1 too large": (progress_unit.replace("## Decisions", "x" * 1601 + "\n\n## Decisions"),
+                             progress_writes),
+    }
+    for name, (text, writes) in progress_failures.items():
+        got, why = score("progress", text, [], writes, [])
+        assert got == "fail", f"progress {name} failure scored {got}: {why}"
+    surrounded = "# Unrelated\n\n## Notes\nIgnore this document.\n" + progress_index + progress_unit
+    ok, why = score("progress", surrounded, [], progress_writes, [])
+    assert ok == "pass", f"progress valid document was hidden by surrounding text: {why}"
+    read_only_events = [
+        {"type": "tool_execution_start", "toolName": "read",
+         "args": {"path": progress_writes[0]}},
+        {"type": "tool_execution_start", "toolName": "read",
+         "args": {"path": progress_writes[1]}},
+        {"type": "message_end", "message": {"role": "toolResult",
+         "content": [{"type": "text", "text": progress_unit}]}},
+    ]
+    read_only_text, _, read_only_writes, _ = harvest(read_only_events)
+    ok, why = score("progress", read_only_text, [], read_only_writes, [])
+    assert ok == "fail", f"progress read-only session scored {ok}: {why}"
     declined = ("`test/mocks/webhook.mock.test.ts` has no timer and no clock. "
                 "Send me one failing run: the test name, the assertion message, and the stack.")
     ok, why = score("rootcause", declined, [], [], [])

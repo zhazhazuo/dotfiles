@@ -1,0 +1,18 @@
+# Routing and output fixture for progress-tracking. Freeze before round one.
+# Columns: id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact  action
+# progress requires an INDEX write and a unit file with the reader's nine-section order.
+# A negative control belongs to another navigator and must not read this skill.
+
+p01	Record this session before we stop: the cache now keys by tenant, tests pass, and the next job is to measure the hit rate.	-	progress-tracking	yes	create a unit and index row	iterate	progress	progress
+p02	Update the api-migration progress unit: keep the v1 adapter until v2 reaches parity, and next run the contract suite.	-	progress-tracking	yes	rewrite an existing unit	iterate	progress	progress
+p03	Archive the old-export work unit because csv-export superseded it. Record the successor and remove it from active state.	-	progress-tracking	yes	archive with a successor	iterate	progress	progress
+p04	Record the billing-retry session: the user must choose three or five retries, and the agent next adds retry telemetry.	-	progress-tracking	yes	separate user and agent actions	iterate	progress	progress
+p05	Record the search-rollout session: we tried prefix matching, then fuzzy matching, and now use exact matching. Next measure recall.	-	progress-tracking	yes	convert history into current state	iterate	progress	progress
+h01	The api-migration contract suite passes and the work is done. Complete its progress unit and update the index.	-	progress-tracking	yes	complete a unit	holdout	progress	progress
+h02	Rename processOrder to handleOrder in the checkout.	-	-	yes	NEGATIVE CONTROL: code work is dev-nav	holdout	-	-
+h03	Record parser-recovery: malformed input now skips one record, the next job is to count skipped records, and keep the injected state short.	-	progress-tracking	yes	Tier 1 budget	holdout	progress	progress
+h04	Spawn a child agent to run the test suite.	-	-	yes	NEGATIVE CONTROL: delegation is dev-flow-nav	holdout	-	-
+h05	Record metrics-export: CSV and JSON use one formatter, the next job is a snapshot test, and put the rejected designs in Context.	-	progress-tracking	yes	Context holds rejected designs	holdout	progress	progress
+s01	Record webhook-replay: replay is idempotent, tests pass, and the next job is to document the retry header.	-	progress-tracking	yes	sealed create	sealed	progress	progress
+s02	Read the release runbook in Confluence and name the release blockers.	-	-	yes	NEGATIVE CONTROL: Confluence is ops-nav	sealed	-	-
+s03	Archive parser-recovery because the recovery work was abandoned. State that reason in the final update.	-	progress-tracking	yes	sealed archive	sealed	progress	progress

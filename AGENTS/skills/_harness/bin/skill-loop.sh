@@ -266,6 +266,20 @@ field() {  # $1 = row, $2 = column number (1-based)
 
 # ------------------------------------------------------------------ the run
 
+scratch_tree() {  # prints a neutral working tree, never named after the skill or the repeat
+  local root
+  root="$(mktemp -d "${TMPDIR:-/tmp}/looprun.XXXXXXXX")" || return 1
+  printf '%s/workspace\n' "$root"
+}
+
+instrument_stamp() {  # keys the run cache, so a repaired runner never reuses old transcripts
+  { sha_file "${BASH_SOURCE[0]}"
+    sha_file "${LIB}/score_routing.py"
+    sha_file "${LIB}/score_artifact.py"
+    sha_file "${LIB}/decide.py"
+  } | sha_stdin
+}
+
 run_cells() {
   local label="$1" split="$2"
   local run="${OUT}/${label}"
@@ -277,13 +291,13 @@ run_cells() {
   [ -f "$deck_file" ] || die "no deck at ${deck_file}"
 
   local sig
-  sig="$(printf '%s %s %s %s %s' "$(deck_hash)" "$(sha_file "$FIXTURE")" "$(sha_file "$RULES")" "$MODE" "${MODEL:-default}" | sha_stdin)"
+  sig="$(printf '%s %s %s %s %s %s' "$(deck_hash)" "$(sha_file "$FIXTURE")" "$(sha_file "$RULES")" "$MODE" "${MODEL:-default}" "$(instrument_stamp)" | sha_stdin)"
   local cache="${OUT}/cache/${sig}"
   mkdir -p "$cache"
   printf '%s\n' "$sig" > "${run}/cache-sig.txt"
   deck_hash > "${run}/deck-hash.txt"
 
-  local sys_prompt="Eval run. Work inside this repository and do not write outside it."
+  local sys_prompt="Work inside this repository and do not write outside it."
   local route_prompt="Your job in this run is to route, not to do the work. Read the deck at ${deck_file}, decide the lifecycle phases this task passes through, in order, and read the card and skill file for every phase you will need. Then stop and list the phases you entered and the skills you read. Do the routing only; do not do the work."
 
   local n=0
@@ -315,9 +329,10 @@ run_cells() {
           [ "$MODE" = "route" ] && prompt="${route_prompt}
 
 TASK: ${moment}"
-          local scratch="${run}/work/${id}-r${repeat}"
-          mkdir -p "${run}/work"
-          rm -rf "$scratch"
+          # The tree sits outside the run directory, at a name that states neither the skill nor
+          # the repeat. A session that reads its own path must not learn what is being measured.
+          local scratch
+          scratch="$(scratch_tree)" || exit 1
           cp -R "${EVALS}/fixture-repo" "$scratch" || exit 1
           ( cd "$scratch" && git init -q . && git add -A &&
             git -c user.email=eval@local -c user.name=eval commit -qm fixture ) >/dev/null 2>&1 || true
@@ -328,7 +343,7 @@ TASK: ${moment}"
               "$prompt"
           ) > "$out" 2>"${trans}/${id}-r${repeat}.err" < /dev/null
           [ -s "$out" ] && cp "$out" "$hit"
-          rm -rf "$scratch"
+          rm -rf "$(dirname "$scratch")"
         fi
       ) &
       n=$((n + 1))
@@ -369,7 +384,7 @@ with open(os.path.join(evals, "routing-moments.tsv"), encoding="utf-8") as fh:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         cols = line.rstrip("\n").split("\t")
-        while len(cols) < 8:
+        while len(cols) < 9:
             cols.append("")
         artifact_of[cols[0].strip()] = cols[7].strip() or "-"
 
@@ -392,10 +407,13 @@ for cell in cells:
 moments = {}
 for cell in cells:
     entry = moments.setdefault(cell["id"], {"split": cell["split"], "passes": 0,
-                                             "repeats": 0, "artifact_passes": 0})
+                                             "repeats": 0, "artifact_passes": 0,
+                                             "action_passes": 0, "routing_passes": 0})
     entry["repeats"] += 1
     entry["passes"] += 1 if cell["verdict"] == "PASS" else 0
     entry["artifact_passes"] += 1 if cell.get("artifact") == "pass" else 0
+    entry["action_passes"] += 1 if cell.get("action") == "pass" else 0
+    entry["routing_passes"] += 1 if cell.get("routing_verdict") == "PASS" else 0
 
 splits = {}
 for cell in cells:
@@ -424,17 +442,19 @@ with open(os.path.join(run, "score.json"), "w", encoding="utf-8") as fh:
     fh.write("\n")
 
 with open(os.path.join(run, "report.tsv"), "w", encoding="utf-8") as fh:
-    fh.write("id\tsplit\tphase\texpected\tverdicts\tartifact\treads\treads_per_repeat\twall_s\ttokens\n")
+    fh.write("id\tsplit\tphase\texpected\tverdicts\tartifact\taction\trouting\treads\treads_per_repeat\twall_s\ttokens\n")
     for moment_id in sorted(moments):
         group = [c for c in cells if c["id"] == moment_id]
         verdicts = ",".join(c["verdict"][0] for c in group)
         artifacts = ",".join({"pass": "P", "fail": "F", "na": "-"}.get(c.get("artifact"), "?") for c in group)
+        actions = ",".join({"pass": "P", "fail": "F", "na": "-"}.get(c.get("action"), "?") for c in group)
+        routing = ",".join(c.get("routing_verdict", c["verdict"])[0] for c in group)
         reads = ",".join(group[0]["reads"]) or "NONE"
         per = ";".join(",".join(c["reads"]) or "NONE" for c in group)
         wall = sum(c["wall_seconds"] for c in group) / len(group)
         tokens = sum(c["tokens_total"] for c in group)
         fh.write(f"{moment_id}\t{group[0]['split']}\t{group[0]['phase']}\t{group[0]['expected']}\t"
-                 f"{verdicts}\t{artifacts}\t{reads}\t{per}\t{wall:.1f}\t{tokens}\n")
+                 f"{verdicts}\t{artifacts}\t{actions}\t{routing}\t{reads}\t{per}\t{wall:.1f}\t{tokens}\n")
 
 print(f"skill={skill} label={label} mode={mode} model={model}")
 print(f"repeats per cell: {repeats}  split totals: {json.dumps(agg, sort_keys=True)}")
@@ -489,8 +509,18 @@ self_test() {
       exit 1
     fi
   ) || { rm -rf "$tmp"; return 1; }
-  rm -rf "$tmp"
-  say "skill-loop self-test OK: three scorers, freeze catches a fixture edit and a tree edit"
+  local neutral
+  neutral="$(scratch_tree)" || { rm -rf "$tmp"; return 1; }
+  case "$neutral" in
+    *dev-nav*|*intercom-coordination*|*-r3*)
+      say "self-test: the scratch path names the skill or the repeat: $neutral"
+      rm -rf "$(dirname "$neutral")" "$tmp"
+      return 1 ;;
+  esac
+  [ -d "$(dirname "$neutral")" ] || { say "self-test: scratch_tree made no directory"; rm -rf "$tmp"; return 1; }
+  rm -rf "$(dirname "$neutral")" "$tmp"
+  say "skill-loop self-test OK: three scorers, freeze catches a fixture edit and a tree edit, the
+scratch path is neutral"
 }
 
 # ------------------------------------------------------------------ dispatch
@@ -534,10 +564,17 @@ with open(fixture, encoding="utf-8") as fh:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         cols = line.rstrip("\n").split("\t")
-        while len(cols) < 8:
+        while len(cols) < 9:
             cols.append("")
-        moment_id, _, phase, expected, natural, _, split, artifact = cols[:8]
+        moment_id, _, phase, expected, natural, _, split, artifact, action = cols[:9]
         rows += 1
+        allowed = {"-", "", "send", "ask", "reply", "handover", "cancel",
+                   "list", "list-cwd", "peers", "status", "pending"}
+        if skill == "progress-tracking":
+            allowed.add("progress")
+        for want in (action or "-").split("|"):
+            if want.strip() not in allowed:
+                errors.append(f"{moment_id}: expected action {want!r} is not supported")
         split = split or "iterate"
         counts[split] = counts.get(split, 0) + 1
         if expected != "-" and expected not in own:

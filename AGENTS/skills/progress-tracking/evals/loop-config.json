@@ -1,0 +1,10 @@
+{
+  "repeats": 3,
+  "jobs": 3,
+  "mode": "natural",
+  "ceiling_usd": 0,
+  "ceiling_tokens": 3000000,
+  "cap_rounds": 6,
+  "holdout_patience": 2,
+  "calibration": "none yet for this skill; the ceiling is carried over from the dev-nav calibration, which measured 386908 billable tokens for 15 cells on the same provider and the same instrument."
+}

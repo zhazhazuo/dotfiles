@@ -1,0 +1,15 @@
+{
+  "created": "2026-11-22T12:19:52Z",
+  "deck_at_freeze": "0dd3fac51a3fbbfd9f5abc9ec48cb1bc3e8e2e566d2f319b81b088184c7787b9",
+  "fixture": "3c2ab8f69cd9dd687f30ebfe39a569757230263bf4e3f86f4faf31828f0433b0",
+  "fixture_tree": "927b00efe4d0c21514c59161769049d61aad78304f40d46c8d17f4010bfcf581",
+  "instrument": {
+    "PROCEDURE.md": "070847e5b4775c09c57346257507baf3ffda78b8e7d4b6e6199d8b7e0ac59ac8",
+    "decide.py": "07fe808199f5c305fc434dfe4cdb78356266939cd05a1c3b2df7dc0eb6f3f607",
+    "score_artifact.py": "f828c8660d1214b0ec43a2b5ff7d184571da0fd787b5fc6d3e58baf393a20327",
+    "score_routing.py": "4cf0cf2d2a829cc0485f43550b13ae6fc754942287b8ffa157bc326e31924aca",
+    "skill-loop.sh": "078cf6278f52fecef94c38a5897a2c96104325e631ce7314de71447b977a992f"
+  },
+  "rules": "22b6a0d63fa288ca5e254ce5d160b1fdbc4b948ea1b28ef42e448ecf12d08093",
+  "skill": "progress-tracking"
+}

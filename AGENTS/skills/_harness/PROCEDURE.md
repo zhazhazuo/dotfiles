@@ -91,6 +91,12 @@ Each moment runs 3 times per deck per split. A cell is `PASS` or `FAIL` by the r
 the expected phase. Orienting first and delegating after are legal. A negative control passes when
 no dev card is read.
 
+Each cell runs in a copy of `fixture-repo` under a fresh `mktemp -d` directory. The path states
+neither the skill nor the repeat, because a session that reads its own path must not learn what is
+being measured. The system prompt states the write boundary and does not announce an eval. The run
+cache keys on the runner and the three scorers as well as the deck, so a repaired instrument never
+reuses an older transcript.
+
 The three numbers come from the transcript, never from judgement:
 
 - skill files read per moment: the count of distinct `SKILL.md` reads.
@@ -98,9 +104,12 @@ The three numbers come from the transcript, never from judgement:
 - `usage.cost.total`: summed over assistant messages. Some providers report 0; the same summary
   carries `tokens` so a ceiling still exists. The calibration round decides which ceiling applies.
 
-The exit-artifact score is separate and never folded into the routing delta. It answers the
-question routing cannot: did the phase produce its artifact. It is a presence rubric from
-`score_artifact.py`, frozen with the fixture, and `--explain` prints which condition fired.
+The exit-artifact score is reported beside routing. It answers the question routing cannot: did
+the phase produce its artifact. It is a presence rubric from `score_artifact.py`, frozen with the
+fixture, and `--explain` prints which condition fired. The `progress` rubric requires an index and
+a work-unit write, the nine canonical headings in injection order, a valid status and at most 1,600
+characters in Tier 1. A fixture can put `progress` in the action column to include that rubric in
+the cell verdict. The artifact column still reports it separately.
 
 ## Accept and stop
 

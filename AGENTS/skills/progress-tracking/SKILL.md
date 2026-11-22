@@ -76,6 +76,12 @@ What this unit of work is for. One or two lines.
 ## State
 Where the work stands right now. Prefer bullets. Rewrite it; never append.
 
+## Open Questions
+- What the USER must answer (blockers)
+
+## Next
+- What the AGENT does next
+
 ## Decisions
 - Decision: the final state, not the history of reaching it
 
@@ -84,12 +90,6 @@ Where the work stands right now. Prefer bullets. Rewrite it; never append.
 
 ## Assumptions
 - What is taken as true and has not been verified
-
-## Open Questions
-- What the USER must answer (blockers)
-
-## Next
-- What the AGENT does next
 
 ## Context
 History, reasoning, rejected options, pointers. Never injected — this is where detail

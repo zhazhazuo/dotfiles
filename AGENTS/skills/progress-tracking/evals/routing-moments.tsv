@@ -1,0 +1,19 @@
+# Creation-only output fixture for progress-tracking, series 2.
+# Columns: id  moment  expected_phase  expected_skill  natural_ok  note  split  artifact  action
+# Positive moments name the deck explicitly, as /seal dispatch does. Routing is controlled.
+# The repository starts without .ai-artifacts, so no injected progress-state supplies section order.
+# The measured variable is whether the deck alone produces the reader's canonical schema.
+
+p01	Read ~/.agents/skills/progress-tracking/SKILL.md, then record cache-invalidation: tenant keys and tests pass, next measure hit rate.	-	progress-tracking	yes	create with current state and next	iterate	progress	progress
+p02	Read ~/.agents/skills/progress-tracking/SKILL.md, then record billing-retry: the user chooses three or five retries, and the agent adds telemetry next.	-	progress-tracking	yes	create with user and agent actions	iterate	progress	progress
+p03	Read ~/.agents/skills/progress-tracking/SKILL.md, then record search-rollout: exact matching is current, prefix and fuzzy were rejected, next measure recall.	-	progress-tracking	yes	create with rejected options	iterate	progress	progress
+p04	Read ~/.agents/skills/progress-tracking/SKILL.md, then record metrics-export: CSV and JSON share one formatter, and next write a snapshot test.	-	progress-tracking	yes	create with a decision	iterate	progress	progress
+p05	Read ~/.agents/skills/progress-tracking/SKILL.md, then record webhook-replay: replay is idempotent, tests pass, and next document the retry header.	-	progress-tracking	yes	create with verified state	iterate	progress	progress
+h01	Read ~/.agents/skills/progress-tracking/SKILL.md, then record parser-recovery: malformed input skips one record, and next count skipped records.	-	progress-tracking	yes	holdout creation	holdout	progress	progress
+h02	Rename processOrder to handleOrder in the checkout.	-	-	yes	NEGATIVE CONTROL: code work is dev-nav	holdout	-	-
+h03	Read ~/.agents/skills/progress-tracking/SKILL.md, then record tenant-telemetry: events carry tenant IDs, and next measure missing IDs.	-	progress-tracking	yes	holdout creation	holdout	progress	progress
+h04	Spawn a child agent to run the test suite.	-	-	yes	NEGATIVE CONTROL: delegation is dev-flow-nav	holdout	-	-
+h05	Read ~/.agents/skills/progress-tracking/SKILL.md, then record rate-limit-budget: remaining capacity is 20 percent, and next add an alert.	-	progress-tracking	yes	holdout creation	holdout	progress	progress
+s01	Read ~/.agents/skills/progress-tracking/SKILL.md, then record deployment-flag: the new path is disabled, and next enable it for one tenant.	-	progress-tracking	yes	sealed creation	sealed	progress	progress
+s02	Read the release runbook in Confluence and name the release blockers.	-	-	yes	NEGATIVE CONTROL: Confluence is ops-nav	sealed	-	-
+s03	Read ~/.agents/skills/progress-tracking/SKILL.md, then record import-alias: old imports use the compatibility alias, and next remove the alias.	-	progress-tracking	yes	sealed creation	sealed	progress	progress

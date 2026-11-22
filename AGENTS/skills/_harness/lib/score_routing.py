@@ -37,8 +37,20 @@ import re
 import sys
 import tempfile
 
+from score_artifact import (
+    harvest as artifact_harvest,
+)
+from score_artifact import (
+    score as score_exit_artifact,
+)
+
 READ_VERB = re.compile(r"\b(cat|bat|less|more|head|tail|sed|rg|grep)\b")
 SKILL_PATH = re.compile(r"([A-Za-z0-9_.-]+)/SKILL\.md")
+
+# The intercom action a cell chose. A substantive action changes state for the peer, so the first
+# one is the choice under test and three in a row is the resend loop the deck forbids.
+SUBSTANTIVE_ACTIONS = ("send", "ask", "reply", "handover", "cancel")
+ACTION_NAMES = SUBSTANTIVE_ACTIONS + ("list", "list-cwd", "peers", "status", "pending")
 
 
 # ---------------------------------------------------------------- transcript
@@ -97,6 +109,56 @@ def skill_reads(evs, exempt):
                 continue
             seen.append(name)
     return seen
+
+
+def action_calls(evs):
+    """Every intercom action in order, from the tool event the harness records."""
+    seen = []
+    for o in evs:
+        if o.get("type") != "tool_execution_start":
+            continue
+        tool = o.get("toolName") or ""
+        args = o.get("args") or {}
+        if not isinstance(args, dict):
+            continue
+        action = None
+        if tool == "intercom":
+            action = args.get("action")
+        elif tool == "run_tool" and args.get("tool") == "intercom":
+            inner = args.get("args") or {}
+            if isinstance(inner, dict):
+                action = inner.get("action")
+        if isinstance(action, str) and action:
+            seen.append(action)
+    return seen
+
+
+def score_action(seen, expected):
+    """Compare the actions a cell chose against the fixture's expectation."""
+    if not expected or expected == "-":
+        return "na", "no action expected"
+    if expected == "progress":
+        return score_exit_artifact("progress", *artifact_harvest(seen))
+    want = [w.strip() for w in expected.split("|") if w.strip()]
+    if not want:
+        return "na", "no action expected"
+    if not seen:
+        return "fail", "no-action:" + ",".join(want)
+    substantive = [a for a in seen if a in SUBSTANTIVE_ACTIONS]
+    wants_substantive = [w for w in want if w in SUBSTANTIVE_ACTIONS]
+    if wants_substantive:
+        if not substantive:
+            return "fail", "no-substantive-action:" + ",".join(want)
+        if substantive[0] not in wants_substantive:
+            return "fail", "wrong-action:" + substantive[0]
+    elif not any(w in seen for w in want):
+        return "fail", "action-not-taken:" + ",".join(want)
+    run = 1
+    for a, b in zip(substantive, substantive[1:]):
+        run = run + 1 if a == b else 1
+        if run >= 3:
+            return "fail", "action-repeat:" + b
+    return "pass", "action-ok"
 
 
 def metrics(evs):
@@ -172,13 +234,20 @@ def verdict(reads, expected_skill, expected_phase, rules):
     return True, "entry-ok"
 
 
-def score_one(path, expected_skill, expected_phase, rules):
+def score_one(path, expected_skill, expected_phase, rules, expected_action="-"):
     evs = events(path)
     reads = skill_reads(evs, set(rules.get("exempt_skill_names") or []))
     ok, code = verdict(reads, expected_skill, expected_phase, rules)
+    seen = evs if expected_action == "progress" else action_calls(evs)
+    action_state, action_code = score_action(seen, expected_action)
     row = {
-        "verdict": "PASS" if ok else "FAIL",
+        "verdict": "PASS" if ok and action_state != "fail" else "FAIL",
         "code": code,
+        "routing_verdict": "PASS" if ok else "FAIL",
+        "action": action_state,
+        "action_code": action_code,
+        "action_expected": expected_action or "-",
+        "actions": seen,
         "reads": reads,
         "skill_files_read": len(reads),
     }
@@ -196,7 +265,7 @@ def read_fixture(path):
             if not line or line.lstrip().startswith("#"):
                 continue
             cols = line.split("\t")
-            while len(cols) < 8:
+            while len(cols) < 9:
                 cols.append("")
             rows.append({
                 "id": cols[0].strip(),
@@ -207,6 +276,7 @@ def read_fixture(path):
                 "note": cols[5],
                 "split": cols[6].strip() or "iterate",
                 "artifact": cols[7].strip() or "-",
+                "action": cols[8].strip() or "-",
             })
     return rows
 
@@ -270,6 +340,69 @@ ORIENT_FIRST_EVENTS = [
 ]
 
 
+ACTION_OK_EVENTS = [
+    {"type": "session", "timestamp": "2026-01-01T00:00:00.000Z"},
+    {"type": "tool_execution_start", "toolName": "read",
+     "args": {"path": "~/.agents/skills/intercom-coordination/SKILL.md"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "list"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "send", "to": "builder"}},
+]
+
+ACTION_WRONG_EVENTS = [
+    {"type": "session", "timestamp": "2026-01-01T00:00:00.000Z"},
+    {"type": "tool_execution_start", "toolName": "read",
+     "args": {"path": "~/.agents/skills/intercom-coordination/SKILL.md"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "send", "to": "builder"}},
+]
+
+ACTION_REPEAT_EVENTS = [
+    {"type": "session", "timestamp": "2026-01-01T00:00:00.000Z"},
+    {"type": "tool_execution_start", "toolName": "read",
+     "args": {"path": "~/.agents/skills/intercom-coordination/SKILL.md"}},
+    {"type": "tool_execution_start", "toolName": "run_tool",
+     "args": {"tool": "intercom", "args": {"action": "handover", "to": "reviewer"}}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "handover", "to": "reviewer"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "handover", "to": "reviewer"}},
+]
+
+ACTION_RETRY_EVENTS = [
+    {"type": "session", "timestamp": "2026-01-01T00:00:00.000Z"},
+    {"type": "tool_execution_start", "toolName": "read",
+     "args": {"path": "~/.agents/skills/intercom-coordination/SKILL.md"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "send", "to": "builder"}},
+    {"type": "tool_execution_start", "toolName": "intercom", "args": {"action": "send", "to": "builder"}},
+]
+
+PROGRESS_OK_EVENTS = [
+    {"type": "session", "timestamp": "2026-01-01T00:00:00.000Z"},
+    {"type": "tool_execution_start", "toolName": "read",
+     "args": {"path": "~/.agents/skills/progress-tracking/SKILL.md"}},
+    {"type": "tool_execution_start", "toolName": "write",
+     "args": {"path": ".ai-artifacts/progress/INDEX.md", "content": "# Progress Index\n"}},
+    {"type": "tool_execution_start", "toolName": "write",
+     "args": {"path": ".ai-artifacts/progress/cache-invalidation.md", "content": """# cache-invalidation
+## Status
+active
+## Objective
+Keep tenants separate.
+## State
+- Tenant keys landed.
+## Open Questions
+- None.
+## Next
+- Measure hits.
+## Decisions
+- Key by tenant.
+## Constraints
+- Keep the API.
+## Assumptions
+- Tenant is present.
+## Context
+No further history.
+"""}},
+]
+
+
 def _write_tmp(events_list):
     with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False, encoding="utf-8") as handle:
         for ev in events_list:
@@ -294,6 +427,9 @@ def self_test():
         "pass": PASS_EVENTS, "fail": FAIL_EVENTS, "negative": NEGATIVE_EVENTS,
         "control_fail": CONTROL_FAIL_EVENTS, "enter_wrong": ENTER_WRONG_EVENTS,
         "orient_first": ORIENT_FIRST_EVENTS, "wc": WC_EVENTS,
+        "a_ok": ACTION_OK_EVENTS, "a_wrong": ACTION_WRONG_EVENTS,
+        "a_repeat": ACTION_REPEAT_EVENTS, "a_retry": ACTION_RETRY_EVENTS,
+        "p_ok": PROGRESS_OK_EVENTS,
     }.items()}
     try:
         ok = score_one(paths["pass"], "write-discoverable-code", "4", rules)
@@ -336,10 +472,28 @@ def self_test():
         # The extractor must not count the deck under test as a skill it routes to.
         assert score_one(paths["pass"], "write-discoverable-code", "4",
                          dict(rules, exempt_skill_names=[]))["reads"] == ["write-discoverable-code"]
+
+        # The action rule: the first substantive action is the choice, two in a row is one retry,
+        # three in a row is the resend loop. A deck with no action column is unaffected.
+        deck = "intercom-coordination"
+        assert score_one(paths["a_ok"], deck, "-", rules, "send")["action"] == "pass"
+        assert score_one(paths["a_ok"], deck, "-", rules, "send|reply")["action"] == "pass"
+        assert score_one(paths["a_ok"], deck, "-", rules, "ask")["action_code"] == "wrong-action:send"
+        assert score_one(paths["a_wrong"], deck, "-", rules, "ask")["verdict"] == "FAIL"
+        assert score_one(paths["a_ok"], deck, "-", rules, "list")["action"] == "pass"
+        assert score_one(paths["a_repeat"], deck, "-", rules, "handover")["action_code"] == "action-repeat:handover"
+        assert score_one(paths["a_repeat"], deck, "-", rules, "handover")["verdict"] == "FAIL"
+        assert score_one(paths["a_retry"], deck, "-", rules, "send")["action"] == "pass"
+        assert score_one(paths["a_wrong"], deck, "-", rules, "-")["action"] == "na"
+        assert score_one(paths["a_wrong"], deck, "-", rules, "-")["verdict"] == "PASS"
+        assert score_one(paths["pass"], "write-discoverable-code", "4", rules)["action"] == "na"
+        progress_deck = "progress-tracking"
+        assert score_one(paths["p_ok"], progress_deck, "-", rules, "progress")["action"] == "pass"
+        assert score_one(paths["a_ok"], progress_deck, "-", rules, "progress")["action"] == "fail"
     finally:
         for path in paths.values():
             os.unlink(path)
-    print("score_routing self-test OK: pass, miss, abstain, forced, wrong-entry, flat, metrics")
+    print("score_routing self-test OK: pass, miss, abstain, forced, wrong-entry, flat, metrics, action")
 
 
 # ---------------------------------------------------------------- main
@@ -394,13 +548,15 @@ def main():
             cell = {"id": row["id"], "split": row["split"], "repeat": repeat,
                     "phase": row["phase"], "expected": row["skill"]}
             if not os.path.exists(path):
-                cell.update({"verdict": "MISSING", "code": "no-transcript", "reads": [],
+                cell.update({"verdict": "MISSING", "code": "no-transcript",
+                             "action": "fail", "action_code": "no-transcript",
+                             "action_expected": row.get("action", "-"), "actions": [], "reads": [],
                              "skill_files_read": 0, "wall_seconds": 0.0, "cost_usd": 0.0,
                              "tokens_in": 0, "tokens_out": 0, "tokens_cache_read": 0,
                              "tokens_cache_write": 0, "tokens_total": 0,
                              "tokens_billable": 0})
             else:
-                cell.update(score_one(path, row["skill"], row["phase"], rules))
+                cell.update(score_one(path, row["skill"], row["phase"], rules, row.get("action", "-")))
             out.append(cell)
 
     if args.json:
@@ -419,8 +575,9 @@ def main():
         cost = sum(c["cost_usd"] for c in cells)
         tokens = sum(c["tokens_total"] for c in cells)
         read_text = ",".join(reads) or "NONE"
+        actions = ",".join(str(c.get("action")) for c in cells)
         print(f"{moment_id}\t{cells[0]['split']}\t{read_text}\t{verdicts}\t"
-              f"{passes}/{len(cells)}\t{wall:.1f}\t{cost:.6f}\t{tokens}")
+              f"{passes}/{len(cells)}\t{actions}\t{wall:.1f}\t{cost:.6f}\t{tokens}")
     return 0
 
 
