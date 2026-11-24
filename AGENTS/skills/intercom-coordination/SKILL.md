@@ -31,6 +31,29 @@ call is not covered here. That file matches the installed version.
   broker mailbox.
 - Name this session with `/alias <name>` so peers can address it. The name persists with the session.
 
+## Choose the message card
+
+Run `intercom({ action: "list" })` before delegating. Read the target model and match the message to
+its strengths. If the roster omits the model, use the execution card.
+
+| Target model | Message card | Required content |
+|---|---|---|
+| `DeepSeek-Flash` | Execution | A self-contained task with exact files, current state, decisions, constraints, steps, acceptance criteria, and reply fields. Assign implementation, verification, or bounded investigation. Do not request open-ended ideas. |
+| A reasoning or general-purpose model | Execution or design | Use the execution card for a decided task. For open design work, supply the context and constraints, then request alternatives, tradeoffs, and a recommendation. |
+| An unknown model | Execution | Include every decision and all necessary context. Do not assume access to this session's history. |
+
+Use this structure for the execution card:
+
+```text
+Task: <one bounded outcome>
+Files: <exact paths to read or change>
+Current state: <relevant facts and completed work>
+Decisions and constraints: <choices already made and limits to respect>
+Steps: <ordered actions>
+Acceptance criteria: <observable checks>
+Reply with: <required result, evidence, and blockers>
+```
+
 ## Write the message
 
 - State the task, the files to read, the current state, and what a reply must contain.
